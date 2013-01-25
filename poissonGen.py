@@ -1,33 +1,51 @@
 import sys
+import math
+import random
 
-if len(sys.argv) 1= 5:
-	print 'Wrong Number of Arguments'
+if len(sys.argv) != 6:
+    print 'Wrong Number of Arguments you sent', sys.argv
     print '[avgArrivalRate, avgStay, avgChargeNeed, timestep, interval]'
-	sys.exit()
+    sys.exit()
+print 'parameters: ',sys.argv    
 
-
+avgArrivalRate = float(sys.argv[1])
+avgStay = float(sys.argv[2])
+avgChargeNeed = float(sys.argv[3])
+timestep = float(sys.argv[4])
+interval = float(sys.argv[5])
 
 class Vehicle:
-	numVehicles = 0
+    numVehicles = 0
 
-	def __init__(self, arrivalTime, depTime, chargeNeed):
-		self.id = numVehicles
-		numVehicles++
-		self.arrivalTime = arrivalTime
-		self.depTime = depTime
-		self.chargeNeed = chargeNeed
+    def __init__(self, arrivalTime, depTime, chargeNeed):
+        self.id = numVehicles
+        numVehicles+=1
+        self.arrivalTime = arrivalTime
+        self.depTime = depTime
+        self.chargeNeed = chargeNeed
 
-	def getInfo(self):
-		return [self.arrivalTime, self.depTime, self.chargeNeed]
-
-avgArrivalRate = sys.argv[0]
-avgStay = sys.argv[1]
-avgChargeNeed = sys.argv[2]
-timestep = sys.argv[3]
-interval = sys.argv[4]
+    def getInfo(self):
+        return [self.arrivalTime, self.depTime, self.chargeNeed]
 
 
+def simulateInterval():
+    arrivalTimes = []
+    prevArrival = 0
+    while True:
+        nextArrival = vehicleArrives(prevArrival)
+        if nextArrival > interval:
+            break
+        arrivalTimes.append(nextArrival)
+        prevArrival = nextArrival
+    arrivalsPerTimestep = [0] * int(math.ceil(interval / timestep))    
+    for arrivalTime in arrivalTimes:
+        arrivalsPerTimestep[int(math.floor(arrivalTime/timestep))]+=1
+    print 'total arrivals = ',sum(arrivalsPerTimestep)
+    return arrivalsPerTimestep
 
 
+def vehicleArrives(prevArrival):
+    return prevArrival + random.expovariate(avgArrivalRate)
 
+print simulateInterval()
 
