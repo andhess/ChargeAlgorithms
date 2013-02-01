@@ -2,23 +2,25 @@ import sys
 import math
 import random
 
-if len(sys.argv) != 6:
+if len(sys.argv) != 2:
     print 'Wrong Number of Arguments you sent', sys.argv
-    print '[avgArrivalRate, avgStay, avgChargeNeed, timestep, interval]'
+    print 'interval'
     sys.exit()
 print 'parameters: ',sys.argv    
 
-avgArrivalRate = float(sys.argv[1])
-avgStay = float(sys.argv[2])
-avgChargeNeed = float(sys.argv[3])
-timestep = float(sys.argv[4])
-interval = float(sys.argv[5])
+interval = float(sys.argv[1])
 
 # constants
+
+averageArrivalRate = .5
+
 # chargeRateMu
-# chargeRateSigma 
-chargeNeedMu
-chargeNeedSigma
+# chargeRateSigma
+
+# chargeNeeded - the charge needed at the end 
+chargeNeededMu = 45 #kwh
+chargeNeededSigma = 5 #kwh
+
 currentChargeSigma = 3 #kwh
 currentChargeMu = 12 #kwh
 
@@ -29,20 +31,35 @@ uniformChargeRate = 30 #kw
 class Vehicle:
     numVehicles = 0
 
-    def __init__(self, arrivalTime, depTime, chargeNeed, currentCharge, chargeRate, maxCapacity):
+    def __init__( self, arrivalTime, depTime, chargeNeeded, currentCharge, chargeRate, maxCapacity ):
         self.id = numVehicles
-        numVehicles+=1
+        numVehicles += 1
         self.arrivalTime = arrivalTime
         self.depTime = depTime
-        self.chargeNeed = chargeNeed
+        self.chargeNeeded = chargeNeed
         self.currentCharge = currentCharge
         self.chargeRate = chargeRate
         self.maxCapacity = maxCapacity
 
-    def getInfo(self):
-        return [self.arrivalTime, self.depTime, self.chargeNeed, self.currentCharge, self.chargeRate, self.maxCapacity]
+#    def getInfo(self):
+#        return [self.arrivalTime, self.depTime, self.chargeNeeded, self.currentCharge, self.chargeRate, self.maxCapacity]
+
+def vehicleGen( arrayOfArrivalTimes ):
+    vehicles = []
+    for arrival in arrayOfArrivalTimes
+        depart = arrival + random.randint( 60, 180 )
+        chargeNeeded = random.gauss( chargeNeededMu, chargeNeededSigma )
+        currentCharge = random.gauss( currentChargeMu, currentChargeSigma )
+        chargeRate = uniformChargeRate
+        maxCapacity = uniformMaxCapacity
+        vehicles.append( Vehicle( arrival, depart, chargeNeed, currentCharge, chargeRate, maxCapacity) )
+    return vehicles
+
 
 def simulateFCFS( arrayOfVehicles ):
+    currentTime = 0
+    while currentTime < interval:
+        for vehicle in arrayOfVehicles
 
 
 def simulateInterval():
@@ -54,23 +71,8 @@ def simulateInterval():
             break
         arrivalTimes.append(nextArrival)
         prevArrival = nextArrival
-    # arrivalsPerTimestep = [0] * int(math.ceil(interval / timestep))    
-    # for arrivalTime in arrivalTimes:
-    #     arrivalsPerTimestep[int(math.floor(arrivalTime/timestep))]+=1
-    # print 'total arrivals = ',sum(arrivalsPerTimestep)
-    #return arrivalsPerTimestep
-    vehicles = vehicleGen( arrivalTimes )
-    return vehicles
 
-def vehicleGen( arrayOfArrivalTimes ):
-    vehicles = []
-    for arrival in arrayOfArrivalTimes
-        depart = arrival + random.randint( 60, 180 )
-        chargeNeed = 
-        currentCharge = 
-        chargeRate = 
-        maxCapacity = 
-        vehicles.append( Vehicle( arrival, depart, chargeNeed, currentCharge, chargeRate, maxCapacity) )
+    vehicles = vehicleGen( arrivalTimes )
     return vehicles
 
 def vehicleArrives(prevArrival):
@@ -78,3 +80,14 @@ def vehicleArrives(prevArrival):
 
 print simulateInterval()
 
+
+
+
+
+
+### garbage
+    # arrivalsPerTimestep = [0] * int(math.ceil(interval / timestep))    
+    # for arrivalTime in arrivalTimes:
+    #     arrivalsPerTimestep[int(math.floor(arrivalTime/timestep))]+=1
+    # print 'total arrivals = ',sum(arrivalsPerTimestep)
+    #return arrivalsPerTimestep
