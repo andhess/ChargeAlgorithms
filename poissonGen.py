@@ -7,7 +7,7 @@ if len(sys.argv) != 2:
     print 'Wrong Number of Arguments you sent', sys.argv
     print 'interval'
     sys.exit()
-print 'parameters: ',sys.argv    
+#print 'parameters: ',sys.argv    
 
 interval = int(sys.argv[1])
 
@@ -32,28 +32,25 @@ numChargePorts = 2
 chargePorts = [None] * numChargePorts
 doneChargingLot = []
 failedLot = []
-queue = Queue(0) # infinite size
+queue = Queue.Queue(0) # infinite size
 currentTime = 0 
 
 
 class Vehicle:
-    numVehicles = 0
+    numVehiclesMade = 0
 
     def __init__( self, arrivalTime, depTime, chargeNeeded, currentCharge, chargeRate, maxCapacity ):
-        self.id = numVehicles
-        numVehicles += 1
+        self.id = Vehicle.numVehiclesMade
+        Vehicle.numVehiclesMade += 1
         self.arrivalTime = arrivalTime
         self.depTime = depTime
-        self.chargeNeeded = chargeNeed
+        self.chargeNeeded = chargeNeeded
         self.currentCharge = currentCharge
         self.chargeRate = chargeRate
         self.maxCapacity = maxCapacity
 
     def failedToString():
-        print "ID: " , self.id , "\n" ,
-            "current charge: " , self.currentCharge , "  " ,
-            "charge needed: " , self.chargeNeeded , "  " , 
-            "departure time: " , self.depTime , "  " 
+        print "ID: " , self.id , "  current charge: " , self.currentCharge , "  charge needed: " , self.chargeNeeded , "   departure time: " , self.depTime
 
 
 #    def getInfo(self):
@@ -62,11 +59,11 @@ class Vehicle:
 
 def simulateFCFS( arrayOfVehicleArrivals ):   
     for minute, numVehiclesPerMin in enumerate(arrayOfVehicleArrivals):
-        for vehicle in numVehiclesPerMin
+        for vehicle in numVehiclesPerMin:
             port = openChargePort()
             if port is not None:
                 chargePorts[port] = vehicle
-            else
+            else:
                 queue.put(vehicle)
         updateVehicles()
         currentTime += 1
@@ -74,10 +71,8 @@ def simulateFCFS( arrayOfVehicleArrivals ):
         updateVehicles()
         currentTime += 1
 
-    print "current time: " , currentTime , "\n" ,
-        "done charging lot: " , len( doneChargingLot ) , "\n" ,
-        "failed charing lot: " , len( failedLot ) , "\n"
-    for vehicle in failedLot
+    print "current time: " , currentTime , "   done charging lot: " , len( doneChargingLot ) , "  failed charing lot: " , len( failedLot )
+    for vehicle in failedLot:
         vehicle.failedToString()
 
 
@@ -100,7 +95,7 @@ def updateVehicles():
 
 def openChargePort():
     for index,port in enumerate(chargePorts):
-        if port == None
+        if port == None:
             return index
     return None
 
@@ -134,13 +129,15 @@ def vehicleGen( arrayOfArrivalsPerMin ):
                 currentCharge = random.gauss( currentChargeMu, currentChargeSigma )
                 chargeRate = uniformChargeRate
                 maxCapacity = uniformMaxCapacity
-                vehiclesDuringMin.append( Vehicle( arrival, depart, chargeNeed, currentCharge, chargeRate, maxCapacity) )
+                vehiclesDuringMin.append( Vehicle( minute, depart, chargeNeeded, currentCharge, chargeRate, maxCapacity) )
             vehicles.append(vehiclesDuringMin)
-        else
+        else:
             vehicles.append( [] )
     return vehicles
 
-print simulateInterval()
+#print simulateInterval()
+
+simulateFCFS( simulateInterval() )
 
 
 
