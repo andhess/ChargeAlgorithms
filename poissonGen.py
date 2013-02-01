@@ -62,9 +62,6 @@ def simulateInterval():
         prevArrival = nextArrival
 
     arrivalsPerMin = [0] * interval
-    print "number of arrivals", len(arrivalTimes)
-    print "len of arrivalsPerMin", len(arrivalsPerMin)
-    print arrivalTimes
     for arrivalTime in arrivalTimes:
         arrivalsPerMin[int(arrivalTime)]+=1
     vehicles = vehicleGen( arrivalsPerMin )
