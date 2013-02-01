@@ -29,6 +29,11 @@ uniformMaxCapacity = 60 #kwh
 uniformChargeRate = 30 #kw
 
 numChargePorts = 2
+chargePorts = [None] * numChargePorts
+doneChargingLot = []
+failedLot = []
+queue = Queue(0) # infinite size
+currentTime = 0 
 
 
 class Vehicle:
@@ -44,30 +49,56 @@ class Vehicle:
         self.chargeRate = chargeRate
         self.maxCapacity = maxCapacity
 
+    def failedToString():
+        print "ID: " , self.id , "\n" ,
+            "current charge: " , self.currentCharge , "  " ,
+            "charge needed: " , self.chargeNeeded , "  " , 
+            "departure time: " , self.depTime , "  " 
+
+
 #    def getInfo(self):
 #        return [self.arrivalTime, self.depTime, self.chargeNeeded, self.currentCharge, self.chargeRate, self.maxCapacity]
 
 
-def simulateFCFS( arrayOfVehicleArrivals ):
-    currentTime = 0
-    chargePorts = [None] * numChargePorts;
-    queue = Queue(0) # infinite size
-    doneCharging = []
-    while currentTime < interval:
-        for minute in arrayOfVehicleArrivals
-            for vehicle in minute
-                port = openChargePort( chargePorts )
-                if port:
-                    chargePorts[port] = vehicle
-                else
-                    queue.put(vehicle)
+def simulateFCFS( arrayOfVehicleArrivals ):   
+    for minute, numVehiclesPerMin in enumerate(arrayOfVehicleArrivals):
+        for vehicle in numVehiclesPerMin
+            port = openChargePort()
+            if port is not None:
+                chargePorts[port] = vehicle
+            else
+                queue.put(vehicle)
+        updateVehicles()
+        currentTime += 1
+    while openChargePort() is not None and not queue.empty():
         updateVehicles()
         currentTime += 1
 
+    print "current time: " , currentTime , "\n" ,
+        "done charging lot: " , len( doneChargingLot ) , "\n" ,
+        "failed charing lot: " , len( failedLot ) , "\n"
+    for vehicle in failedLot
+        vehicle.failedToString()
 
+
+def updateVehicles():
+
+    # advance 1 minute in the simulation
+    for index, vehicle in enumerate(chargePorts):
+        vehicle.currentCharge += (vehicle.chargeRate) / 60
+
+        #check if done charging
+        if vehicle.currentCharge >= vehicle.chargeNeeded:
+            doneChargingLot.append( vehicle )
+            chargePorts[index] = queue.get()  #careful
+
+        #  check if deadline reached
+        if currentTime >= vehicle.depTime:
+            failedLot.append( vehicle )
+            chargePorts[index] = queue.get()
         
 
-def openChargePort(chargePorts):
+def openChargePort():
     for index,port in enumerate(chargePorts):
         if port == None
             return index
