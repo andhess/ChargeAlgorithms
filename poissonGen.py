@@ -1,6 +1,7 @@
 import sys
 import math
 import random
+import Queue
 
 if len(sys.argv) != 2:
     print 'Wrong Number of Arguments you sent', sys.argv
@@ -27,6 +28,8 @@ currentChargeMu = 12 #kwh
 uniformMaxCapacity = 60 #kwh
 uniformChargeRate = 30 #kw
 
+numChargePorts = 2
+
 
 class Vehicle:
     numVehicles = 0
@@ -45,11 +48,30 @@ class Vehicle:
 #        return [self.arrivalTime, self.depTime, self.chargeNeeded, self.currentCharge, self.chargeRate, self.maxCapacity]
 
 
-# def simulateFCFS( arrayOfVehicles ):
-#     currentTime = 0
-#     while currentTime < interval:
-#         for vehicle in arrayOfVehicles
+def simulateFCFS( arrayOfVehicleArrivals ):
+    currentTime = 0
+    chargePorts = [None] * numChargePorts;
+    queue = Queue(0) # infinite size
+    doneCharging = []
+    while currentTime < interval:
+        for minute in arrayOfVehicleArrivals
+            for vehicle in minute
+                port = openChargePort( chargePorts )
+                if port:
+                    chargePorts[port] = vehicle
+                else
+                    queue.put(vehicle)
+        updateVehicles()
+        currentTime += 1
 
+
+        
+
+def openChargePort(chargePorts):
+    for index,port in enumerate(chargePorts):
+        if port == None
+            return index
+    return None
 
 def simulateInterval():
     arrivalTimes = []
