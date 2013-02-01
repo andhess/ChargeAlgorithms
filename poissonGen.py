@@ -8,11 +8,11 @@ if len(sys.argv) != 2:
     sys.exit()
 print 'parameters: ',sys.argv    
 
-interval = float(sys.argv[1])
+interval = int(sys.argv[1])
 
 # constants
 
-averageArrivalRate = .5
+avgArrivalRate = .5
 
 # chargeRateMu
 # chargeRateSigma
@@ -44,22 +44,11 @@ class Vehicle:
 #    def getInfo(self):
 #        return [self.arrivalTime, self.depTime, self.chargeNeeded, self.currentCharge, self.chargeRate, self.maxCapacity]
 
-def vehicleGen( arrayOfArrivalTimes ):
-    vehicles = []
-    for arrival in arrayOfArrivalTimes
-        depart = arrival + random.randint( 60, 180 )
-        chargeNeeded = random.gauss( chargeNeededMu, chargeNeededSigma )
-        currentCharge = random.gauss( currentChargeMu, currentChargeSigma )
-        chargeRate = uniformChargeRate
-        maxCapacity = uniformMaxCapacity
-        vehicles.append( Vehicle( arrival, depart, chargeNeed, currentCharge, chargeRate, maxCapacity) )
-    return vehicles
 
-
-def simulateFCFS( arrayOfVehicles ):
-    currentTime = 0
-    while currentTime < interval:
-        for vehicle in arrayOfVehicles
+# def simulateFCFS( arrayOfVehicles ):
+#     currentTime = 0
+#     while currentTime < interval:
+#         for vehicle in arrayOfVehicles
 
 
 def simulateInterval():
@@ -67,16 +56,37 @@ def simulateInterval():
     prevArrival = 0
     while True:
         nextArrival = math.floor(vehicleArrives(prevArrival))
-        if nextArrival > interval:
+        if nextArrival >= interval:
             break
         arrivalTimes.append(nextArrival)
         prevArrival = nextArrival
 
-    vehicles = vehicleGen( arrivalTimes )
+    arrivalsPerMin = [0] * interval
+    print "number of arrivals", len(arrivalTimes)
+    print "len of arrivalsPerMin", len(arrivalsPerMin)
+    print arrivalTimes
+    for arrivalTime in arrivalTimes:
+        arrivalsPerMin[int(arrivalTime)]+=1
+    vehicles = vehicleGen( arrivalsPerMin )
     return vehicles
 
 def vehicleArrives(prevArrival):
     return prevArrival + random.expovariate( avgArrivalRate )
+
+def vehicleGen( arrayOfArrivalsPerMin ):
+    vehicles = []
+    for minute,arrivalesDuringMin in enumerate(arrayOfArrivalsPerMin):
+        if arrivalesDuringMin != 0 :
+            vehiclesDuringMin = []
+            for i in range(0, arrivalesDuringMin):
+                depart = minute + random.randint( 60, 180 )
+                chargeNeeded = random.gauss( chargeNeededMu, chargeNeededSigma )
+                currentCharge = random.gauss( currentChargeMu, currentChargeSigma )
+                chargeRate = uniformChargeRate
+                maxCapacity = uniformMaxCapacity
+                vehiclesDuringMin.append( Vehicle( arrival, depart, chargeNeed, currentCharge, chargeRate, maxCapacity) )
+            vehicles.append(vehiclesDuringMin)
+    return vehicles
 
 print simulateInterval()
 
