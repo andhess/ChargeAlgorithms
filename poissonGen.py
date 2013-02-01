@@ -105,6 +105,8 @@ def vehicleGen( arrayOfArrivalsPerMin ):
                 maxCapacity = uniformMaxCapacity
                 vehiclesDuringMin.append( Vehicle( arrival, depart, chargeNeed, currentCharge, chargeRate, maxCapacity) )
             vehicles.append(vehiclesDuringMin)
+        else
+            vehicles.append( [] )
     return vehicles
 
 print simulateInterval()
