@@ -3,6 +3,7 @@ import math
 import random
 import Queue
 from vehicle import *
+from chargePorts import *
 
 if len(sys.argv) != 2:
     print 'Wrong Number of Arguments you sent', sys.argv
@@ -29,34 +30,16 @@ currentChargeMu = 12 #kwh
 uniformMaxCapacity = 60 #kwh
 uniformChargeRate = 30 #kw
 
-numChargePorts = 2
-chargePorts = [None] * numChargePorts
 doneChargingLot = []
 failedLot = []
 queue = Queue.Queue(0) # infinite size
 currentTime = 0 
 
+#### Simulations
 
-def simulateFCFS( arrayOfVehicleArrivals ):
-    global currentTime
-    for minute, numVehiclesPerMin in enumerate( arrayOfVehicleArrivals ):
-        for vehicle in numVehiclesPerMin:
-            port = openChargePort()
-            if port is not None:
-                chargePorts[ port ] = vehicle
-            else:
-                queue.put(vehicle)
-        updateVehicles()
-        currentTime += 1
-    print "status:  " , openChargePort() , "  " , queue.empty()
-    while chargePortsEmpty() == False or not queue.empty():
-        updateVehicles()
-        currentTime += 1
-    print "status:  " , openChargePort() , "  " , queue.empty()," which evaluated to ", not queue.empty() or openChargePort() is None
+#print simulateInterval()
 
-    print "current time: " , currentTime , "   done charging lot: " , len( doneChargingLot ) , "  failed charing lot: " , len( failedLot ) , "  queue size:  " , queue.qsize() , " chargePort " , chargePorts
-    #for vehicle in failedLot:
-    #    vehicle.failedToString()
+simulateFCFS( simulateInterval() )
 
 
 def updateVehicles():
@@ -83,18 +66,7 @@ def updateVehicles():
                     chargePorts[index] = queue.get()
                 else:
                     chargePorts[index] = None
-        
 
-def openChargePort():
-    for index,port in enumerate(chargePorts):
-        if port is None:
-            return index
-    return None
-def chargePortsEmpty():
-    for index,port in enumerate(chargePorts):
-        if port is not None:
-            return False
-    return True
 
 def simulateInterval():
     arrivalTimes = []
@@ -133,9 +105,38 @@ def vehicleGen( arrayOfArrivalsPerMin ):
             vehicles.append( [] )
     return vehicles
 
-#print simulateInterval()
 
-simulateFCFS( simulateInterval() )
+# The Algorithms
+
+# EDF
+
+
+# FCFS
+
+def simulateFCFS( arrayOfVehicleArrivals ):
+    global currentTime
+    for minute, numVehiclesPerMin in enumerate( arrayOfVehicleArrivals ):
+        for vehicle in numVehiclesPerMin:
+            port = openChargePort()
+            if port is not None:
+                chargePorts[ port ] = vehicle
+            else:
+                queue.put(vehicle)
+        updateVehicles()
+        currentTime += 1
+    print "status:  " , openChargePort() , "  " , queue.empty()
+    while chargePortsEmpty() == False or not queue.empty():
+        updateVehicles()
+        currentTime += 1
+    print "status:  " , openChargePort() , "  " , queue.empty()," which evaluated to ", not queue.empty() or openChargePort() is None
+
+    print "current time: " , currentTime , "   done charging lot: " , len( doneChargingLot ) , "  failed charing lot: " , len( failedLot ) , "  queue size:  " , queue.qsize() , " chargePort " , chargePorts
+    #for vehicle in failedLot:
+    #    vehicle.failedToString()
+
+
+
+
 
 
 ### garbage
