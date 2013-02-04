@@ -2,7 +2,7 @@ import sys
 import math
 import random
 import Queue
-import vehicle.py
+from vehicle import *
 
 if len(sys.argv) != 2:
     print 'Wrong Number of Arguments you sent', sys.argv
@@ -39,22 +39,24 @@ currentTime = 0
 
 def simulateFCFS( arrayOfVehicleArrivals ):
     global currentTime
-    for minute, numVehiclesPerMin in enumerate(arrayOfVehicleArrivals):
+    for minute, numVehiclesPerMin in enumerate( arrayOfVehicleArrivals ):
         for vehicle in numVehiclesPerMin:
             port = openChargePort()
             if port is not None:
-                chargePorts[port] = vehicle
+                chargePorts[ port ] = vehicle
             else:
                 queue.put(vehicle)
         updateVehicles()
         currentTime += 1
-    while openChargePort() is not None and not queue.empty():
+    print "status:  " , openChargePort() , "  " , queue.empty()
+    while not queue.empty() or openChargePort() is not None:
         updateVehicles()
         currentTime += 1
+    print "status:  " , openChargePort() , "  " , queue.empty() 
 
-    print "current time: " , currentTime , "   done charging lot: " , len( doneChargingLot ) , "  failed charing lot: " , len( failedLot ) , "  queue size:  " , queue.qsize()
-    for vehicle in failedLot:
-        vehicle.failedToString()
+    print "current time: " , currentTime , "   done charging lot: " , len( doneChargingLot ) , "  failed charing lot: " , len( failedLot ) , "  queue size:  " , queue.qsize() , " chargePort " , chargePorts
+    #for vehicle in failedLot:
+    #    vehicle.failedToString()
 
 
 def updateVehicles():
@@ -79,7 +81,7 @@ def updateVehicles():
 
 def openChargePort():
     for index,port in enumerate(chargePorts):
-        if port == None:
+        if port is None:
             return index
     return None
 
@@ -95,7 +97,8 @@ def simulateInterval():
 
     arrivalsPerMin = [0] * interval
     for arrivalTime in arrivalTimes:
-        arrivalsPerMin[int(arrivalTime)]+=1
+        arrivalsPerMin[int(arrivalTime)]+= 1
+    print "total number of vehicles:  " , len(arrivalTimes)
     vehicles = vehicleGen( arrivalsPerMin )
     return vehicles
 
@@ -122,10 +125,6 @@ def vehicleGen( arrayOfArrivalsPerMin ):
 #print simulateInterval()
 
 simulateFCFS( simulateInterval() )
-
-
-
-
 
 
 ### garbage
