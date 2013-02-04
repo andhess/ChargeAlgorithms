@@ -2,6 +2,7 @@ import sys
 import math
 import random
 import Queue
+import vehicle.py
 
 if len(sys.argv) != 2:
     print 'Wrong Number of Arguments you sent', sys.argv
@@ -34,26 +35,6 @@ doneChargingLot = []
 failedLot = []
 queue = Queue.Queue(0) # infinite size
 currentTime = 0 
-
-
-class Vehicle:
-    numVehiclesMade = 0
-
-    def __init__( self, arrivalTime, depTime, chargeNeeded, currentCharge, chargeRate, maxCapacity ):
-        self.id = Vehicle.numVehiclesMade
-        Vehicle.numVehiclesMade += 1
-        self.arrivalTime = arrivalTime
-        self.depTime = depTime
-        self.chargeNeeded = chargeNeeded
-        self.currentCharge = currentCharge
-        self.chargeRate = chargeRate
-        self.maxCapacity = maxCapacity
-
-    def failedToString():
-        print "ID: " , self.id , "  current charge: " , self.currentCharge , "  charge needed: " , self.chargeNeeded , "   departure time: " , self.depTime
-
-#    def getInfo(self):
-#        return [self.arrivalTime, self.depTime, self.chargeNeeded, self.currentCharge, self.chargeRate, self.maxCapacity]
 
 
 def simulateFCFS( arrayOfVehicleArrivals ):
