@@ -49,7 +49,7 @@ def simulateFCFS( arrayOfVehicleArrivals ):
         updateVehicles()
         currentTime += 1
     print "status:  " , openChargePort() , "  " , queue.empty()
-    while not queue.empty() or openChargePort() is not None:
+    while not queue.empty() or openChargePort() is None:
         updateVehicles()
         currentTime += 1
     print "status:  " , openChargePort() , "  " , queue.empty() 
@@ -70,13 +70,19 @@ def updateVehicles():
             print "Charge:  " , vehicle.currentCharge , "   " , vehicle.chargeNeeded
             if vehicle.currentCharge >= vehicle.chargeNeeded:
                 doneChargingLot.append( vehicle )
-                chargePorts[index] = queue.get()  #careful
+                if not queue.empty():
+                    chargePorts[index] = queue.get()  #careful
+                else:
+                    chargePorts[index] = None
 
             print "Timiing:  " , currentTime , "   ",  vehicle.depTime 
             #  check if deadline reached
             if currentTime >= vehicle.depTime:
                 failedLot.append( vehicle )
-                chargePorts[index] = queue.get()
+                if not queue.empty():
+                    chargePorts[index] = queue.get()
+                else:
+                    chargePorts[index] = None
         
 
 def openChargePort():
