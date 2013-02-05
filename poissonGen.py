@@ -32,6 +32,7 @@ uniformChargeRate = 30 #kw
 
 doneChargingLot = []
 failedLot = []
+pQueue = []
 queue = Queue.Queue(0) # infinite size
 currentTime = 0 
 
@@ -42,7 +43,7 @@ currentTime = 0
 simulateFCFS( simulateInterval() )
 
 
-def updateVehicles():
+def updateVehiclesFCFS():
 
     # advance 1 minute in the simulation
     for index, vehicle in enumerate(chargePorts):
@@ -105,10 +106,67 @@ def vehicleGen( arrayOfArrivalsPerMin ):
             vehicles.append( [] )
     return vehicles
 
+def listSwap( listA, aIndex, listB, bIndex ):
+    tempA = listA[aIndex]
+    listA[ aIndex ] = listB[bIndex]
+    listB[ bIndex ] = tempA
 
 # The Algorithms
 
 # EDF
+
+## need to setup for use with a list instead of a queue, need to fix updateVehiclesEDF as well
+def simulateEDF( arrayofVehicleArrivals ):
+    global currentTime
+    for minute, numVehiclesPerMin in enumerate( arrayOfVehicleArrivals ):
+        for vehicle in numVehiclesPerMin:
+            port = openChargePort()
+            if port is not None:
+                chargePorts[ port ] = vehicle
+            else:
+                pQueue.append( vehicle )
+        updateVehiclesEDF()
+        currentTime += 1
+    print "status:  " , openChargePort() , "  " , pQueue.empty()
+    while chargePortsEmpty() == False or not pQueue.empty():
+        updateVehiclesEDF()
+        currentTime += 1
+    print "status:  " , openChargePort() , "  " , pQueue.empty()," which evaluated to ", not pQueue.empty() or openChargePort() is None
+
+    print "current time: " , currentTime , "   done charging lot: " , len( doneChargingLot ) , "  failed charing lot: " , len( failedLot ) , "  pQueue size:  " , pQueue.qsize() , " chargePort " , chargePorts
+    #for vehicle in failedLot:
+    #    vehicle.failedToString()
+
+
+
+def updateVehiclesEDF():
+
+    # advance 1 minute in the simulation
+    for index, vehicle in enumerate( chargePorts ):
+        if vehicle is not None:
+            vehicle.currentCharge += (vehicle.chargeRate) / 60
+
+            #check if done charging
+            print "Charge:  " , vehicle.currentCharge , "   " , vehicle.chargeNeeded
+            if vehicle.currentCharge >= vehicle.chargeNeeded:
+                doneChargingLot.append( vehicle )
+                if not queue.empty():
+                    chargePorts[index] = queue.get()  #careful
+                else:
+                    chargePorts[index] = None
+            print "Timing:  " , currentTime , "   ",  vehicle.depTime 
+            
+            # check if deadline reached
+            if currentTime >= vehicle.depTime:
+                failedLot.append( vehicle )
+                if not queue.empty():
+                    chargePorts[index] = queue.get()
+                else:
+                    chargePorts[index] = None
+
+            # 
+
+
 
 
 # FCFS
@@ -122,11 +180,11 @@ def simulateFCFS( arrayOfVehicleArrivals ):
                 chargePorts[ port ] = vehicle
             else:
                 queue.put(vehicle)
-        updateVehicles()
+        updateVehiclesFCFS()
         currentTime += 1
     print "status:  " , openChargePort() , "  " , queue.empty()
     while chargePortsEmpty() == False or not queue.empty():
-        updateVehicles()
+        updateVehiclesFCFS()
         currentTime += 1
     print "status:  " , openChargePort() , "  " , queue.empty()," which evaluated to ", not queue.empty() or openChargePort() is None
 
