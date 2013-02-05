@@ -14,8 +14,5 @@ class Vehicle:
     def failedToString():
         print "ID: " , self.id , "  current charge: " , self.currentCharge , "  charge needed: " , self.chargeNeeded , "   departure time: " , self.depTime
 
-    def __lt__(self, other):
-        return self.depTime < other.depTime
-        
 #    def getInfo(self):
 #        return [self.arrivalTime, self.depTime, self.chargeNeeded, self.currentCharge, self.chargeRate, self.maxCapacity]
