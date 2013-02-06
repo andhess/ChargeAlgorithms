@@ -4,6 +4,7 @@ import random
 import Queue
 from vehicle import *
 from chargePorts import *
+from operator import attrgetter
 
 if len(sys.argv) != 2:
     print 'Wrong Number of Arguments you sent', sys.argv
@@ -32,7 +33,7 @@ uniformChargeRate = 30 #kw
 
 doneChargingLot = []
 failedLot = []
-pQueue = []
+edfQueue = []
 queue = Queue.Queue(0) # infinite size
 currentTime = 0 
 
@@ -114,26 +115,32 @@ def listSwap( listA, aIndex, listB, bIndex ):
 # The Algorithms
 
 # EDF
-
+earliestDLIndex = -1;
 ## need to setup for use with a list instead of a queue, need to fix updateVehiclesEDF as well
 def simulateEDF( arrayofVehicleArrivals ):
     global currentTime
+    global earliestDLIndex
+    #interval of arrivals 
     for minute, numVehiclesPerMin in enumerate( arrayOfVehicleArrivals ):
         for vehicle in numVehiclesPerMin:
             port = openChargePort()
             if port is not None:
                 chargePorts[ port ] = vehicle
             else:
-                pQueue.append( vehicle )
+                edfQueue.append( vehicle )
+                if earliestDLIndex == -1 or vehicle.depTime < edfQueue[earliestDLIndex].depTime:
+                    earliestDLIndex = len(edfQueue)-1
         updateVehiclesEDF()
         currentTime += 1
-    print "status:  " , openChargePort() , "  " , pQueue.empty()
-    while chargePortsEmpty() == False or not pQueue.empty():
-        updateVehiclesEDF()
-        currentTime += 1
-    print "status:  " , openChargePort() , "  " , pQueue.empty()," which evaluated to ", not pQueue.empty() or openChargePort() is None
+    print "status:  " , openChargePort() , "  " , len(edfQueue)==0
 
-    print "current time: " , currentTime , "   done charging lot: " , len( doneChargingLot ) , "  failed charing lot: " , len( failedLot ) , "  pQueue size:  " , pQueue.qsize() , " chargePort " , chargePorts
+    #finishing charging simulation after all vehicles have arrived
+    while chargePortsEmpty() == False or not len(edfQueue)==0:
+        updateVehiclesEDF()
+        currentTime += 1
+    print "status:  " , openChargePort() , "  " , len(edfQueue)==0," which evaluated to ", not len(edfQueue)==0 or openChargePort() is None
+
+    print "current time: " , currentTime , "   done charging lot: " , len( doneChargingLot ) , "  failed charing lot: " , len( failedLot ) , "  edfQueue size:  " , edfQueue.qsize() , " chargePort " , chargePorts
     #for vehicle in failedLot:
     #    vehicle.failedToString()
 
@@ -150,8 +157,10 @@ def updateVehiclesEDF():
             print "Charge:  " , vehicle.currentCharge , "   " , vehicle.chargeNeeded
             if vehicle.currentCharge >= vehicle.chargeNeeded:
                 doneChargingLot.append( vehicle )
-                if not queue.empty():
-                    chargePorts[index] = queue.get()  #careful
+                if len(edfQueue) > 0:
+                    chargePorts[index] = edfQueue[earliestDLIndex]
+                    edfQueue.remove(earliestDLIndex) 
+                    earliestDLIndex = earliestDL()
                 else:
                     chargePorts[index] = None
             print "Timing:  " , currentTime , "   ",  vehicle.depTime 
@@ -159,12 +168,26 @@ def updateVehiclesEDF():
             # check if deadline reached
             if currentTime >= vehicle.depTime:
                 failedLot.append( vehicle )
-                if not queue.empty():
-                    chargePorts[index] = queue.get()
+                if len(edfQueue) > 0:
+                    chargePorts[index] = edfQueue[earliestDLIndex]
+                    edfQueue.remove(earliestDLIndex) 
+                    earliestDLIndex = earliestDL()
                 else:
                     chargePorts[index] = None
 
-            # 
+            # check if all cars in chargePorts still have best deadlines
+            if earliestDLIndex != -1 and vehicle.depTime > edfQueue[earliestDLIndex].depTime:
+                temp = vehicle
+                chargePorts[index] = edfQueue[earliestDLIndex]
+                edfQueue[earliestDLIndex] = temp
+                #earliestDLIndex will remain the same
+
+
+def earliestDL():
+    if len(edfQueue) == 0:
+        return -1
+    return edfQueue.index(min(edfQueue,key=attrgetter('depTime')))
+
 
 
 
