@@ -113,9 +113,11 @@ def vehicleGen( arrayOfArrivalsPerMin ):
 # this is going to work pretty much the same way as EDF, only difference is we need to constantly update the laxity values of each vehicle
 # however we are still hanging on to the same index deal as before
 #
-#    departure time - current time
-#
+#    total time =   departure time - current time
+#    free time  =  total time - timeToCharge
 # 
+#   ok, when does laxity need to be updated for each vehicle?
+#
 
 def simulateLLF( arrayOfVehicleArrivals ):
     global currentTime
@@ -164,7 +166,7 @@ def simulateLLF( arrayOfVehicleArrivals ):
 # called to update the vehicles for each minute of simulation
 def updateVehiclesLLF():
 
-    # cheack each chargePort
+    # increment the charge for the cars that were charging
     for index, vehicle in enumerate( chargePorts ):
 
         # add one minute of charge
@@ -172,15 +174,21 @@ def updateVehiclesLLF():
             vehicle.currentCharge += ( vehicle.chargeRate ) / 60
 
             print "Charge:  " , vehicle.currentCharge , "   " , vehicle.chargeNeeded
-            
+    
+    # update the laxity for all the peeps
+    updateLaxityForAll
+    # now move cars around 
+    for index, vehicle in enumerate( chargePorts ):
+        if vehicle is not None:
+
             #check if done charging
             if vehicle.currentCharge >= vehicle.chargeNeeded:
                 doneChargingLot.append( vehicle )
                 
-                if len( edfQueue ) > 0:
-                    chargePorts[ index ] = edfQueue[ earliestDLIndex ]
-                    del edfQueue[ earliestDLIndex ]  
-                    earliestDLIndex = earliestDL()
+                if len( llfQueue ) > 0:
+                    chargePorts[ index ] = llfQueue[ llfIndex ]
+                    del llfQueue[ llfIndex ]  
+                    llfIndex = lowestLaxity()
                 else:
                     chargePorts[ index ] = None
             
@@ -190,10 +198,10 @@ def updateVehiclesLLF():
             if currentTime >= vehicle.depTime:
                 failedLot.append( vehicle )
                 
-                if len( edfQueue ) > 0:
-                    chargePorts[ index ] = edfQueue[ earliestDLIndex ]
-                    del edfQueue[ earliestDLIndex ] 
-                    earliestDLIndex = earliestDL()
+                if len( llfQueue ) > 0:
+                    chargePorts[ index ] = llfQueue[ llfIndex ]
+                    del llfQueue[ llfIndex ] 
+                    llfIndex = lowestLaxity()
                 else:
                     chargePorts[ index ] = None
 
@@ -202,6 +210,18 @@ def lowestLaxity():
     if len( llfQueue ) == 0:
         return -1
     return llfQueue.index( min( llfQueue, key = attrgetter( 'laxity' ) ) )
+
+# laxity constantly changes as time advances and certain cars are charged
+def updateLaxityForAll():
+
+    # first do chargePorts
+    for index, vehicle in enumerate( chargePorts ):
+        if vehicle is not None:
+            vehicle.updateLaxity( currentTime )
+
+    # now do llfQueue
+    for index, vehicle in enumerate( chargePorts ):
+        vehicle.updateLaxity( currentTime )
 
 
 #  ------ EDF ------
