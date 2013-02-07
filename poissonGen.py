@@ -176,8 +176,9 @@ def updateVehiclesLLF():
             print "Charge:  " , vehicle.currentCharge , "   " , vehicle.chargeNeeded
     
     # update the laxity for all the peeps
-    updateLaxityForAll
-    # now move cars around 
+    updateLaxityForAll()
+
+    # now move cars around so the laxity property is maintained
     for index, vehicle in enumerate( chargePorts ):
         if vehicle is not None:
 
@@ -205,6 +206,16 @@ def updateVehiclesLLF():
                 else:
                     chargePorts[ index ] = None
 
+            # check if all cars in chargePorts still have lowest laxity
+            if lffIndex != -1 and vehicle.laxity > llfQueue[ llfIndex ].laxity:
+
+                # swap vehicle of llfIndex with the current vehicle in the loop
+                temp = vehicle
+                chargePorts[ index ] = llfQueue[ llfIndex ]
+                llfQueue[ llfIndex ] = temp
+
+                # llfIndex is unchanged and still correctly points to the next lowest laxity
+
 # gets index for the vehicle with the lowest laxity from llf
 def lowestLaxity():
     if len( llfQueue ) == 0:
@@ -219,7 +230,7 @@ def updateLaxityForAll():
         if vehicle is not None:
             vehicle.updateLaxity( currentTime )
 
-    # now do llfQueue
+    # now do the llfQueue
     for index, vehicle in enumerate( chargePorts ):
         vehicle.updateLaxity( currentTime )
 
