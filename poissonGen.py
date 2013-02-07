@@ -140,7 +140,7 @@ def simulateLLF( arrayOfVehicleArrivals ):
                 if llfIndex == -1 or vehicle.laxity < llfQueue[ llfIndex ].laxity:
                     llfIndex = len( llfQueue ) - 1
 
-        updateVehiclesEDF( currentTime )
+        updateVehiclesLLF()
         currentTime += 1
 
     print "status:  " , openChargePort() , "  " , len(edfQueue) == 0
@@ -165,7 +165,7 @@ def simulateLLF( arrayOfVehicleArrivals ):
 
 # called to update the vehicles for each minute of simulation
 def updateVehiclesLLF():
-
+    global llfIndex
     # increment the charge for the cars that were charging
     for index, vehicle in enumerate( chargePorts ):
 
@@ -232,7 +232,8 @@ def updateLaxityForAll():
 
     # now do the llfQueue
     for index, vehicle in enumerate( chargePorts ):
-        vehicle.updateLaxity( currentTime )
+        if vehicle is not None:
+            vehicle.updateLaxity( currentTime )
 
 
 #  ------ EDF ------
@@ -408,9 +409,11 @@ def updateVehiclesFCFS():
 
 # print simulateInterval()
 
-# simulateFCFS( simulateInterval() )
+#simulateFCFS( simulateInterval() )
 
-simulateEDF( simulateInterval() )
+#simulateEDF( simulateInterval() )
+
+simulateLLF( simulateInterval() )
 
 
 # -------- GARBAGE -----------
