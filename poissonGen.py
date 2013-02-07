@@ -114,12 +114,12 @@ def listSwap( listA, aIndex, listB, bIndex ):
 
 #LLF
 
-
-
-
-def updateLaxities(vehicle):
-    
-
+# laxity is defined as freeTime/totalTime where freeTime = (departure - arrival - chargeTime) and totalTime = (departure - arrival) initially
+# laxity needs to be updated each minute where freeTime = () and totalTime = (departure - currentTime)
+#
+#
+#
+#
 
 # EDF
 earliestDLIndex = -1;
