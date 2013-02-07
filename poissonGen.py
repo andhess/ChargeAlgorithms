@@ -41,8 +41,6 @@ currentTime = 0
 
 #print simulateInterval()
 
-simulateFCFS( simulateInterval() )
-
 
 def updateVehiclesFCFS():
 
@@ -114,10 +112,18 @@ def listSwap( listA, aIndex, listB, bIndex ):
 
 # The Algorithms
 
+#LLF
+
+
+
+
+def updateLaxities(vehicle):
+    
+
+
 # EDF
 earliestDLIndex = -1;
-## need to setup for use with a list instead of a queue, need to fix updateVehiclesEDF as well
-def simulateEDF( arrayofVehicleArrivals ):
+def simulateEDF( arrayOfVehicleArrivals ):
     global currentTime
     global earliestDLIndex
     #interval of arrivals 
@@ -140,13 +146,14 @@ def simulateEDF( arrayofVehicleArrivals ):
         currentTime += 1
     print "status:  " , openChargePort() , "  " , len(edfQueue)==0," which evaluated to ", not len(edfQueue)==0 or openChargePort() is None
 
-    print "current time: " , currentTime , "   done charging lot: " , len( doneChargingLot ) , "  failed charing lot: " , len( failedLot ) , "  edfQueue size:  " , edfQueue.qsize() , " chargePort " , chargePorts
+    print "current time: " , currentTime , "   done charging lot: " , len( doneChargingLot ) , "  failed charing lot: " , len( failedLot ) , "  edfQueue size:  " , len(edfQueue) , " chargePort " , chargePorts
     #for vehicle in failedLot:
     #    vehicle.failedToString()
 
 
 
 def updateVehiclesEDF():
+    global earliestDLIndex
 
     # advance 1 minute in the simulation
     for index, vehicle in enumerate( chargePorts ):
@@ -159,7 +166,7 @@ def updateVehiclesEDF():
                 doneChargingLot.append( vehicle )
                 if len(edfQueue) > 0:
                     chargePorts[index] = edfQueue[earliestDLIndex]
-                    edfQueue.remove(earliestDLIndex) 
+                    del edfQueue[earliestDLIndex]  
                     earliestDLIndex = earliestDL()
                 else:
                     chargePorts[index] = None
@@ -170,7 +177,7 @@ def updateVehiclesEDF():
                 failedLot.append( vehicle )
                 if len(edfQueue) > 0:
                     chargePorts[index] = edfQueue[earliestDLIndex]
-                    edfQueue.remove(earliestDLIndex) 
+                    del edfQueue[earliestDLIndex] 
                     earliestDLIndex = earliestDL()
                 else:
                     chargePorts[index] = None
@@ -217,7 +224,7 @@ def simulateFCFS( arrayOfVehicleArrivals ):
 
 
 
-
+simulateEDF( simulateInterval() )
 
 
 ### garbage
