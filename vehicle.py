@@ -14,9 +14,10 @@ class Vehicle:
         self.currentCharge  =   currentCharge
         self.chargeRate     =   chargeRate
         self.maxCapacity    =   maxCapacity
-        timeToCharge        =   ( chargeNeeded - currentCharge ) / chargeRate #linear
-        timeWindow          =   depTime - arrivalTime
-        self.laxity         =   ( timeWindow - timeToCharge ) / timeToCharge
+        timeToCharge        =   ( chargeNeeded - currentCharge ) / chargeRate  #linear
+        totalTime           =   depTime - arrivalTime
+        freeTime            =   totalTime - timeToCharge
+        self.laxity         =   freeTime / totalTime
 
     def toString():
         print ( "ID: " , self.id ,
@@ -26,9 +27,13 @@ class Vehicle:
                 "  laxity: ", self.laxity
             )
 
-    #need to write this
-    def updateLaxity():
-        return 0
+    # updates the laxity for vehicle. Requires the current time of the simulation
+    def updateLaxity( currentTime ):
+        timeToCharge =  ( self.chargeNeeded - self.currentCharge ) / self.chargeRate
+        totalTime    =  self.depTime - currentTime
+        freeTime     =  totalTime - timeToCharge
+        self.laxity  =  freeTime / totalTime
+
 
 #    def getInfo(self):
 #        return [self.arrivalTime, self.depTime, self.chargeNeeded, self.currentCharge, self.chargeRate, self.maxCapacity]

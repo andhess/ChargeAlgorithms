@@ -14,10 +14,12 @@ if len( sys.argv ) != 2:
 
 interval = int( sys.argv[ 1 ] )
 
-# ----------- Constants -------------
+# ----------- Globals & Constants -------------
 
+# --- poissonStuff ---
 avgArrivalRate = .5
 
+# --- charging stuff ---
 # chargeRateMu
 # chargeRateSigma
 
@@ -31,12 +33,21 @@ currentChargeMu = 12 #kwh
 uniformMaxCapacity = 60 #kwh
 uniformChargeRate = 30 #kw
 
+# ---- storage lots ------
+
 doneChargingLot = []
 failedLot = []
-edfQueue = []
-queue = Queue.Queue( 0 ) # infinite size
-currentTime = 0 
 
+# ---- queues ------
+
+#fcfs
+queue = Queue.Queue( 0 )
+
+edfQueue = []
+llfQueue = []
+
+# ----- global time vars ------
+currentTime = 0 
 
 # ------------ Poisson Generator ------------
 
@@ -57,9 +68,9 @@ def simulateInterval():
     arrivalsPerMin = [ 0 ] * interval
 
     for arrivalTime in arrivalTimes:
-        arrivalsPerMin[int(arrivalTime)]+= 1
+        arrivalsPerMin[ int( arrivalTime ) ] += 1
     
-    print "total number of vehicles:  " , len(arrivalTimes)
+    print "total number of vehicles:  " , len( arrivalTimes )
     
     vehicles = vehicleGen( arrivalsPerMin )
     return vehicles
@@ -75,7 +86,7 @@ def vehicleGen( arrayOfArrivalsPerMin ):
             vehiclesDuringMin = []
 
             for i in range( 0, arrivalesDuringMin ):
-                depart = minute + random.randint( 60, 180 )
+                depart = minute + random.randint( 60 , 180 )
                 chargeNeeded = random.gauss( chargeNeededMu, chargeNeededSigma )
                 currentCharge = random.gauss( currentChargeMu, currentChargeSigma )
                 chargeRate = uniformChargeRate
@@ -99,8 +110,85 @@ def vehicleGen( arrayOfArrivalsPerMin ):
 # 
 # for both cases, caluclate totalTime, then free time will just be totalTime - chargeTime.
 #
-# not sure what the unit for laxity is going to be. I'm guessing we'll want freeTime / totalTime // laxity will constantly be updated each step
+# this is going to work pretty much the same way as EDF, only difference is we need to constantly update the laxity values of each vehicle
+# however we are still hanging on to the same index deal as before
+#
+# 
 
+def simulateLLF( arrayOfVehicleArrivals ):
+    global currentTime
+    global llfIndex
+
+    # iterate through each vehicle in each minute
+    for minute, numVehiclesPerMin in enumerate( arrayOfVehicleArrivals ):
+        for vehicle in numVehiclesPerMin:
+            port = openChargePort()
+
+            if port is not None:
+                chargePorts[ port ] = vehicle
+            else:
+                llfQueue.append( vehicle )
+                if llfIndex == -1 or vehicle.laxity < llfQueue[ llfIndex ].laxity:
+                    llfIndex = len( edfQueue ) - 1
+
+        updateVehiclesEDF()
+        currentTime += 1
+
+    print "status:  " , openChargePort() , "  " , len(edfQueue) == 0
+
+    # vehicles done arriving, now continue with the simulation
+    while chargePortsEmpty() == False or not len( edfQueue ) == 0:
+        updateVehiclesEDF()
+        currentTime += 1
+
+    print ( "status:  " , openChargePort() ,
+            "  " , len( edfQueue ) == 0 ,
+            " which evaluated to " , 
+            not len( edfQueue ) == 0 or openChargePort() is None
+            )
+
+    print ( "current time: " , currentTime , 
+            "  done charging lot: " , len( doneChargingLot ) ,
+            "  failed charing lot: " , len( failedLot ) ,
+            "  edfQueue size:  " , len( edfQueue ) ,
+            "  chargePort " , chargePorts
+        )
+
+# called to update the vehicles for each minute of simulation
+def updateVehiclesLLF():
+
+    # cheack each chargePort
+    for index, vehicle in enumerate( chargePorts ):
+
+        # add one minute of charge
+        if vehicle is not None:
+            vehicle.currentCharge += (vehicle.chargeRate) / 60
+
+            print "Charge:  " , vehicle.currentCharge , "   " , vehicle.chargeNeeded
+            
+            #check if done charging
+            if vehicle.currentCharge >= vehicle.chargeNeeded:
+                doneChargingLot.append( vehicle )
+                
+                if len( edfQueue ) > 0:
+                    chargePorts[ index ] = edfQueue[ earliestDLIndex ]
+                    del edfQueue[ earliestDLIndex ]  
+                    earliestDLIndex = earliestDL()
+                else:
+                    chargePorts[ index ] = None
+            
+            print "Timing:  " , currentTime , "   ",  vehicle.depTime 
+
+            # check if deadline reached
+            if currentTime >= vehicle.depTime:
+                failedLot.append( vehicle )
+                
+                if len( edfQueue ) > 0:
+                    chargePorts[ index ] = edfQueue[ earliestDLIndex ]
+                    del edfQueue[ earliestDLIndex ] 
+                    earliestDLIndex = earliestDL()
+                else:
+                    chargePorts[ index ] = None
 
 
 #  ------ EDF ------
@@ -164,12 +252,12 @@ def updateVehiclesEDF():
             if vehicle.currentCharge >= vehicle.chargeNeeded:
                 doneChargingLot.append( vehicle )
                 
-                if len(edfQueue) > 0:
-                    chargePorts[index] = edfQueue[earliestDLIndex]
-                    del edfQueue[earliestDLIndex]  
+                if len( edfQueue ) > 0:
+                    chargePorts[ index ] = edfQueue[ earliestDLIndex ]
+                    del edfQueue[ earliestDLIndex ]  
                     earliestDLIndex = earliestDL()
                 else:
-                    chargePorts[index] = None
+                    chargePorts[ index ] = None
             
             print "Timing:  " , currentTime , "   ",  vehicle.depTime 
 
@@ -177,12 +265,12 @@ def updateVehiclesEDF():
             if currentTime >= vehicle.depTime:
                 failedLot.append( vehicle )
                 
-                if len(edfQueue) > 0:
-                    chargePorts[index] = edfQueue[earliestDLIndex]
-                    del edfQueue[earliestDLIndex] 
+                if len( edfQueue ) > 0:
+                    chargePorts[ index ] = edfQueue[ earliestDLIndex ]
+                    del edfQueue[ earliestDLIndex ] 
                     earliestDLIndex = earliestDL()
                 else:
-                    chargePorts[index] = None
+                    chargePorts[ index ] = None
 
             # check if all cars in chargePorts still have best deadlines
             if earliestDLIndex != -1 and vehicle.depTime > edfQueue[ earliestDLIndex ].depTime:
@@ -223,6 +311,7 @@ def simulateFCFS( arrayOfVehicleArrivals ):
 
     print "status:  " , openChargePort() , "  " , queue.empty()
     
+    # run the clock until all vehicles have ran through the simulation
     while chargePortsEmpty() == False or not queue.empty():
         updateVehiclesFCFS()
         currentTime += 1
