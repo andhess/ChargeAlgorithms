@@ -1,11 +1,11 @@
 # charge port constants
 numChargePorts = 2
-chargePorts = [None] * numChargePorts
+chargePorts = [ None ] * numChargePorts
 
 
-# returns open charge port (if any)
+# returns open charge port ( if any )
 def openChargePort():
-    for index,port in enumerate(chargePorts):
+    for index, port in enumerate( chargePorts ):
         if port is None:
             return index
     return None
