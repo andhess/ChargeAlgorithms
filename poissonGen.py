@@ -161,7 +161,8 @@ def simulateLLF( arrayOfVehicleArrivals ):
             "  failed charing lot: " , len( failedLot ) ,
             "  edfQueue size:  " , len( edfQueue ) ,
             "  chargePort " , chargePorts
-        )
+            )
+        
 
 # called to update the vehicles for each minute of simulation
 def updateVehiclesLLF():
@@ -230,6 +231,7 @@ def updateLaxityForAll():
         if vehicle is not None:
             vehicle.updateLaxity( currentTime )
 
+#FIXME : ran into issue here. the queue seems to have null spaces. fuck.
     # now do the llfQueue
     for index, vehicle in enumerate( chargePorts ):
         if vehicle is not None:
@@ -411,9 +413,9 @@ def updateVehiclesFCFS():
 
 #simulateFCFS( simulateInterval() )
 
-#simulateEDF( simulateInterval() )
+simulateEDF( simulateInterval() )
 
-simulateLLF( simulateInterval() )
+#simulateLLF( simulateInterval() )
 
 
 # -------- GARBAGE -----------
