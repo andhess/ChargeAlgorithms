@@ -113,6 +113,8 @@ def vehicleGen( arrayOfArrivalsPerMin ):
 # this is going to work pretty much the same way as EDF, only difference is we need to constantly update the laxity values of each vehicle
 # however we are still hanging on to the same index deal as before
 #
+#    departure time - current time
+#
 # 
 
 def simulateLLF( arrayOfVehicleArrivals ):
@@ -124,14 +126,19 @@ def simulateLLF( arrayOfVehicleArrivals ):
         for vehicle in numVehiclesPerMin:
             port = openChargePort()
 
+            # there is an open chargePort, add vehicle to it
             if port is not None:
                 chargePorts[ port ] = vehicle
+
+            # no open chargePort, append to llfQueue
             else:
                 llfQueue.append( vehicle )
-                if llfIndex == -1 or vehicle.laxity < llfQueue[ llfIndex ].laxity:
-                    llfIndex = len( edfQueue ) - 1
 
-        updateVehiclesEDF()
+                # update the llfIndex if this vehicle is better
+                if llfIndex == -1 or vehicle.laxity < llfQueue[ llfIndex ].laxity:
+                    llfIndex = len( llfQueue ) - 1
+
+        updateVehiclesEDF( currentTime )
         currentTime += 1
 
     print "status:  " , openChargePort() , "  " , len(edfQueue) == 0
@@ -162,7 +169,7 @@ def updateVehiclesLLF():
 
         # add one minute of charge
         if vehicle is not None:
-            vehicle.currentCharge += (vehicle.chargeRate) / 60
+            vehicle.currentCharge += ( vehicle.chargeRate ) / 60
 
             print "Charge:  " , vehicle.currentCharge , "   " , vehicle.chargeNeeded
             
@@ -189,6 +196,12 @@ def updateVehiclesLLF():
                     earliestDLIndex = earliestDL()
                 else:
                     chargePorts[ index ] = None
+
+# gets index for the vehicle with the lowest laxity from llf
+def lowestLaxity():
+    if len( llfQueue ) == 0:
+        return -1
+    return llfQueue.index( min( llfQueue, key = attrgetter( 'laxity' ) ) )
 
 
 #  ------ EDF ------
@@ -244,7 +257,7 @@ def updateVehiclesEDF():
 
         # add one minute of charge
         if vehicle is not None:
-            vehicle.currentCharge += (vehicle.chargeRate) / 60
+            vehicle.currentCharge += ( vehicle.chargeRate ) / 60
 
             print "Charge:  " , vehicle.currentCharge , "   " , vehicle.chargeNeeded
             
