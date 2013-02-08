@@ -410,12 +410,35 @@ def updateVehiclesFCFS():
 
 # --------- Export to CSV -----------
 
-def exportVehicleToCSV():
+# NOTE: folderName must be a String of one of our algorihtm names: "fcfs" , "edf" , or "llf"
+
+def exportVehicleToCSV( folderName = "fcfs" ):
+
+    # generate a unique filename with a time stamp
     timeStamp = datetime.datetime.now().strftime( "%Y%m%d-%H%M%S" )
-    saveWhere = "csv/" , timeStamp
-    fileName = os.path.relpath( saveWhere )
-    c = csv.writer( open( fileName , "wb" ) )
-    c.writerow( [ "Name" , "Address" , "Telephone" , "Fax" , "E-mail" , "Others" ] )
+
+    # setup to save in the right directory
+    #saveWhere = "csv/" , folderName , '/' , timeStamp
+
+
+    script_dir = os.path.dirname( os.path.abspath(__file__) )
+
+    dest_dir = os.path.join( script_dir, 'csv', folderName )
+    
+    try:
+        os.makedirs(dest_dir)
+
+    except OSError:
+        pass # already exists
+    
+    path = os.path.join( dest_dir, timeStamp )
+    
+    #with open(path, 'wb') as stream:
+    #    stream.write('foo\n')
+
+    # get ready to write
+    newCSV = csv.writer( open( path , "wb" ) )
+    newCSV.writerow( [ "Name" , "Address" , "Telephone" , "Fax" , "E-mail" , "Others" ] )
 
 
 
@@ -424,6 +447,7 @@ def exportVehicleToCSV():
 # print simulateInterval()
 
 simulateFCFS( simulateInterval() )
+
 exportVehicleToCSV()
 
 #simulateEDF( simulateInterval() )
