@@ -232,7 +232,6 @@ def updateLaxityForAll():
         if vehicle is not None:
             vehicle.updateLaxity( currentTime )
 
-#FIXME : ran into issue here. the queue seems to have null spaces. fuck.
     # now do the llfQueue
     for index, vehicle in enumerate( llfQueue ):
         vehicle.updateLaxity( currentTime )
