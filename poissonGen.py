@@ -145,12 +145,11 @@ def simulateLLF( arrayOfVehicleArrivals ):
         updateVehiclesLLF()
         currentTime += 1
 
-    print "status:  " , openChargePort() , "  " , len(llfQueue) == 0
+    print "status:  " , openChargePort() , "  " , len( llfQueue ) == 0 , "  " , len( llfQueue )
 
     # vehicles done arriving, now continue with the simulation
     while chargePortsEmpty() == False or not len( llfQueue ) == 0:
         updateVehiclesEDF()
-        print chargePorts , "   " ,  chargePortsEmpty() , "   " ,  len( llfQueue )
         currentTime += 1
 
     print "status:  " , openChargePort() , \
@@ -209,8 +208,10 @@ def updateVehiclesLLF():
                 else:
                     chargePorts[ index ] = None
 
+            print "the laxity index is   :    "  ,  llfIndex  , "    the queue size is   :   "  , len( llfQueue )
+
             # check if all cars in chargePorts still have lowest laxity
-            if llfIndex != -1 and vehicle.laxity > llfQueue[ llfIndex ].laxity and vehicle.laxity < 1:
+            if llfIndex != -1 and vehicle.laxity > llfQueue[ llfIndex ].laxity:
 
                 # swap vehicle of llfIndex with the current vehicle in the loop
                 temp = vehicle
