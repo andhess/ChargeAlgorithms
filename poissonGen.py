@@ -53,7 +53,7 @@ llfQueue = []
 currentTime = 0 
 
 # --- random ----
-numberOfVehiclesInSimulation
+numberOfVehiclesInSimulation = 0
 
 # ---------- CSV Stuff ------------
 
@@ -64,6 +64,7 @@ numberOfVehiclesInSimulation
 # will create a 2-level array, the top level being the length of the interval
 # level 2 contains an array of the vehicle objects that will arrive during that minute
 def simulateInterval():
+    global numberOfVehiclesInSimulation
     arrivalTimes = []
     prevArrival = 0
 
@@ -136,6 +137,9 @@ def simulateLLF( arrayOfVehicleArrivals ):
     global currentTime
     global llfIndex
 
+    # initialize a CSV document for storing all data
+    generateVehicleCSV( "llf" )
+
     # iterate through each vehicle in each minute
     for minute, numVehiclesPerMin in enumerate( arrayOfVehicleArrivals ):
         for vehicle in numVehiclesPerMin:
@@ -197,6 +201,7 @@ def updateVehiclesLLF():
 
             #check if done charging
             if vehicle.currentCharge >= vehicle.chargeNeeded:
+                exportVehicleToCSV( vehicle, "SUCCESS" )
                 doneChargingLot.append( vehicle )
                 
                 if len( llfQueue ) > 0:
@@ -210,6 +215,7 @@ def updateVehiclesLLF():
 
             # check if deadline reached
             if currentTime >= vehicle.depTime:
+                exportVehicleToCSV( vehicle, "FAILURE" )
                 failedLot.append( vehicle )
                 
                 if len( llfQueue ) > 0:
@@ -260,6 +266,9 @@ def simulateEDF( arrayOfVehicleArrivals ):
     global currentTime
     global earliestDLIndex
 
+    # initialize a CSV document for storing all data
+    generateVehicleCSV( "edf" )
+
     # iterate through each vehicle in each minute
     for minute, numVehiclesPerMin in enumerate( arrayOfVehicleArrivals ):
         for vehicle in numVehiclesPerMin:
@@ -308,6 +317,7 @@ def updateVehiclesEDF():
             
             #check if done charging
             if vehicle.currentCharge >= vehicle.chargeNeeded:
+                exportVehicleToCSV( vehicle, "SUCCESS" )
                 doneChargingLot.append( vehicle )
                 
                 if len( edfQueue ) > 0:
@@ -321,6 +331,7 @@ def updateVehiclesEDF():
 
             # check if deadline reached
             if currentTime >= vehicle.depTime:
+                exportVehicleToCSV( vehicle, "FAILURE" )
                 failedLot.append( vehicle )
                 
                 if len( edfQueue ) > 0:
@@ -423,10 +434,9 @@ def updateVehiclesFCFS():
 
 # --------- Exporting to CSV -----------
 
+# every time an alrogithm is run, it will create a csv file of every vehicle in directory
+# file will be save in /csv/<algorithm name>/timeStamp.csv
 # NOTE: folderName must be a String of one of our algorihtm names: "fcfs" , "edf" , or "llf"
-# Vehicle - the vehicle to add to the file
-# status - SUCCESS or FAILURE
-
 def generateVehicleCSV( folderName ):
     global path
     global newCSV
@@ -451,7 +461,7 @@ def generateVehicleCSV( folderName ):
     newCSV = csv.writer( open( path , "wb" ) )
 
     # basic stats
-    newCSV.writerow( "Interval time:  " , interval , "   Number of vehicles:  " , numberOfVehiclesInSimulation )
+    newCSV.writerow( [ "Interval time" , interval , "   Number of vehicles" , numberOfVehiclesInSimulation ] )
 
     # initialize some columns
     newCSV.writerow( [ "Vehicle ID" , \
@@ -467,38 +477,28 @@ def generateVehicleCSV( folderName ):
                        "Original Free Time" , \
                        "Original Total Time" , \
                        "Original Laxity" \
-                       "Initial Charge Percent" \
-                       "Final Charge Percent" \
-                       "Percent of desired charge fullfilled" ] )
+                        ] )
 
 
+# when a vehicle is leaving a lot, throw it into the CSV so we can study it
 def exportVehicleToCSV( vehicle, status ):
     global path
     global newCSV
-    
-    # and now write it up - not sure if need to call this again
-    # newCSV = csv.writer( open( path , "wb" ) )
 
     newCSV.writerow( [ vehicle.id , \
                        status , \
-                       vehicle.arrivatTime , \
+                       vehicle.arrivalTime , \
                        vehicle.depTime , \
                        vehicle.initialCharge , \
                        vehicle.currentCharge , \
                        vehicle.chargeRate , \
-                       vehcile.chargeNeeded , \
+                       vehicle.chargeNeeded , \
                        vehicle.maxCapacity , \
-                       vehicle.timeToCharge \
+                       vehicle.timeToCharge , \
                        vehicle.freeTime , \
                        vehicle.totalTime , \
                        vehicle.originalLaxity \
-                       ( vehicle.initialCharge / vehicle.maxCapacity ) \
-                       ( vehicle.currentCharge / vehicle.maxCapacity ) \
-                       ( vehicle.currentCharge / vehicle.chargeNeeded ) ] )
-
-
-    # how to set this up? generate file at the beginning for a run
-    # then as each vehicle is added to an empty lot we can call write vehicle?
+                       ] )
 
 
 #  -------- Simulations ------------
@@ -507,11 +507,9 @@ def exportVehicleToCSV( vehicle, status ):
 
 simulateFCFS( simulateInterval() )
 
-exportVehicleToCSV()
+# simulateEDF( simulateInterval() )
 
-#simulateEDF( simulateInterval() )
-
-#simulateLLF( simulateInterval() )
+# simulateLLF( simulateInterval() )
 
 
 # -------- GARBAGE -----------

@@ -19,7 +19,7 @@ class Vehicle:
         self.totalTime      =   depTime - arrivalTime
         self.freeTime       =   self.totalTime - self.timeToCharge
         self.laxity         =   self.freeTime / self.totalTime
-        seld.originalLaxity  =   self.freeTime / self.totalTime
+        self.originalLaxity  =   self.freeTime / self.totalTime
 
     def toString():
         print "ID: " , self.id , \
