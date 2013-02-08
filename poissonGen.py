@@ -24,14 +24,14 @@ avgArrivalRate = .5
 # chargeRateSigma
 
 # chargeNeeded - the charge needed at the end 
-chargeNeededMu = 45 #kwh
-chargeNeededSigma = 5 #kwh
+chargeNeededMu = 20 #kwh
+chargeNeededSigma = 3 #kwh
 
 currentChargeSigma = 3 #kwh
 currentChargeMu = 12 #kwh
 
-uniformMaxCapacity = 60 #kwh
-uniformChargeRate = 30 #kw
+uniformMaxCapacity = 30 #kwh
+uniformChargeRate = 50 #kw
 
 # ---- storage lots ------
 
@@ -119,6 +119,8 @@ def vehicleGen( arrayOfArrivalsPerMin ):
 #   ok, when does laxity need to be updated for each vehicle?
 #
 
+llfIndex = -1
+
 def simulateLLF( arrayOfVehicleArrivals ):
     global currentTime
     global llfIndex
@@ -143,29 +145,28 @@ def simulateLLF( arrayOfVehicleArrivals ):
         updateVehiclesLLF()
         currentTime += 1
 
-    print "status:  " , openChargePort() , "  " , len(edfQueue) == 0
+    print "status:  " , openChargePort() , "  " , len(llfQueue) == 0
 
     # vehicles done arriving, now continue with the simulation
-    while chargePortsEmpty() == False or not len( edfQueue ) == 0:
+    while chargePortsEmpty() == False or not len( llfQueue ) == 0:
         updateVehiclesEDF()
         currentTime += 1
 
-    print ( "status:  " , openChargePort() ,
-            "  " , len( edfQueue ) == 0 ,
-            " which evaluated to " , 
-            not len( edfQueue ) == 0 or openChargePort() is None
-            )
+    print "status:  " , openChargePort() , \
+          "  " , len( llfQueue ) == 0 , \
+          " which evaluated to " , \
+          not len( llfQueue ) == 0 or openChargePort() is None
 
-    print ( "current time: " , currentTime , 
-            "  done charging lot: " , len( doneChargingLot ) ,
-            "  failed charing lot: " , len( failedLot ) ,
-            "  edfQueue size:  " , len( edfQueue ) ,
-            "  chargePort " , chargePorts
-            )
+    print "current time: " , currentTime , \
+          "  done charging lot: " , len( doneChargingLot ) , \
+          "  failed charing lot: " , len( failedLot ) , \
+          "  edfQueue size:  " , len( llfQueue ) , \
+          "  chargePort " , chargePorts
         
 
 # called to update the vehicles for each minute of simulation
 def updateVehiclesLLF():
+    global currentTime
     global llfIndex
     # increment the charge for the cars that were charging
     for index, vehicle in enumerate( chargePorts ):
@@ -208,7 +209,7 @@ def updateVehiclesLLF():
                     chargePorts[ index ] = None
 
             # check if all cars in chargePorts still have lowest laxity
-            if lffIndex != -1 and vehicle.laxity > llfQueue[ llfIndex ].laxity:
+            if llfIndex != -1 and vehicle.laxity > llfQueue[ llfIndex ].laxity:
 
                 # swap vehicle of llfIndex with the current vehicle in the loop
                 temp = vehicle
@@ -233,9 +234,8 @@ def updateLaxityForAll():
 
 #FIXME : ran into issue here. the queue seems to have null spaces. fuck.
     # now do the llfQueue
-    for index, vehicle in enumerate( chargePorts ):
-        if vehicle is not None:
-            vehicle.updateLaxity( currentTime )
+    for index, vehicle in enumerate( llfQueue ):
+        vehicle.updateLaxity( currentTime )
 
 
 #  ------ EDF ------
@@ -269,18 +269,16 @@ def simulateEDF( arrayOfVehicleArrivals ):
         updateVehiclesEDF()
         currentTime += 1
 
-    print ( "status:  " , openChargePort() ,
-            "  " , len( edfQueue ) == 0 ,
-            " which evaluated to " , 
-            not len( edfQueue ) == 0 or openChargePort() is None
-            )
+    print "status:  " , openChargePort() , \
+          "  " , len( edfQueue ) == 0 , \
+          " which evaluated to " , \
+          not len( edfQueue ) == 0 or openChargePort() is None
 
-    print ( "current time: " , currentTime , 
-            "  done charging lot: " , len( doneChargingLot ) ,
-            "  failed charing lot: " , len( failedLot ) ,
-            "  edfQueue size:  " , len( edfQueue ) ,
-            "  chargePort " , chargePorts
-        )
+    print "current time: " , currentTime , \
+          "  done charging lot: " , len( doneChargingLot ) , \
+          "  failed charing lot: " , len( failedLot ) , \
+          "  edfQueue size:  " , len( edfQueue ) , \
+          "  chargePort " , chargePorts
 
 # called to update the vehicles for each minute of simulation
 def updateVehiclesEDF():
@@ -363,18 +361,17 @@ def simulateFCFS( arrayOfVehicleArrivals ):
         updateVehiclesFCFS()
         currentTime += 1
     
-    print ( "status:  " , openChargePort() ,
-            "  " , queue.empty() ,
-            " which evaluated to " ,
-            not queue.empty() or openChargePort() is None
-            )
+    print "status:  " , openChargePort() , \
+          "  " , queue.empty() , \
+          " which evaluated to " , \
+          not queue.empty() or openChargePort() is None
 
-    print ( "current time: " , currentTime ,
-            "  done charging lot: " , len( doneChargingLot ) ,
-            "  failed charing lot: " , len( failedLot ) ,
-            "  queue size:  " , queue.qsize() ,
-            " chargePort " , chargePorts
-            )
+    print "current time: " , currentTime , \
+          "  done charging lot: " , len( doneChargingLot ) , \
+          "  failed charing lot: " , len( failedLot ) , \
+          "  queue size:  " , queue.qsize() , \
+          " chargePort " , chargePorts
+            
 
 # called to update the vehicles for each minute of simulation
 def updateVehiclesFCFS():
@@ -411,9 +408,9 @@ def updateVehiclesFCFS():
 
 # print simulateInterval()
 
-#simulateFCFS( simulateInterval() )
+simulateFCFS( simulateInterval() )
 
-simulateEDF( simulateInterval() )
+#simulateEDF( simulateInterval() )
 
 #simulateLLF( simulateInterval() )
 

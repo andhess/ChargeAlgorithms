@@ -20,19 +20,23 @@ class Vehicle:
         self.laxity         =   freeTime / totalTime
 
     def toString():
-        print ( "ID: " , self.id ,
-                "  current charge: " , self.currentCharge ,
-                "  charge needed: " , self.chargeNeeded ,
-                "  departure time: " , self.depTime ,
-                "  laxity: ", self.laxity
-            )
+        print "ID: " , self.id , \
+              "  current charge: " , self.currentCharge , \
+              "  charge needed: " , self.chargeNeeded , \
+              "  departure time: " , self.depTime , \
+              "  laxity: ", self.laxity
 
     # updates the laxity for vehicle. Requires the current time of the simulation
-    def updateLaxity( currentTime ):
+    def updateLaxity( self, currentTime ):
         timeToCharge =  ( self.chargeNeeded - self.currentCharge ) / self.chargeRate
         totalTime    =  self.depTime - currentTime
         freeTime     =  totalTime - timeToCharge
-        self.laxity  =  freeTime / totalTime
+
+        # in case time ends up, we can't divide by 0
+        if totalTime == 0:
+            self.laxity = 3
+        else:
+            self.laxity  =  freeTime / totalTime
 
 
 #    def getInfo(self):

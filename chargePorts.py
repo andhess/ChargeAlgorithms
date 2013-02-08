@@ -1,5 +1,5 @@
 # charge port constants
-numChargePorts = 2
+numChargePorts = 5
 chargePorts = [ None ] * numChargePorts
 
 
