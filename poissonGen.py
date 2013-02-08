@@ -52,6 +52,12 @@ llfQueue = []
 # ----- global time vars ------
 currentTime = 0 
 
+# --- random ----
+numberOfVehiclesInSimulation
+
+# ---------- CSV Stuff ------------
+
+
 # ------------ Poisson Generator ------------
 
 # the main function for generating an interval on which to run an algorithmn
@@ -74,6 +80,8 @@ def simulateInterval():
         arrivalsPerMin[ int( arrivalTime ) ] += 1
     
     print "total number of vehicles:  " , len( arrivalTimes )
+
+    numberOfVehiclesInSimulation = len( arrivalTimes )
     
     vehicles = vehicleGen( arrivalsPerMin )
     return vehicles
@@ -346,6 +354,9 @@ def earliestDL():
 def simulateFCFS( arrayOfVehicleArrivals ):
     global currentTime
 
+    # initialize a CSV document for storing all data
+    generateVehicleCSV( "fcfs" )
+
     # iterate through each vehicle in each minute
     for minute, numVehiclesPerMin in enumerate( arrayOfVehicleArrivals ):
         for vehicle in numVehiclesPerMin:           
@@ -392,6 +403,7 @@ def updateVehiclesFCFS():
 
             # check if done charging
             if vehicle.currentCharge >= vehicle.chargeNeeded:
+                exportVehicleToCSV( vehicle, "SUCCESS" )
                 doneChargingLot.append( vehicle )
                 if not queue.empty():
                     chargePorts[ index ] = queue.get()   #careful
@@ -402,44 +414,91 @@ def updateVehiclesFCFS():
 
             # check if deadline reached            
             if currentTime >= vehicle.depTime:
+                exportVehicleToCSV( vehicle, "FAILURE" )
                 failedLot.append( vehicle )
                 if not queue.empty():
                     chargePorts[ index ] = queue.get()
                 else:
                     chargePorts[ index ] = None
 
-# --------- Export to CSV -----------
+# --------- Exporting to CSV -----------
 
 # NOTE: folderName must be a String of one of our algorihtm names: "fcfs" , "edf" , or "llf"
+# Vehicle - the vehicle to add to the file
+# status - SUCCESS or FAILURE
 
-def exportVehicleToCSV( folderName = "fcfs" ):
+def generateVehicleCSV( folderName ):
+    global path
+    global newCSV
 
     # generate a unique filename with a time stamp
     timeStamp = datetime.datetime.now().strftime( "%Y%m%d-%H%M%S" )
 
-    # setup to save in the right directory
-    #saveWhere = "csv/" , folderName , '/' , timeStamp
-
-
+    # thank stack overflow for making this easy
+    # setup file to save in a directory
     script_dir = os.path.dirname( os.path.abspath(__file__) )
-
-    dest_dir = os.path.join( script_dir, 'csv', folderName )
-    
+    dest_dir = os.path.join( script_dir, 'csv', folderName )    
     try:
         os.makedirs(dest_dir)
 
     except OSError:
         pass # already exists
     
+    # relative file location
     path = os.path.join( dest_dir, timeStamp )
     
-    #with open(path, 'wb') as stream:
-    #    stream.write('foo\n')
-
-    # get ready to write
+    # and now write it up
     newCSV = csv.writer( open( path , "wb" ) )
-    newCSV.writerow( [ "Name" , "Address" , "Telephone" , "Fax" , "E-mail" , "Others" ] )
 
+    # basic stats
+    newCSV.writerow( "Interval time:  " , interval , "   Number of vehicles:  " , numberOfVehiclesInSimulation )
+
+    # initialize some columns
+    newCSV.writerow( [ "Vehicle ID" , \
+                       "Status" , \
+                       "Arrival Time" , \
+                       "Departure Time" , \
+                       "Initial Charge" , \
+                       "Current Charge" , \
+                       "Charge Rate" , \
+                       "Charge Level Needed" , \
+                       "Max Capacity" , \
+                       "Charge Time Needed" \
+                       "Original Free Time" , \
+                       "Original Total Time" , \
+                       "Original Laxity" \
+                       "Initial Charge Percent" \
+                       "Final Charge Percent" \
+                       "Percent of desired charge fullfilled" ] )
+
+
+def exportVehicleToCSV( vehicle, status ):
+    global path
+    global newCSV
+    
+    # and now write it up - not sure if need to call this again
+    # newCSV = csv.writer( open( path , "wb" ) )
+
+    newCSV.writerow( [ vehicle.id , \
+                       status , \
+                       vehicle.arrivatTime , \
+                       vehicle.depTime , \
+                       vehicle.initialCharge , \
+                       vehicle.currentCharge , \
+                       vehicle.chargeRate , \
+                       vehcile.chargeNeeded , \
+                       vehicle.maxCapacity , \
+                       vehicle.timeToCharge \
+                       vehicle.freeTime , \
+                       vehicle.totalTime , \
+                       vehicle.originalLaxity \
+                       ( vehicle.initialCharge / vehicle.maxCapacity ) \
+                       ( vehicle.currentCharge / vehicle.maxCapacity ) \
+                       ( vehicle.currentCharge / vehicle.chargeNeeded ) ] )
+
+
+    # how to set this up? generate file at the beginning for a run
+    # then as each vehicle is added to an empty lot we can call write vehicle?
 
 
 #  -------- Simulations ------------

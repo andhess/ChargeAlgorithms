@@ -12,12 +12,14 @@ class Vehicle:
         self.depTime        =   depTime
         self.chargeNeeded   =   chargeNeeded
         self.currentCharge  =   currentCharge
+        self.initialCharge  =   currentCharge
         self.chargeRate     =   chargeRate
         self.maxCapacity    =   maxCapacity
-        timeToCharge        =   ( chargeNeeded - currentCharge ) / chargeRate  #linear
-        totalTime           =   depTime - arrivalTime
-        freeTime            =   totalTime - timeToCharge
-        self.laxity         =   freeTime / totalTime
+        self.timeToCharge   =   ( chargeNeeded - currentCharge ) / chargeRate  #linear
+        self.totalTime      =   depTime - arrivalTime
+        self.freeTime       =   self.totalTime - self.timeToCharge
+        self.laxity         =   self.freeTime / self.totalTime
+        seld.originalLaxity  =   self.freeTime / self.totalTime
 
     def toString():
         print "ID: " , self.id , \
