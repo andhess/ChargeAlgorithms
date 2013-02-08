@@ -2,6 +2,9 @@ import sys
 import math
 import random
 import Queue
+import csv
+import os
+import datetime
 from vehicle import *
 from chargePorts import *
 from operator import attrgetter
@@ -405,16 +408,27 @@ def updateVehiclesFCFS():
                 else:
                     chargePorts[ index ] = None
 
+# --------- Export to CSV -----------
+
+def exportVehicleToCSV():
+    timeStamp = datetime.datetime.now().strftime( "%Y%m%d-%H%M%S" )
+    saveWhere = "csv/" , timeStamp
+    fileName = os.path.relpath( saveWhere )
+    c = csv.writer( open( fileName , "wb" ) )
+    c.writerow( [ "Name" , "Address" , "Telephone" , "Fax" , "E-mail" , "Others" ] )
+
+
 
 #  -------- Simulations ------------
 
 # print simulateInterval()
 
-#simulateFCFS( simulateInterval() )
+simulateFCFS( simulateInterval() )
+exportVehicleToCSV()
 
 #simulateEDF( simulateInterval() )
 
-simulateLLF( simulateInterval() )
+#simulateLLF( simulateInterval() )
 
 
 # -------- GARBAGE -----------
