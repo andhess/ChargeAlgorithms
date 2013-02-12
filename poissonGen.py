@@ -80,7 +80,7 @@ def simulateInterval():
     for arrivalTime in arrivalTimes:
         arrivalsPerMin[ int( arrivalTime ) ] += 1
     
-    print "total number of vehicles:  " , len( arrivalTimes )
+    # print "total number of vehicles:  " , len( arrivalTimes )
 
     numberOfVehiclesInSimulation = len( arrivalTimes )
     
@@ -160,22 +160,16 @@ def simulateLLF( arrayOfVehicleArrivals ):
         updateVehiclesLLF()
         currentTime += 1
 
-    print "status:  " , openChargePort() , "  " , len( llfQueue ) == 0 , "  " , len( llfQueue )
-
     # vehicles done arriving, now continue with the simulation
     while chargePortsEmpty() == False or not len( llfQueue ) == 0:
         updateVehiclesLLF()
         currentTime += 1
 
-    print "status:  " , openChargePort() , \
-          "  " , len( llfQueue ) == 0 , \
-          " which evaluated to " , \
-          not len( llfQueue ) == 0 or openChargePort() is None
-
-    print "current time: " , currentTime , \
+    print "total number of cars: ", numberOfVehiclesInSimulation , \
+          "  current time: " , currentTime , \
           "  done charging lot: " , len( doneChargingLot ) , \
           "  failed charing lot: " , len( failedLot ) , \
-          "  edfQueue size:  " , len( llfQueue ) , \
+          "  llfQueue size:  " , len( llfQueue ) , \
           "  chargePort " , chargePorts
         
 
@@ -292,22 +286,16 @@ def simulateLLFSimple( arrayOfVehicleArrivals ):
         updateVehiclesLLF()
         currentTime += 1
 
-    print "status:  " , openChargePort() , "  " , len( llfQueue ) == 0 , "  " , len( llfQueue )
-
     # vehicles done arriving, now continue with the simulation
     while chargePortsEmpty() == False or not len( llfQueue ) == 0:
         updateVehiclesLLF()
         currentTime += 1
 
-    print "status:  " , openChargePort() , \
-          "  " , len( llfQueue ) == 0 , \
-          " which evaluated to " , \
-          not len( llfQueue ) == 0 or openChargePort() is None
-
-    print "current time: " , currentTime , \
+    print "total number of cars: ", numberOfVehiclesInSimulation , \
+          "  current time: " , currentTime , \
           "  done charging lot: " , len( doneChargingLot ) , \
           "  failed charing lot: " , len( failedLot ) , \
-          "  edfQueue size:  " , len( llfQueue ) , \
+          "  llfQueue size:  " , len( llfQueue ) , \
           "  chargePort " , chargePorts
         
 
@@ -408,7 +396,8 @@ def simulateEDF( arrayOfVehicleArrivals ):
           " which evaluated to " , \
           not len( edfQueue ) == 0 or openChargePort() is None
 
-    print "current time: " , currentTime , \
+    print "total number of cars: ", numberOfVehiclesInSimulation , \
+          "  current time: " , currentTime , \
           "  done charging lot: " , len( doneChargingLot ) , \
           "  failed charing lot: " , len( failedLot ) , \
           "  edfQueue size:  " , len( edfQueue ) , \
@@ -505,11 +494,12 @@ def simulateFCFS( arrayOfVehicleArrivals ):
           " which evaluated to " , \
           not queue.empty() or openChargePort() is None
 
-    print "current time: " , currentTime , \
+    print "total number of cars: ", numberOfVehiclesInSimulation , \
+          "  current time: " , currentTime , \
           "  done charging lot: " , len( doneChargingLot ) , \
           "  failed charing lot: " , len( failedLot ) , \
-          "  queue size:  " , queue.qsize() , \
-          " chargePort " , chargePorts
+          "  fcfsQueue size:  " , queue.qsize() , \
+          "  chargePort " , chargePorts
             
 
 # called to update the vehicles for each minute of simulation
@@ -612,18 +602,17 @@ def exportVehicleToCSV( vehicle, status ):
                        vehicle.originalLaxity \
                        ] )
 
-
 #  -------- Simulations ------------
 
-# print simulateInterval()
+interval = simulateInterval()
 
-# simulateFCFS( simulateInterval() )
+# simulateFCFS( interval )
 
-# simulateEDF( simulateInterval() )
+# simulateEDF( interval )
 
-# simulateLLF( simulateInterval() )
+# simulateLLF( interval )
 
-simulateLLF( simulateInterval() )
+simulateLLFSimple( interval )
 
 
 # -------- GARBAGE -----------
