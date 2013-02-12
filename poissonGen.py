@@ -257,6 +257,117 @@ def updateLaxityForAll():
         vehicle.updateLaxity( currentTime )
 
 
+#  ------ LLF SIMPLE --------
+# This algorithm runs under the same premise as the other LLF algorithm except in this instance laxity is only computed once
+# upon arrival
+# laxity is still defined as freeTime/totalTime where freeTime = (departure - arrival - chargeTime) and totalTime = (departure - arrival) 
+# However, since laxity is only calculated once, if a car has a small laxity there is a good chance that it will never be charged 
+
+llfIndex = -1
+
+def simulateLLFSimple( arrayOfVehicleArrivals ):
+    global currentTime
+    global llfIndex
+
+    # initialize a CSV document for storing all data
+    generateVehicleCSV( "llfSimple" )
+
+    # iterate through each vehicle in each minute
+    for minute, numVehiclesPerMin in enumerate( arrayOfVehicleArrivals ):
+        for vehicle in numVehiclesPerMin:
+            port = openChargePort()
+
+            # there is an open chargePort, add vehicle to it
+            if port is not None:
+                chargePorts[ port ] = vehicle
+
+            # no open chargePort, append to llfQueue
+            else:
+                llfQueue.append( vehicle )
+
+                # update the llfIndex if this vehicle is better
+                if llfIndex == -1 or vehicle.laxity < llfQueue[ llfIndex ].laxity:
+                    llfIndex = len( llfQueue ) - 1
+
+        updateVehiclesLLF()
+        currentTime += 1
+
+    print "status:  " , openChargePort() , "  " , len( llfQueue ) == 0 , "  " , len( llfQueue )
+
+    # vehicles done arriving, now continue with the simulation
+    while chargePortsEmpty() == False or not len( llfQueue ) == 0:
+        updateVehiclesLLF()
+        currentTime += 1
+
+    print "status:  " , openChargePort() , \
+          "  " , len( llfQueue ) == 0 , \
+          " which evaluated to " , \
+          not len( llfQueue ) == 0 or openChargePort() is None
+
+    print "current time: " , currentTime , \
+          "  done charging lot: " , len( doneChargingLot ) , \
+          "  failed charing lot: " , len( failedLot ) , \
+          "  edfQueue size:  " , len( llfQueue ) , \
+          "  chargePort " , chargePorts
+        
+
+# called to update the vehicles for each minute of simulation
+def updateVehiclesLLFSimple():
+    global currentTime
+    global llfIndex
+    # increment the charge for the cars that were charging
+    for index, vehicle in enumerate( chargePorts ):
+
+        # add one minute of charge
+        if vehicle is not None:
+            vehicle.currentCharge += ( vehicle.chargeRate ) / 60
+
+            # print "Charge:  " , vehicle.currentCharge , "   " , vehicle.chargeNeeded
+            # print "Timing:  " , currentTime , "   ",  vehicle.depTime 
+
+    # now move cars around so the laxity property is maintained
+    for index, vehicle in enumerate( chargePorts ):
+        if vehicle is not None:
+
+            #check if done charging
+            if vehicle.currentCharge >= vehicle.chargeNeeded:
+                exportVehicleToCSV( vehicle, "SUCCESS" )
+                doneChargingLot.append( vehicle )
+                
+                if len( llfQueue ) > 0:
+                    chargePorts[ index ] = llfQueue[ llfIndex ]
+                    del llfQueue[ llfIndex ]  
+                    llfIndex = lowestLaxity()
+                else:
+                    chargePorts[ index ] = None
+            
+            
+
+            # check if deadline reached
+            if currentTime >= vehicle.depTime:
+                exportVehicleToCSV( vehicle, "FAILURE" )
+                failedLot.append( vehicle )
+                
+                if len( llfQueue ) > 0:
+                    chargePorts[ index ] = llfQueue[ llfIndex ]
+                    del llfQueue[ llfIndex ]
+                    llfIndex = lowestLaxity() # function defined in LLF section, iterates through llfQueue for lowest laxity
+                else:
+                    chargePorts[ index ] = None
+
+            # print "the laxity index is   :    "  ,  llfIndex  , "    the queue size is   :   "  , len( llfQueue )
+
+            # check if all cars in chargePorts still have lowest laxity
+            if llfIndex != -1 and vehicle.laxity > llfQueue[ llfIndex ].laxity:
+
+                # swap vehicle of llfIndex with the current vehicle in the loop
+                temp = vehicle
+                chargePorts[ index ] = llfQueue[ llfIndex ]
+                llfQueue[ llfIndex ] = temp
+
+                # llfIndex is unchanged and still correctly points to the next lowest laxity
+
+
 #  ------ EDF ------
 
 earliestDLIndex = -1;
@@ -509,6 +620,8 @@ def exportVehicleToCSV( vehicle, status ):
 # simulateFCFS( simulateInterval() )
 
 # simulateEDF( simulateInterval() )
+
+# simulateLLF( simulateInterval() )
 
 simulateLLF( simulateInterval() )
 
