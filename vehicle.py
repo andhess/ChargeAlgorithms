@@ -36,7 +36,7 @@ class Vehicle:
 
         # in case time ends up, we can't divide by 0
         if totalTime == 0:
-            self.laxity = 3
+            self.laxity = 1
         else:
             self.laxity  =  freeTime / totalTime
 

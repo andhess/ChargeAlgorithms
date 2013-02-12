@@ -164,7 +164,7 @@ def simulateLLF( arrayOfVehicleArrivals ):
 
     # vehicles done arriving, now continue with the simulation
     while chargePortsEmpty() == False or not len( llfQueue ) == 0:
-        updateVehiclesEDF()
+        updateVehiclesLLF()
         currentTime += 1
 
     print "status:  " , openChargePort() , \
@@ -190,7 +190,8 @@ def updateVehiclesLLF():
         if vehicle is not None:
             vehicle.currentCharge += ( vehicle.chargeRate ) / 60
 
-            print "Charge:  " , vehicle.currentCharge , "   " , vehicle.chargeNeeded
+            # print "Charge:  " , vehicle.currentCharge , "   " , vehicle.chargeNeeded
+            # print "Timing:  " , currentTime , "   ",  vehicle.depTime 
     
     # update the laxity for all the peeps
     updateLaxityForAll()
@@ -211,7 +212,7 @@ def updateVehiclesLLF():
                 else:
                     chargePorts[ index ] = None
             
-            print "Timing:  " , currentTime , "   ",  vehicle.depTime 
+            
 
             # check if deadline reached
             if currentTime >= vehicle.depTime:
@@ -225,7 +226,7 @@ def updateVehiclesLLF():
                 else:
                     chargePorts[ index ] = None
 
-            print "the laxity index is   :    "  ,  llfIndex  , "    the queue size is   :   "  , len( llfQueue )
+            # print "the laxity index is   :    "  ,  llfIndex  , "    the queue size is   :   "  , len( llfQueue )
 
             # check if all cars in chargePorts still have lowest laxity
             if llfIndex != -1 and vehicle.laxity > llfQueue[ llfIndex ].laxity:
@@ -505,11 +506,11 @@ def exportVehicleToCSV( vehicle, status ):
 
 # print simulateInterval()
 
-simulateFCFS( simulateInterval() )
+# simulateFCFS( simulateInterval() )
 
 # simulateEDF( simulateInterval() )
 
-# simulateLLF( simulateInterval() )
+simulateLLF( simulateInterval() )
 
 
 # -------- GARBAGE -----------
