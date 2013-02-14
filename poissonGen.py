@@ -113,6 +113,22 @@ def vehicleGen( arrayOfArrivalsPerMin ):
 
     return vehicles
 
+# -------- Test simulateInterval() -------------
+# we want to make sure that the poisson distribution is working correctly
+
+def testPoissonDistribution( numberOfSimulations ):
+    global numberOfVehiclesInSimulation
+    numberOfVehiclesInSimulation = 0
+    totalNumberOfVehicles = 0
+    for i in range(numberOfSimulations):
+        simulateInterval()
+        # print numberOfVehiclesInSimulation
+        totalNumberOfVehicles = totalNumberOfVehicles + numberOfVehiclesInSimulation
+        numberOfVehiclesInSimulation = 0
+    print numberOfSimulations, " simulations run with avgArrivalRate: ", avgArrivalRate, " interval: ", interval, \
+          " total number of cars: ",totalNumberOfVehicles
+    print "average number of cars per simulation: ", 1.0*totalNumberOfVehicles/numberOfSimulations
+
 #  ------------- The Algorithms -------------
 
 
@@ -139,7 +155,7 @@ def simulateLLF( arrayOfVehicleArrivals ):
     global llfIndex
 
     # initialize a CSV document for storing all data
-    generateVehicleCSV( "llf" )
+    generateCSV( "llfSmart" )
 
     # iterate through each vehicle in each minute
     for minute, numVehiclesPerMin in enumerate( arrayOfVehicleArrivals ):
@@ -178,6 +194,10 @@ def simulateLLF( arrayOfVehicleArrivals ):
 def updateVehiclesLLF():
     global currentTime
     global llfIndex
+
+    # update chargePortCSV
+    exportChargePortsToCSV()
+
     # increment the charge for the cars that were charging
     for index, vehicle in enumerate( chargePorts ):
 
@@ -265,7 +285,7 @@ def simulateLLFSimple( arrayOfVehicleArrivals ):
     global llfIndex
 
     # initialize a CSV document for storing all data
-    generateVehicleCSV( "llfSimple" )
+    generateCSV( "llfSimple" )
 
     # iterate through each vehicle in each minute
     for minute, numVehiclesPerMin in enumerate( arrayOfVehicleArrivals ):
@@ -304,6 +324,10 @@ def simulateLLFSimple( arrayOfVehicleArrivals ):
 def updateVehiclesLLFSimple():
     global currentTime
     global llfIndex
+
+    # update chargePortCSV
+    exportChargePortsToCSV()
+
     # increment the charge for the cars that were charging
     for index, vehicle in enumerate( chargePorts ):
 
@@ -368,7 +392,7 @@ def simulateEDF( arrayOfVehicleArrivals ):
     global earliestDLIndex
 
     # initialize a CSV document for storing all data
-    generateVehicleCSV( "edf" )
+    generateCSV( "edf" )
 
     # iterate through each vehicle in each minute
     for minute, numVehiclesPerMin in enumerate( arrayOfVehicleArrivals ):
@@ -407,6 +431,9 @@ def simulateEDF( arrayOfVehicleArrivals ):
 # called to update the vehicles for each minute of simulation
 def updateVehiclesEDF():
     global earliestDLIndex
+
+    # update chargePortCSV
+    exportChargePortsToCSV()
 
     # cheack each chargePort
     for index, vehicle in enumerate( chargePorts ):
@@ -468,7 +495,7 @@ def simulateFCFS( arrayOfVehicleArrivals ):
     global currentTime
 
     # initialize a CSV document for storing all data
-    generateVehicleCSV( "fcfs" )
+    generateCSV( "fcfs" )
 
     # iterate through each vehicle in each minute
     for minute, numVehiclesPerMin in enumerate( arrayOfVehicleArrivals ):
@@ -505,6 +532,9 @@ def simulateFCFS( arrayOfVehicleArrivals ):
 
 # called to update the vehicles for each minute of simulation
 def updateVehiclesFCFS():
+
+    # update chargePortCSV
+    exportChargePortsToCSV()
 
     # check each chargePort
     for index, vehicle in enumerate( chargePorts ):        
@@ -543,12 +573,14 @@ def updateVehiclesFCFS():
 
 # --------- Exporting to CSV -----------
 
-# every time an alrogithm is run, it will create a csv file of every vehicle in directory
-# file will be save in /csv/<algorithm name>/timeStamp.csv
-# NOTE: folderName must be a String of one of our algorihtm names: "fcfs" , "edf" , or "llf"
-def generateVehicleCSV( folderName ):
-    global path
-    global newCSV
+# every time an alrogithm is run, it will create csv files for vehicles and chargePorts
+# files will be save in /csv/<algorithm type>/timeStamp/
+# NOTE: folderName must be a String of one of our algorihtm names: "fcfs" , "edf" , or "llfSmart" , "llfSimple"
+def generateCSV( folderName ):
+    global vehiclePath
+    global chargePortPath
+    global vehicleCSV
+    global chargePortCSV
 
     # generate a unique filename with a time stamp
     timeStamp = datetime.datetime.now().strftime( "%Y%m%d-%H%M%S" )
@@ -556,24 +588,28 @@ def generateVehicleCSV( folderName ):
     # thank stack overflow for making this easy
     # setup file to save in a directory
     script_dir = os.path.dirname( os.path.abspath(__file__) )
-    dest_dir = os.path.join( script_dir, 'csv', folderName )    
+    dest_dir = os.path.join( script_dir, 'csv', folderName , timeStamp )    
     try:
         os.makedirs(dest_dir)
 
     except OSError:
         pass # already exists
     
-    # relative file location
-    path = os.path.join( dest_dir, timeStamp )
+    # make a CSV for both Vehicle and ChargePorts
+    vehiclePath = os.path.join( dest_dir, "vehicles" )
+    chargePortPath = os.path.join( dest_dir, "chargePorts" )
     
-    # and now write it up
-    newCSV = csv.writer( open( path , "wb" ) )
+    # and now write them up
+    vehicleCSV = csv.writer( open( vehiclePath , "wb" ) )
+    chargePortCSV = csv.writer( open( chargePortPath , "wb" ) )
+
+    # write some basic info info in vehicleCSV
 
     # basic stats
-    newCSV.writerow( [ "Interval time" , interval , "   Number of vehicles" , numberOfVehiclesInSimulation ] )
+    vehicleCSV.writerow( [ "Interval time" , interval , "Number of vehicles" , numberOfVehiclesInSimulation ] )
 
     # initialize some columns
-    newCSV.writerow( [ "Vehicle ID" , \
+    vehicleCSV.writerow( [ "Vehicle ID" , \
                        "Status" , \
                        "Arrival Time" , \
                        "Departure Time" , \
@@ -588,13 +624,23 @@ def generateVehicleCSV( folderName ):
                        "Original Laxity" \
                         ] )
 
+    # write some basic info in chargePortCSV
+
+    # basic stats
+    chargePortCSV.writerow( [ "Interval time" , interval , "Number of charge ports" , numChargePorts ] )
+
+    # initialize some columns for stuff
+    chargePortCSV.writerow( [ "ChargePort Number" , \
+                              "Vehicle ID" \
+                            ])
+
 
 # when a vehicle is leaving a lot, throw it into the CSV so we can study it
 def exportVehicleToCSV( vehicle, status ):
-    global path
-    global newCSV
+    global vehiclePath
+    global vehicleCSV
 
-    newCSV.writerow( [ vehicle.id , \
+    vehicleCSV.writerow( [ vehicle.id , \
                        status , \
                        vehicle.arrivalTime , \
                        vehicle.depTime , \
@@ -609,36 +655,31 @@ def exportVehicleToCSV( vehicle, status ):
                        vehicle.originalLaxity \
                        ] )
 
-# -------- Test simulateInterval() -------------
-# we want to make sure that the poisson distribution is working correctly
 
-def testPoissonDistribution( numberOfSimulations ):
-    global numberOfVehiclesInSimulation
-    numberOfVehiclesInSimulation = 0
-    totalNumberOfVehicles = 0
-    for i in range(numberOfSimulations):
-        simulateInterval()
-        # print numberOfVehiclesInSimulation
-        totalNumberOfVehicles = totalNumberOfVehicles + numberOfVehiclesInSimulation
-        numberOfVehiclesInSimulation = 0
-    print numberOfSimulations, " simulations run with avgArrivalRate: ", avgArrivalRate, " interval: ", interval, \
-          " total number of cars: ",totalNumberOfVehicles
-    print "average number of cars per simulation: ", 1.0*totalNumberOfVehicles/numberOfSimulations
+def exportChargePortsToCSV():
+
+    for index, vehicle in enumerate( chargePorts ):
+        chargePortCSV.writerow( [ index , \
+                                  vehicle \
+                                  ] )
+
 
 
 #  -------- Simulations ------------
 
-# interval = simulateInterval()
+simulationInterval = simulateInterval()
 
-# simulateFCFS( interval )
+simulateFCFS( simulationInterval )
 
-# simulateEDF( interval )
+simulateEDF( simulationInterval )
 
-# simulateLLF( interval )
+simulateLLF( simulationInterval )
 
 # simulateLLFSimple( interval )
 
-testPoissonDistribution(1000)
+simulateLLFSimple( simulationInterval )
+
+# testPoissonDistribution(1000)
 
 
 # -------- GARBAGE -----------
