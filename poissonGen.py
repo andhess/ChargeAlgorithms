@@ -20,7 +20,7 @@ interval = int( sys.argv[ 1 ] )
 # ----------- Globals & Constants -------------
 
 # --- poissonStuff ---
-avgArrivalRate = .5
+avgArrivalRate = .3 # cars per minute
 
 # --- charging stuff ---
 # chargeRateMu
@@ -65,11 +65,12 @@ numberOfVehiclesInSimulation = 0
 # level 2 contains an array of the vehicle objects that will arrive during that minute
 def simulateInterval():
     global numberOfVehiclesInSimulation
+    numberOfVehiclesInSimulation = 0
     arrivalTimes = []
     prevArrival = 0
 
     while True:
-        nextArrival = math.floor( vehicleArrives( prevArrival ) )
+        nextArrival = vehicleArrives( prevArrival ) # prev had math.floor here
         if nextArrival >= interval:
             break
         arrivalTimes.append( nextArrival )
@@ -534,6 +535,12 @@ def updateVehiclesFCFS():
                 else:
                     chargePorts[ index ] = None
 
+
+
+# --------- Optimal Offline Solution -----------
+# need to figure out what algorithm is optimal
+# have to take into account that start times and departures times are not all the same
+
 # --------- Exporting to CSV -----------
 
 # every time an alrogithm is run, it will create a csv file of every vehicle in directory
@@ -602,9 +609,26 @@ def exportVehicleToCSV( vehicle, status ):
                        vehicle.originalLaxity \
                        ] )
 
+# -------- Test simulateInterval() -------------
+# we want to make sure that the poisson distribution is working correctly
+
+def testPoissonDistribution( numberOfSimulations ):
+    global numberOfVehiclesInSimulation
+    numberOfVehiclesInSimulation = 0
+    totalNumberOfVehicles = 0
+    for i in range(numberOfSimulations):
+        simulateInterval()
+        # print numberOfVehiclesInSimulation
+        totalNumberOfVehicles = totalNumberOfVehicles + numberOfVehiclesInSimulation
+        numberOfVehiclesInSimulation = 0
+    print numberOfSimulations, " simulations run with avgArrivalRate: ", avgArrivalRate, " interval: ", interval, \
+          " total number of cars: ",totalNumberOfVehicles
+    print "average number of cars per simulation: ", 1.0*totalNumberOfVehicles/numberOfSimulations
+
+
 #  -------- Simulations ------------
 
-interval = simulateInterval()
+# interval = simulateInterval()
 
 # simulateFCFS( interval )
 
@@ -612,7 +636,9 @@ interval = simulateInterval()
 
 # simulateLLF( interval )
 
-simulateLLFSimple( interval )
+# simulateLLFSimple( interval )
+
+testPoissonDistribution(1000)
 
 
 # -------- GARBAGE -----------
