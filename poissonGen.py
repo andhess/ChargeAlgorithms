@@ -675,8 +675,6 @@ simulateEDF( simulationInterval )
 
 simulateLLF( simulationInterval )
 
-# simulateLLFSimple( interval )
-
 simulateLLFSimple( simulationInterval )
 
 # testPoissonDistribution(1000)
