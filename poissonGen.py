@@ -421,7 +421,8 @@ def simulateEDF( arrayOfVehicleArrivals ):
           " which evaluated to " , \
           not len( edfQueue ) == 0 or openChargePort() is None
 
-    print "total number of cars: ", numberOfVehiclesInSimulation , \
+    print "EDF SIMULATION: " , \
+          "total number of cars: ", numberOfVehiclesInSimulation , \
           "  current time: " , currentTime , \
           "  done charging lot: " , len( doneChargingLot ) , \
           "  failed charing lot: " , len( failedLot ) , \
@@ -431,6 +432,7 @@ def simulateEDF( arrayOfVehicleArrivals ):
 # called to update the vehicles for each minute of simulation
 def updateVehiclesEDF():
     global earliestDLIndex
+    global latestChargePortDLIndex
 
     # update chargePortCSV
     exportChargePortsToCSV()
@@ -441,8 +443,6 @@ def updateVehiclesEDF():
         # add one minute of charge
         if vehicle is not None:
             vehicle.currentCharge += ( vehicle.chargeRate ) / 60
-
-            print "Charge:  " , vehicle.currentCharge , "   " , vehicle.chargeNeeded
             
             #check if done charging
             if vehicle.currentCharge >= vehicle.chargeNeeded:
@@ -455,8 +455,6 @@ def updateVehiclesEDF():
                     earliestDLIndex = earliestDL()
                 else:
                     chargePorts[ index ] = None
-            
-            print "Timing:  " , currentTime , "   ",  vehicle.depTime 
 
             # check if deadline reached
             if currentTime >= vehicle.depTime:
@@ -470,21 +468,45 @@ def updateVehiclesEDF():
                 else:
                     chargePorts[ index ] = None
 
-            # check if all cars in chargePorts still have best deadlines
-            if earliestDLIndex != -1 and vehicle.depTime > edfQueue[ earliestDLIndex ].depTime:
 
-                # swap index of earliestDLIndex with the current vehicle in the loop
-                temp = vehicle
-                chargePorts[ index ] = edfQueue[ earliestDLIndex ]
-                edfQueue[ earliestDLIndex ] = temp
+    # now we want to make sure that all the cars in the chargePorts are the best choices
+    # we want to know the index of the worst car charging and compare that to the index of the best in the queue
+    # also need to be able to cycle the queue so that it will put ALL the cars in the queue that are better into the chargePorts
 
-                # earliestDLIndex is unchanged and still correct
+    # edge cases to worry about: queue is empty, earliestDLIndex = -1
 
-# gets the earliest deadline of all the vehicles in edfQueue
+    # start out by grabbing the latest chargePort
+    latestChargePortDLIndex = latestChargePortDL()
+    
+    # prioritize edge cases, loop until swap the top DL are all in the queue
+    while len( edfQueue ) > 0 and latestChargePortDLIndex != -1 and edfQueue[ earliestDLIndex ].depTime < chargePort[ latestChargePortDLIndex ].depTime:
+
+        # make a swap
+        temp = chargePorts[ latestChargePortDLIndex ]
+        chargePorts[ index ] = edfQueue[ earliestDLIndex ]
+        edfQueue[ earliestDLIndex ] = temp
+
+        # now update values for comparison
+        earliestDLIndex = earliestDL()
+        latestChargePortDLIndex = latestChargePortDL()
+
+        # NOTE: we are explicitly choosing to grab a clean version of each index because accuracy cannot be guaranteed
+
+# gets the index of earliest deadline of all the vehicles in edfQueue
 def earliestDL():
     if len( edfQueue ) == 0:
         return -1
     return edfQueue.index( min( edfQueue, key = attrgetter( 'depTime' ) ) )
+
+# gets the index of the vehicle in chargePorts with the latest deadline 
+def latestChargePortDL():
+    latestIndex = -1;    
+    #for index, port in enumerate( chargePorts ):
+    #if( port is not None ):
+    #    chargePorts.index( max( chargePorts, key = attrgetter( 'depTime' ) ) )
+
+
+    #return latestIndex
 
 
 # ------ FCFS ------
@@ -671,11 +693,11 @@ simulationInterval = simulateInterval()
 
 simulateFCFS( simulationInterval )
 
-simulateEDF( simulationInterval )
+# simulateEDF( simulationInterval )
 
-simulateLLF( simulationInterval )
+# simulateLLF( simulationInterval )
 
-simulateLLFSimple( simulationInterval )
+# simulateLLFSimple( simulationInterval )
 
 # testPoissonDistribution(1000)
 
