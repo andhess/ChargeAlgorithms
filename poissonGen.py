@@ -13,14 +13,15 @@ if len( sys.argv ) != 2:
     print 'Wrong Number of Arguments you sent', sys.argv
     print 'interval'
     sys.exit()
-#print 'parameters: ',sys.argv    
+#print 'parameters: ',sys.argv   
+print "------------------------------------------" 
 
 interval = int( sys.argv[ 1 ] )
 
 # ----------- Globals & Constants -------------
 
 # --- poissonStuff ---
-avgArrivalRate = .3 # cars per minute
+avgArrivalRate = 1 # cars per minute
 
 # --- charging stuff ---
 # chargeRateMu
@@ -28,13 +29,13 @@ avgArrivalRate = .3 # cars per minute
 
 # chargeNeeded - the charge needed at the end 
 chargeNeededMu = 20 #kwh
-chargeNeededSigma = 3 #kwh
+chargeNeededSigma = 20 #kwh
 
-currentChargeSigma = 3 #kwh
 currentChargeMu = 12 #kwh
+currentChargeSigma = 6 #kwh
 
-uniformMaxCapacity = 30 #kwh
-uniformChargeRate = 50 #kw
+uniformMaxCapacity = 100 #kwh
+uniformChargeRate = 59 #kw
 
 # ---- storage lots ------
 
@@ -48,6 +49,7 @@ queue = Queue.Queue( 0 )
 
 edfQueue = []
 llfQueue = []
+llfSimpleQueue = []
 
 # ----- global time vars ------
 currentTime = 0 
@@ -55,7 +57,28 @@ currentTime = 0
 # --- random ----
 numberOfVehiclesInSimulation = 0
 
-# ---------- CSV Stuff ------------
+# function to reset time, failed/done lots etc. Called at start of every algorithm simlulation
+def updateGlobals():
+    global currentTime
+    currentTime = 0
+    global doneChargingLot
+    doneChargingLot = []
+    global failedLot
+    failedLot = []
+    resetChargePorts()
+
+#visualization of vehicle ids in chargeporst
+def printChargePorts():
+    output = "["
+    for index, vehicle in enumerate(chargePorts):
+        if vehicle is None:
+            output += "None"
+        else:
+            output += str(vehicle.id)
+        if index != len(chargePorts)-1:
+            output += ", "
+    output += "]"
+    print output
 
 
 # ------------ Poisson Generator ------------
@@ -151,8 +174,12 @@ def testPoissonDistribution( numberOfSimulations ):
 llfIndex = -1
 
 def simulateLLF( arrayOfVehicleArrivals ):
+    
+    # reset global variables such as time, done/failed lots
+    updateGlobals()
     global currentTime
     global llfIndex
+    llfIndex =  -1
 
     # initialize a CSV document for storing all data
     generateCSV( "llfSmart" )
@@ -182,7 +209,7 @@ def simulateLLF( arrayOfVehicleArrivals ):
         updateVehiclesLLF()
         currentTime += 1
 
-    print "total number of cars: ", numberOfVehiclesInSimulation , \
+    print "LLF Complex:  total number of cars: ", numberOfVehiclesInSimulation , \
           "  current time: " , currentTime , \
           "  done charging lot: " , len( doneChargingLot ) , \
           "  failed charing lot: " , len( failedLot ) , \
@@ -223,7 +250,7 @@ def updateVehiclesLLF():
                 if len( llfQueue ) > 0:
                     chargePorts[ index ] = llfQueue[ llfIndex ]
                     del llfQueue[ llfIndex ]  
-                    llfIndex = lowestLaxity()
+                    llfIndex = lowestLaxity("complex")
                 else:
                     chargePorts[ index ] = None
             
@@ -237,7 +264,7 @@ def updateVehiclesLLF():
                 if len( llfQueue ) > 0:
                     chargePorts[ index ] = llfQueue[ llfIndex ]
                     del llfQueue[ llfIndex ]
-                    llfIndex = lowestLaxity()
+                    llfIndex = lowestLaxity("complex")
                 else:
                     chargePorts[ index ] = None
 
@@ -254,10 +281,15 @@ def updateVehiclesLLF():
                 # llfIndex is unchanged and still correctly points to the next lowest laxity
 
 # gets index for the vehicle with the lowest laxity from llf
-def lowestLaxity():
-    if len( llfQueue ) == 0:
-        return -1
-    return llfQueue.index( min( llfQueue, key = attrgetter( 'laxity' ) ) )
+def lowestLaxity(type):
+    if type == "complex":
+        if len( llfQueue ) == 0:
+            return -1
+        return llfQueue.index( min( llfQueue, key = attrgetter( 'laxity' ) ) )
+    if type == "simple":
+        if len( llfSimpleQueue ) == 0:
+            return -1
+        return llfSimpleQueue.index( min( llfSimpleQueue, key = attrgetter( 'laxity' ) ) )
 
 # laxity constantly changes as time advances and certain cars are charged
 def updateLaxityForAll():
@@ -278,11 +310,14 @@ def updateLaxityForAll():
 # laxity is still defined as freeTime/totalTime where freeTime = (departure - arrival - chargeTime) and totalTime = (departure - arrival) 
 # However, since laxity is only calculated once, if a car has a small laxity there is a good chance that it will never be charged 
 
-llfIndex = -1
+llfSimpleIndex = -1
 
 def simulateLLFSimple( arrayOfVehicleArrivals ):
+    
+    # reset global variables such as time, done/failed lots
+    updateGlobals()
     global currentTime
-    global llfIndex
+    global llfSimpleIndex
 
     # initialize a CSV document for storing all data
     generateCSV( "llfSimple" )
@@ -298,21 +333,22 @@ def simulateLLFSimple( arrayOfVehicleArrivals ):
 
             # no open chargePort, append to llfQueue
             else:
-                llfQueue.append( vehicle )
+
+                llfSimpleQueue.append( vehicle )
 
                 # update the llfIndex if this vehicle is better
-                if llfIndex == -1 or vehicle.laxity < llfQueue[ llfIndex ].laxity:
-                    llfIndex = len( llfQueue ) - 1
+                if llfSimpleIndex == -1 or vehicle.laxity < llfSimpleQueue[ llfSimpleIndex ].laxity:
+                    llfSimpleIndex = len( llfQueue ) - 1
 
-        updateVehiclesLLF()
+        updateVehiclesLLFSimple()
         currentTime += 1
 
     # vehicles done arriving, now continue with the simulation
-    while chargePortsEmpty() == False or not len( llfQueue ) == 0:
-        updateVehiclesLLF()
+    while chargePortsEmpty() == False or len( llfSimpleQueue ) != 0:
+        updateVehiclesLLFSimple()
         currentTime += 1
 
-    print "total number of cars: ", numberOfVehiclesInSimulation , \
+    print "LLF Simple: total number of cars: ", numberOfVehiclesInSimulation , \
           "  current time: " , currentTime , \
           "  done charging lot: " , len( doneChargingLot ) , \
           "  failed charing lot: " , len( failedLot ) , \
@@ -323,7 +359,9 @@ def simulateLLFSimple( arrayOfVehicleArrivals ):
 # called to update the vehicles for each minute of simulation
 def updateVehiclesLLFSimple():
     global currentTime
-    global llfIndex
+    global llfSimpleIndex
+    print "--------------------"
+    print "llfSimpleIndex: ",llfSimpleIndex
 
     # update chargePortCSV
     exportChargePortsToCSV()
@@ -335,48 +373,49 @@ def updateVehiclesLLFSimple():
         if vehicle is not None:
             vehicle.currentCharge += ( vehicle.chargeRate ) / 60
 
-            # print "Charge:  " , vehicle.currentCharge , "   " , vehicle.chargeNeeded
-            # print "Timing:  " , currentTime , "   ",  vehicle.depTime 
-
     # now move cars around so the laxity property is maintained
     for index, vehicle in enumerate( chargePorts ):
         if vehicle is not None:
+            removed = False
 
             #check if done charging
             if vehicle.currentCharge >= vehicle.chargeNeeded:
+                print "vehicle charged", vehicle.id
                 exportVehicleToCSV( vehicle, "SUCCESS" )
                 doneChargingLot.append( vehicle )
                 
-                if len( llfQueue ) > 0:
-                    chargePorts[ index ] = llfQueue[ llfIndex ]
-                    del llfQueue[ llfIndex ]  
-                    llfIndex = lowestLaxity()
+                if len( llfSimpleQueue ) > 0:
+                    chargePorts[ index ] = llfSimpleQueue[ llfSimpleIndex ]
+                    del llfSimpleQueue[ llfSimpleIndex ]  
+                    llfSimpleIndex = lowestLaxity("simple")
                 else:
                     chargePorts[ index ] = None
+                removed = True
             
             
 
             # check if deadline reached
-            if currentTime >= vehicle.depTime:
+            if currentTime >= vehicle.depTime and not removed:
+                print "vehicle's departure time reached", vehicle.id
                 exportVehicleToCSV( vehicle, "FAILURE" )
                 failedLot.append( vehicle )
-                
-                if len( llfQueue ) > 0:
-                    chargePorts[ index ] = llfQueue[ llfIndex ]
-                    del llfQueue[ llfIndex ]
-                    llfIndex = lowestLaxity() # function defined in LLF section, iterates through llfQueue for lowest laxity
+        
+                if len( llfSimpleQueue ) > 0:
+                    chargePorts[ index ] = llfSimpleQueue[ llfSimpleIndex ]
+                    del llfSimpleQueue[ llfSimpleIndex ]
+                    llfSimpleIndex = lowestLaxity("simple") # function defined in LLF section, iterates through llfQueue for lowest laxity
                 else:
                     chargePorts[ index ] = None
 
-            # print "the laxity index is   :    "  ,  llfIndex  , "    the queue size is   :   "  , len( llfQueue )
+            # print "the laxity index is   :    "  ,  llfSimpleIndex  , "    the queue size is   :   "  , len( llfQueue )
 
             # check if all cars in chargePorts still have lowest laxity
-            if llfIndex != -1 and vehicle.laxity > llfQueue[ llfIndex ].laxity:
+            if llfSimpleIndex != -1 and vehicle.laxity > llfSimpleQueue[ llfSimpleIndex ].laxity:
 
-                # swap vehicle of llfIndex with the current vehicle in the loop
+                # swap vehicle of llfSimpleIndex with the current vehicle in the loop
                 temp = vehicle
-                chargePorts[ index ] = llfQueue[ llfIndex ]
-                llfQueue[ llfIndex ] = temp
+                chargePorts[ index ] = llfSimpleQueue[ llfSimpleIndex ]
+                llfSimpleQueue[ llfSimpleIndex ] = temp
 
                 # llfIndex is unchanged and still correctly points to the next lowest laxity
 
@@ -388,6 +427,9 @@ earliestDLIndex = -1;
 # the main function for Earliest Deadline First Algorithm
 # takes in an array of vehicle interval arrays
 def simulateEDF( arrayOfVehicleArrivals ):
+    
+    # reset global variables such as time, done/failed lots
+    updateGlobals()
     global currentTime
     global earliestDLIndex
 
@@ -409,25 +451,18 @@ def simulateEDF( arrayOfVehicleArrivals ):
         updateVehiclesEDF()
         currentTime += 1
 
-    print "status:  " , openChargePort() , "  " , len(edfQueue) == 0
-
     # vehicles done arriving, now continue with the simulation
     while chargePortsEmpty() == False or not len( edfQueue ) == 0:
         updateVehiclesEDF()
         currentTime += 1
 
-    print "status:  " , openChargePort() , \
-          "  " , len( edfQueue ) == 0 , \
-          " which evaluated to " , \
-          not len( edfQueue ) == 0 or openChargePort() is None
-
-    print "EDF SIMULATION: " , \
-          "total number of cars: ", numberOfVehiclesInSimulation , \
+    print "EDF: total number of cars: ", numberOfVehiclesInSimulation , \
           "  current time: " , currentTime , \
           "  done charging lot: " , len( doneChargingLot ) , \
           "  failed charing lot: " , len( failedLot ) , \
           "  edfQueue size:  " , len( edfQueue ) , \
           "  chargePort " , chargePorts
+
 
 # called to update the vehicles for each minute of simulation
 def updateVehiclesEDF():
@@ -443,7 +478,8 @@ def updateVehiclesEDF():
         # add one minute of charge
         if vehicle is not None:
             vehicle.currentCharge += ( vehicle.chargeRate ) / 60
-            
+            removed = False
+
             #check if done charging
             if vehicle.currentCharge >= vehicle.chargeNeeded:
                 exportVehicleToCSV( vehicle, "SUCCESS" )
@@ -455,9 +491,11 @@ def updateVehiclesEDF():
                     earliestDLIndex = earliestDL()
                 else:
                     chargePorts[ index ] = None
+                removed = True
+
 
             # check if deadline reached
-            if currentTime >= vehicle.depTime:
+            if currentTime >= vehicle.depTime and not removed:
                 exportVehicleToCSV( vehicle, "FAILURE" )
                 failedLot.append( vehicle )
                 
@@ -514,6 +552,9 @@ def latestChargePortDL():
 # the main implementation of the First Come First Serve algorithm
 # takes in an array of arrays of vehicle minutes ( 2-level )
 def simulateFCFS( arrayOfVehicleArrivals ):
+    
+    # reset global variables such as time, done/failed lots
+    updateGlobals()
     global currentTime
 
     # initialize a CSV document for storing all data
@@ -521,7 +562,7 @@ def simulateFCFS( arrayOfVehicleArrivals ):
 
     # iterate through each vehicle in each minute
     for minute, numVehiclesPerMin in enumerate( arrayOfVehicleArrivals ):
-        for vehicle in numVehiclesPerMin:           
+        for vehicle in numVehiclesPerMin:       
             port = openChargePort()
 
             if port is not None:
@@ -532,19 +573,14 @@ def simulateFCFS( arrayOfVehicleArrivals ):
         updateVehiclesFCFS()
         currentTime += 1
 
-    print "status:  " , openChargePort() , "  " , queue.empty()
+    # print "status:  " , openChargePort() , "  " , queue.empty()
     
     # run the clock until all vehicles have ran through the simulation
     while chargePortsEmpty() == False or not queue.empty():
         updateVehiclesFCFS()
         currentTime += 1
-    
-    print "status:  " , openChargePort() , \
-          "  " , queue.empty() , \
-          " which evaluated to " , \
-          not queue.empty() or openChargePort() is None
 
-    print "total number of cars: ", numberOfVehiclesInSimulation , \
+    print "FCFS: total number of cars: ", numberOfVehiclesInSimulation , \
           "  current time: " , currentTime , \
           "  done charging lot: " , len( doneChargingLot ) , \
           "  failed charing lot: " , len( failedLot ) , \
@@ -564,8 +600,7 @@ def updateVehiclesFCFS():
         # add 1 minute of charge
         if vehicle is not None:
             vehicle.currentCharge += ( vehicle.chargeRate ) / 60
-
-            print "Charge:  " , vehicle.currentCharge , "   " , vehicle.chargeNeeded
+            removed = False;
 
             # check if done charging
             if vehicle.currentCharge >= vehicle.chargeNeeded:
@@ -575,11 +610,11 @@ def updateVehiclesFCFS():
                     chargePorts[ index ] = queue.get()   #careful
                 else:
                     chargePorts[ index ] = None
+                removed = True;
 
-            print "Timing:  " , currentTime , "   " ,  vehicle.depTime 
 
             # check if deadline reached            
-            if currentTime >= vehicle.depTime:
+            if currentTime >= vehicle.depTime and not removed:
                 exportVehicleToCSV( vehicle, "FAILURE" )
                 failedLot.append( vehicle )
                 if not queue.empty():
@@ -640,7 +675,7 @@ def generateCSV( folderName ):
                        "Charge Rate" , \
                        "Charge Level Needed" , \
                        "Max Capacity" , \
-                       "Charge Time Needed" \
+                       "Charge Time Needed" , \
                        "Original Free Time" , \
                        "Original Total Time" , \
                        "Original Laxity" \
@@ -681,15 +716,17 @@ def exportVehicleToCSV( vehicle, status ):
 def exportChargePortsToCSV():
 
     for index, vehicle in enumerate( chargePorts ):
-        chargePortCSV.writerow( [ index , \
-                                  vehicle \
-                                  ] )
+        a = 0
+        # chargePortCSV.writerow( [ index , \
+        #                           vehicle \
+        #                           ] )
 
 
 
 #  -------- Simulations ------------
 
 simulationInterval = simulateInterval()
+print "number of vehicles in this simulation: ", numberOfVehiclesInSimulation
 
 simulateFCFS( simulationInterval )
 
@@ -701,6 +738,7 @@ simulateFCFS( simulationInterval )
 
 # testPoissonDistribution(1000)
 
+print "----------------- end of simulations ------------------------"
 
 # -------- GARBAGE -----------
 
