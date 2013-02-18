@@ -16,3 +16,16 @@ def openChargePort():
 # says if all charge ports are empty
 def chargePortsEmpty():
 	return all( port is None for port in chargePorts )
+
+
+# visualization of vehicle ids in chargeporst
+def toString():
+    output = "["
+    for index, vehicle in enumerate(chargePorts):
+        if vehicle is None:
+            output += "None"
+        else:
+            output += str( vehicle.id )
+        if index != len( chargePorts ) - 1:
+            output += ", "
+    output += "]"
