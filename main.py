@@ -16,19 +16,22 @@ common.setInterval(interval)
 
 
 #  -------- Simulations ------------
+print "---------------- start of simulations -----------------------"
 
 simulationInterval = poissonGen.simulateInterval()
 
 print "number of vehicles in this simulation: ", common.numberOfVehiclesInSimulation
 
+print common.vehicleIdsIn2DList( simulationInterval )
+
 fcfs.simulateFCFS( simulationInterval )
 
-# simulateEDF( simulationInterval )
+edf.simulateEDF( simulationInterval )
 
-# simulateLLF( simulationInterval )
+llfSmart.simulateLLF( simulationInterval )
 
-# simulateLLFSimple( simulationInterval )
+llfSimple.simulateLLFSimple( simulationInterval )
 
-# testPoissonDistribution(1000)
+# poissonGen.testPoissonDistribution(1000)
 
 print "----------------- end of simulations ------------------------"

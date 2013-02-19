@@ -2,7 +2,6 @@ import math
 import random
 import vehicle
 import common
-from operator import attrgetter  # edf, llf, llfS
 
 
 # ----------- Globals & Constants -------------

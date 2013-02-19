@@ -41,11 +41,11 @@ def simulateFCFS( arrayOfVehicleArrivals ):
         common.currentTime += 1
 
     print "FCFS: total number of cars: ", common.numberOfVehiclesInSimulation , \
-          "  current time: " , common.currentTime , \
+          "  elapsed time: " , common.currentTime , \
           "  done charging lot: " , len( common.doneChargingLot ) , \
-          "  failed charing lot: " , len( common.failedLot ) , \
+          "  failed charging lot: " , len( common.failedLot ) , \
           "  fcfsQueue size:  " , queue.qsize() , \
-          "  chargePort " , chargePorts.chargePorts
+          "  chargePort " , chargePorts.toString()
             
 
 # called to update the vehicles for each minute of simulation

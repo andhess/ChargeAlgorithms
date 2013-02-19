@@ -31,8 +31,8 @@ def generateCSV( folderName ):
         pass # already exists
     
     # make a CSV for both Vehicle and ChargePorts
-    vehiclePath = os.path.join( dest_dir, "vehicles" )
-    chargePortPath = os.path.join( dest_dir, "chargePorts" )
+    vehiclePath = os.path.join( dest_dir, "vehicles.csv" )
+    chargePortPath = os.path.join( dest_dir, "chargePorts.csv" )
     
     # and now write them up
     vehicleCSV = csv.writer( open( vehiclePath , "wb" ) )

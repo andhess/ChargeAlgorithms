@@ -29,3 +29,4 @@ def toString():
         if index != len( chargePorts ) - 1:
             output += ", "
     output += "]"
+    return output
