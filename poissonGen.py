@@ -1,11 +1,10 @@
 import math
 import random
-import main
+import vehicle
 
 
 from operator import attrgetter  # edf, llf, llfS
 
-interval = main.interval
 
 # ----------- Globals & Constants -------------
 
@@ -30,14 +29,18 @@ uniformChargeRate = 59 #kw
 # --- random ----
 numberOfVehiclesInSimulation = 0
 
+interval = 0
 
 # ------------ Poisson Generator ------------
 
 # the main function for generating an interval on which to run an algorithmn
 # will create a 2-level array, the top level being the length of the interval
 # level 2 contains an array of the vehicle objects that will arrive during that minute
-def simulateInterval():
+def simulateInterval( simulationInterval ):
+    global interval
+    interval = simulationInterval
     global numberOfVehiclesInSimulation
+    
     numberOfVehiclesInSimulation = 0
     arrivalTimes = []
     prevArrival = 0
@@ -77,7 +80,7 @@ def vehicleGen( arrayOfArrivalsPerMin ):
                 currentCharge = random.gauss( currentChargeMu, currentChargeSigma )
                 chargeRate = uniformChargeRate
                 maxCapacity = uniformMaxCapacity
-                vehiclesDuringMin.append( Vehicle( minute, depart, chargeNeeded, currentCharge, chargeRate, maxCapacity ) )
+                vehiclesDuringMin.append( vehicle.Vehicle( minute, depart, chargeNeeded, currentCharge, chargeRate, maxCapacity ) )
             
             vehicles.append( vehiclesDuringMin )
 
