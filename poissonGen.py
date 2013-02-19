@@ -1,9 +1,7 @@
 import math
 import random
 import vehicle
-import globals
-
-
+import common
 from operator import attrgetter  # edf, llf, llfS
 
 
@@ -26,41 +24,31 @@ currentChargeSigma = 6 #kwh
 uniformMaxCapacity = 100 #kwh
 uniformChargeRate = 59 #kw
 
-
-# --- random ----
-numberOfVehiclesInSimulation = 0
-
-interval = 0
-
 # ------------ Poisson Generator ------------
 
 # the main function for generating an interval on which to run an algorithmn
 # will create a 2-level array, the top level being the length of the interval
 # level 2 contains an array of the vehicle objects that will arrive during that minute
 def simulateInterval():
-    global interval
-    interval = globals.interval
-    global numberOfVehiclesInSimulation
-    
-    numberOfVehiclesInSimulation = 0
+
     arrivalTimes = []
     prevArrival = 0
 
     while True:
         nextArrival = vehicleArrives( prevArrival ) # prev had math.floor here
-        if nextArrival >= interval:
+        if nextArrival >= common.interval:
             break
         arrivalTimes.append( nextArrival )
         prevArrival = nextArrival
 
-    arrivalsPerMin = [ 0 ] * interval
+    arrivalsPerMin = [ 0 ] * common.interval
 
     for arrivalTime in arrivalTimes:
         arrivalsPerMin[ int( arrivalTime ) ] += 1
     
     # print "total number of vehicles:  " , len( arrivalTimes )
 
-    numberOfVehiclesInSimulation = len( arrivalTimes )
+    common.numberOfVehiclesInSimulation = len( arrivalTimes )
     
     vehicles = vehicleGen( arrivalsPerMin )
     return vehicles
@@ -102,7 +90,7 @@ def testPoissonDistribution( numberOfSimulations ):
         # print numberOfVehiclesInSimulation
         totalNumberOfVehicles = totalNumberOfVehicles + numberOfVehiclesInSimulation
         numberOfVehiclesInSimulation = 0
-    print numberOfSimulations, " simulations run with avgArrivalRate: ", avgArrivalRate, " interval: ", interval, \
+    print numberOfSimulations, " simulations run with avgArrivalRate: ", avgArrivalRate, " interval: ", common.interval, \
           " total number of cars: ",totalNumberOfVehicles
     print "average number of cars per simulation: ", 1.0*totalNumberOfVehicles/numberOfSimulations
 

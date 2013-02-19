@@ -1,6 +1,7 @@
 import Queue
-import globals
+import common
 import csvGen
+import chargePorts
 
 #fcfs
 queue = Queue.Queue( 0 )
@@ -13,7 +14,7 @@ queue = Queue.Queue( 0 )
 def simulateFCFS( arrayOfVehicleArrivals ):
     
     # reset global variables such as time, done/failed lots
-    globals.updateGlobals()
+    common.updateGlobals()
     global currentTime
 
     # initialize a CSV document for storing all data
@@ -22,39 +23,39 @@ def simulateFCFS( arrayOfVehicleArrivals ):
     # iterate through each vehicle in each minute
     for minute, numVehiclesPerMin in enumerate( arrayOfVehicleArrivals ):
         for vehicle in numVehiclesPerMin:       
-            port = openChargePort()
+            port = chargePorts.openChargePort()
 
             if port is not None:
-                chargePorts[ port ] = vehicle
+                chargePorts.chargePorts[ port ] = vehicle
             else:
                 queue.put( vehicle )
 
         updateVehiclesFCFS()
-        currentTime += 1
+        common.currentTime += 1
 
     # print "status:  " , openChargePort() , "  " , queue.empty()
     
     # run the clock until all vehicles have ran through the simulation
-    while chargePortsEmpty() == False or not queue.empty():
+    while chargePorts.chargePortsEmpty() == False or not queue.empty():
         updateVehiclesFCFS()
-        currentTime += 1
+        common.currentTime += 1
 
-    print "FCFS: total number of cars: ", numberOfVehiclesInSimulation , \
-          "  current time: " , currentTime , \
-          "  done charging lot: " , len( doneChargingLot ) , \
-          "  failed charing lot: " , len( failedLot ) , \
+    print "FCFS: total number of cars: ", common.numberOfVehiclesInSimulation , \
+          "  current time: " , common.currentTime , \
+          "  done charging lot: " , len( common.doneChargingLot ) , \
+          "  failed charing lot: " , len( common.failedLot ) , \
           "  fcfsQueue size:  " , queue.qsize() , \
-          "  chargePort " , chargePorts
+          "  chargePort " , chargePorts.chargePorts
             
 
 # called to update the vehicles for each minute of simulation
 def updateVehiclesFCFS():
 
     # update chargePortCSV
-    exportChargePortsToCSV()
+    csvGen.exportChargePortsToCSV()
 
     # check each chargePort
-    for index, vehicle in enumerate( chargePorts ):        
+    for index, vehicle in enumerate( chargePorts.chargePorts ):        
 
         # add 1 minute of charge
         if vehicle is not None:
@@ -64,19 +65,19 @@ def updateVehiclesFCFS():
             # check if done charging
             if vehicle.currentCharge >= vehicle.chargeNeeded:
                 csvGen.exportVehicleToCSV( vehicle, "SUCCESS" )
-                doneChargingLot.append( vehicle )
+                common.doneChargingLot.append( vehicle )
                 if not queue.empty():
-                    chargePorts[ index ] = queue.get()   #careful
+                    chargePorts.chargePorts[ index ] = queue.get()   #careful
                 else:
-                    chargePorts[ index ] = None
+                    chargePorts.chargePorts[ index ] = None
                 removed = True;
 
 
             # check if deadline reached            
-            if currentTime >= vehicle.depTime and not removed:
+            if common.currentTime >= vehicle.depTime and not removed:
                 csvGen.exportVehicleToCSV( vehicle, "FAILURE" )
-                failedLot.append( vehicle )
+                common.failedLot.append( vehicle )
                 if not queue.empty():
-                    chargePorts[ index ] = queue.get()
+                    chargePorts.chargePorts[ index ] = queue.get()
                 else:
-                    chargePorts[ index ] = None
+                    chargePorts.chargePorts[ index ] = None

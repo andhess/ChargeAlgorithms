@@ -1,7 +1,8 @@
 import csv
 import os
 import datetime
-import globals
+import common
+import chargePorts
 
 
 # --------- Exporting to CSV -----------
@@ -40,7 +41,7 @@ def generateCSV( folderName ):
     # write some basic info info in vehicleCSV
 
     # basic stats
-    vehicleCSV.writerow( [ "Interval time" , interval , "Number of vehicles" , numberOfVehiclesInSimulation ] )
+    vehicleCSV.writerow( [ "Interval time" , common.interval , "Number of vehicles" , common.numberOfVehiclesInSimulation ] )
 
     # initialize some columns
     vehicleCSV.writerow( [ "Vehicle ID" , \
@@ -61,7 +62,7 @@ def generateCSV( folderName ):
     # write some basic info in chargePortCSV
 
     # basic stats
-    chargePortCSV.writerow( [ "Interval time" , interval , "Number of charge ports" , numChargePorts ] )
+    chargePortCSV.writerow( [ "Interval time" , common.interval , "Number of charge ports" , chargePorts.numChargePorts ] )
 
     # initialize some columns for stuff
     chargePortCSV.writerow( [ "ChargePort Number" , \
@@ -92,7 +93,7 @@ def exportVehicleToCSV( vehicle, status ):
 
 def exportChargePortsToCSV():
 
-    for index, vehicle in enumerate( chargePorts ):
+    for index, vehicle in enumerate( chargePorts.chargePorts ):
         a = 0
         # chargePortCSV.writerow( [ index , \
         #                           vehicle \

@@ -1,11 +1,10 @@
 import sys
+import common
 import fcfs
 import edf
 import llfSmart
 import llfSimple
 import poissonGen
-import chargePorts
-import csv
 
 
 if len( sys.argv ) != 2:
@@ -13,13 +12,14 @@ if len( sys.argv ) != 2:
     sys.exit()  
 
 interval = int( sys.argv[ 1 ] )
+common.setInterval(interval)
 
 
 #  -------- Simulations ------------
 
 simulationInterval = poissonGen.simulateInterval()
 
-print "number of vehicles in this simulation: ", poissonGen.numberOfVehiclesInSimulation
+print "number of vehicles in this simulation: ", common.numberOfVehiclesInSimulation
 
 fcfs.simulateFCFS( simulationInterval )
 
