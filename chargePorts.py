@@ -1,6 +1,7 @@
 # charge port constants
 numChargePorts = 3
 chargePorts = [ None ] * numChargePorts
+chargePortListeners = [ None ] * numChargePorts
 
 # reset the charge ports array, to be used in updateGlobals() in poissonGen.py
 def resetChargePorts():

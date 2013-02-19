@@ -58,7 +58,7 @@ def updateVehiclesEDF():
     global earliestDLIndex
     global latestChargePortDLIndex
 
-    print "------ minute -------"
+    # print "------ minute -------"
 
     # update chargePortCSV
     csvGen.exportChargePortsToCSV()
@@ -116,9 +116,13 @@ def updateVehiclesEDF():
     
     # prioritize edge cases, loop until swap the top DL are all in the queue
     while len( edfQueue ) > 0 and latestChargePortDLIndex != -1 and edfQueue[ earliestDLIndex ].depTime < chargePorts.chargePorts[ latestChargePortDLIndex ].depTime:
-        print "before swap chargePorts are: ", common.vehicleIdsInList(chargePorts.chargePorts, latestChargePortDLIndex)
+
+        print "before swap chargePorts are: ", common.vehicleIdsInList(chargePorts.chargePorts, latestChargePortDLIndex )
+        
         print "replacing ", chargePorts.chargePorts[ latestChargePortDLIndex ].id, " with ", edfQueue[ earliestDLIndex ].id
+        
         print "latestChargePortDLIndex: ", latestChargePortDLIndex, " earliestDLIndex: ", earliestDLIndex
+        
         # make a swap
         temp = chargePorts.chargePorts[ latestChargePortDLIndex ]
         chargePorts.chargePorts[ latestChargePortDLIndex ] = edfQueue[ earliestDLIndex ]
@@ -129,8 +133,8 @@ def updateVehiclesEDF():
         latestChargePortDLIndex = latestChargePortDL()
 
         print "after swap chargePorts are: ", common.vehicleIdsInList(chargePorts.chargePorts, latestChargePortDLIndex)
-        print "edfqueue is: ", common.vehicleIdsInList( edfQueue, earliestDLIndex)
-
+        
+        print "edfqueue is: ", common.vehicleIdsInList( edfQueue, earliestDLIndex )
 
 
         # NOTE: we are explicitly choosing to grab a clean version of each index because accuracy cannot be guaranteed
@@ -145,7 +149,7 @@ def earliestDL():
 def latestChargePortDL():
     latestIndex = -1
     latestTime = -1
-    for index, port in enumerate(chargePorts.chargePorts):
+    for index, port in enumerate( chargePorts.chargePorts ):
         if port is not None:
             if port.depTime > latestTime:
                 latestTime = port.depTime

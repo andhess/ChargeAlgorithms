@@ -129,7 +129,7 @@ def lowestLaxity():
 def highestLaxityChargePort():
     highestLaxityIndex = -1
     highestLaxity = -1
-    for index, port in enumerate(chargePorts.chargePorts):
+    for index, port in enumerate( chargePorts.chargePorts ):
         if port is not None:
             if port.laxity > highestLaxity:
                 highestLaxity = port.laxity

@@ -28,13 +28,13 @@ def updateGlobals():
     failedLot = []
     resetChargePorts()
 
-def vehicleIdsInList( list, highlight):
+def vehicleIdsInList( list, highlight ):
 	output = "["
-	for index, item in enumerate(list):
+	for index, item in enumerate( list ):
 		if index == highlight:
 			output += "***"
 		if item is not None:
-			output += str(item.id)
+			output += str( item.id )
 		else:
 			output += "None"
 		if index != len( list ) - 1:
@@ -55,12 +55,3 @@ def vehicleIdsIn2DList( list ):
 						output += ", "
 	output += "]"
 	return output
-
-
-
-
-
-
-
-
-
