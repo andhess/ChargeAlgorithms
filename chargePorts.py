@@ -19,7 +19,7 @@ def chargePortsEmpty():
 	return all( port is None for port in chargePorts )
 
 
-# visualization of vehicle ids in chargeporst
+# visualization of vehicle ids in chargeports
 def toString():
     output = "["
     for index, vehicle in enumerate(chargePorts):

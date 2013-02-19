@@ -22,11 +22,12 @@ class Vehicle:
         self.originalLaxity  =   self.freeTime / self.totalTime
 
     def toString():
-        print "ID: " , self.id , \
-              "  current charge: " , self.currentCharge , \
-              "  charge needed: " , self.chargeNeeded , \
-              "  departure time: " , self.depTime , \
-              "  laxity: ", self.laxity
+        body =  "ID: " , self.id , \
+                "  current charge: " , self.currentCharge , \
+                "  charge needed: " , self.chargeNeeded , \
+                "  departure time: " , self.depTime , \
+                "  laxity: ", self.laxity
+        return body
 
     # updates the laxity for vehicle. Requires the current time of the simulation
     def updateLaxity( self, currentTime ):

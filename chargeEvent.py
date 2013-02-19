@@ -7,6 +7,10 @@
 # to create, pass in the vehicle and currentTime
 # when a vehicle is done charging, it will need the updated version of the same vehicle and again the currentTime
 
+# readouts of -1 for endTime, endVehicle, and timeCharging will denote that it's either still listening or something went very wrong
+
+from vehicle import toString
+
 class chargingEvent:
 	numEvents = 0
 
@@ -30,5 +34,30 @@ class chargingEvent:
     	self.endVehicle     = 	vehicle
     	self.timeCharging   =   currentTime - self.startTime
 
-    
+    # probably useful to have
+    def toString():
+
+    	vehicleEnd = -1
+
+    	if self.endVehicle != -1:
+    		vehicleEnd = self.endVehicle.toString()
+
+        body =  "ID: " , self.id , \
+        		"  starting time : " , self.startTime , \
+              	"  initial vehicle properties : " , self.initialVehicle.toString() , \
+              	"  ending time : " , self.endTime , \
+              	"  ending vehicle properties : " , vehicleEnd , \
+              	"  time charging : " , self.timeCharging
+
+        print body
+
+    # this will be a line in the CSV file, just have writerow jot down this stuff
+    # FIXME: add some vehicle properties like chargeReceived, etc
+    def csvPrep():
+    	row = [ self.id , \
+                self.startTime , \
+                self.endTime , \
+                self.timeCharging , \
+              ]
+        return row
 
