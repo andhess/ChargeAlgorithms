@@ -7,23 +7,7 @@ chargePortListeners = [ ]
 for i in range( numChargePorts ):
     chargePortListeners.append( [  ] )
 
-chargePortListeners[ 2 ].append( 12 )
-chargePortListeners[ 2 ].append( 7 )
-chargePortListeners[ 2 ].append( 5 )
-chargePortListeners[ 0 ].append( 3 )
-chargePortListeners[ 2 ].append( 3 )
-chargePortListeners[ 2 ].append( 0 )
-chargePortListeners[ 1 ].append( 1 )
-chargePortListeners[ 1 ].append( 5 )
-chargePortListeners[ 1 ].append( 3 )
-chargePortListeners[ 2 ].append( 3 )
-chargePortListeners[ 0 ].append( 4 )
-chargePortListeners[ 0 ].append( 9 )
-chargePortListeners[ 2 ].append( 3 )
-chargePortListeners[ 1 ].append( 2 )
-chargePortListeners[ 2 ].append( 3 )
-
-print "listener object  " ,  chargePortListeners
+# print "listener object  " ,  chargePortListeners
 
 # reset the charge ports array, to be used in updateGlobals() in poissonGen.py
 def resetChargePorts():
