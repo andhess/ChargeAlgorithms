@@ -75,10 +75,19 @@ def updateVehiclesFCFS():
             # check if done charging
             if vehicle.currentCharge >= vehicle.chargeNeeded:
 
+                # this vehicle is on the out, so wrap up its listener
+                chargePorts.chargePortListeners[ index ][ 0 ].terminateCharge( vehicle , common.currentTime )
+
                 csvGen.exportVehicleToCSV( vehicle, "SUCCESS" )
                 common.doneChargingLot.append( vehicle )
                 if not queue.empty():
-                    chargePorts.chargePorts[ index ] = queue.get()   #careful
+
+                    nextVehicle = queue.get()
+                    chargePorts.chargePorts[ index ] = nextVehicle
+
+                    # and then make a new listener
+                    chargePorts.chargePortListeners[ index ].insert( 0 , chargeEvent.chargingEvent( nextVehicle , common.currentTime ) )
+                    
                 else:
                     chargePorts.chargePorts[ index ] = None
                 removed = True;
@@ -87,12 +96,19 @@ def updateVehiclesFCFS():
             # check if deadline reached            
             if common.currentTime >= vehicle.depTime and not removed:
 
-                chargePorts.chargePortListeners[ index ][ 0 ].terminateCharge( vehicle, common.currentTime )
+                # this vehicle is on the out, so wrap up its listener
+                chargePorts.chargePortListeners[ index ][ 0 ].terminateCharge( vehicle , common.currentTime )
                 
                 csvGen.exportVehicleToCSV( vehicle, "FAILURE" )
                 common.failedLot.append( vehicle )
                 if not queue.empty():
-                    chargePorts.chargePorts[ index ] = queue.get()
+
+                    nextVehicle = queue.get()
+                    chargePorts.chargePorts[ index ] = nextVehicle
+
+                    # and then make a new listener
+                    chargePorts.chargePortListeners[ index ].insert( 0 , chargeEvent.chargingEvent( nextVehicle , common.currentTime ) )
+
                 else:
                     chargePorts.chargePorts[ index ] = None
 
