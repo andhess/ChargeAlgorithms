@@ -9,33 +9,33 @@
 
 # readouts of -1 for endTime, endVehicle, and timeCharging will denote that it's either still listening or something went very wrong
 
-from vehicle import toString
+import vehicle
 
 class chargingEvent:
-	numEvents = 0
+    numEvents = 0
 
     def __init__( self, vehicle, startTime ):
 
         # parameters for each vehicle, not all are used for each algorithm implementation
-        self.id			 		=	  chargingEvent.numEvent 
+        self.id			 		=	  chargingEvent.numEvents 
         self.startTime   		=     startTime					# the time that this vehicle began charging
         self.initialVehicle     =     vehicle 					# we wil have all the stats of our vehicle object when it entered
         self.endTime			=     -1						# update to endTime
-        self.endVehicle			=     -1						# and will write its properties when it exits
+        self.endVehicle			=     -1						# will write its properties when it exits
         self.timeCharging       =     -1
 
 
         # keep tabs of the number of vehicles that have entered the model
-        chargingEvent.numEvent += 1
+        chargingEvent.numEvents += 1
 
     # when the vehicle is done charging, we'll gather its stats
-    def terminateCharge( currentTime, vehicle ):
+    def terminateCharge( self, vehicle, currentTime ):
     	self.endTime 	    = 	currentTime
     	self.endVehicle     = 	vehicle
     	self.timeCharging   =   currentTime - self.startTime
 
     # probably useful to have
-    def toString():
+    def toString( self ):
 
     	vehicleEnd = -1
 

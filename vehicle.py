@@ -21,7 +21,7 @@ class Vehicle:
         self.laxity         =   self.freeTime / self.totalTime
         self.originalLaxity  =   self.freeTime / self.totalTime
 
-    def toString():
+    def toString( self ):
         body =  "ID: " , self.id , \
                 "  current charge: " , self.currentCharge , \
                 "  charge needed: " , self.chargeNeeded , \

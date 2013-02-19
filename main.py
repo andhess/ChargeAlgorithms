@@ -26,11 +26,11 @@ print common.vehicleIdsIn2DList( simulationInterval )
 
 fcfs.simulateFCFS( simulationInterval )
 
-edf.simulateEDF( simulationInterval )
+# edf.simulateEDF( simulationInterval )
 
-llfSmart.simulateLLF( simulationInterval )
+# llfSmart.simulateLLF( simulationInterval )
 
-llfSimple.simulateLLFSimple( simulationInterval )
+# llfSimple.simulateLLFSimple( simulationInterval )
 
 # poissonGen.testPoissonDistribution(1000)
 
