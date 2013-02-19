@@ -54,15 +54,15 @@ def simulateFCFS( arrayOfVehicleArrivals ):
           "  fcfsQueue size:  " , queue.qsize() , \
           "  chargePort " , chargePorts.toString()
 
-    for index in chargePorts.chargePortListeners:
-        for item in index:
-            print item.toString()
+    # for index in chargePorts.chargePortListeners:
+    #     for item in index:
+    #         print item.toString()
+
+    # write a CSV for all the chargePort logs
+    csvGen.exportChargePortsToCSV( "fcfs" )
 
 # called to update the vehicles for each minute of simulation
 def updateVehiclesFCFS():
-
-    # update chargePortCSV
-    csvGen.exportChargePortsToCSV()
 
     # check each chargePort
     for index, vehicle in enumerate( chargePorts.chargePorts ):        
@@ -78,8 +78,11 @@ def updateVehiclesFCFS():
                 # this vehicle is on the out, so wrap up its listener
                 chargePorts.chargePortListeners[ index ][ 0 ].terminateCharge( vehicle , common.currentTime )
 
+                # remove finished vehicle from grid and document it
                 csvGen.exportVehicleToCSV( vehicle, "SUCCESS" )
                 common.doneChargingLot.append( vehicle )
+                
+                # the next vehicle
                 if not queue.empty():
 
                     nextVehicle = queue.get()
@@ -87,7 +90,7 @@ def updateVehiclesFCFS():
 
                     # and then make a new listener
                     chargePorts.chargePortListeners[ index ].insert( 0 , chargeEvent.chargingEvent( nextVehicle , common.currentTime ) )
-                    
+
                 else:
                     chargePorts.chargePorts[ index ] = None
                 removed = True;
@@ -99,8 +102,11 @@ def updateVehiclesFCFS():
                 # this vehicle is on the out, so wrap up its listener
                 chargePorts.chargePortListeners[ index ][ 0 ].terminateCharge( vehicle , common.currentTime )
                 
-                csvGen.exportVehicleToCSV( vehicle, "FAILURE" )
+                # remove finished vehicle from grid and document it
+                csvGen.exportVehicleToCSV( vehicle, "FAILURE" )               
                 common.failedLot.append( vehicle )
+                
+                # the next vehicle
                 if not queue.empty():
 
                     nextVehicle = queue.get()
