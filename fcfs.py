@@ -1,5 +1,6 @@
 import Queue
-
+import globals
+import csvGen
 
 #fcfs
 queue = Queue.Queue( 0 )
@@ -12,11 +13,11 @@ queue = Queue.Queue( 0 )
 def simulateFCFS( arrayOfVehicleArrivals ):
     
     # reset global variables such as time, done/failed lots
-    updateGlobals()
+    globals.updateGlobals()
     global currentTime
 
     # initialize a CSV document for storing all data
-    generateCSV( "fcfs" )
+    csvGen.generateCSV( "fcfs" )
 
     # iterate through each vehicle in each minute
     for minute, numVehiclesPerMin in enumerate( arrayOfVehicleArrivals ):
@@ -62,7 +63,7 @@ def updateVehiclesFCFS():
 
             # check if done charging
             if vehicle.currentCharge >= vehicle.chargeNeeded:
-                exportVehicleToCSV( vehicle, "SUCCESS" )
+                csvGen.exportVehicleToCSV( vehicle, "SUCCESS" )
                 doneChargingLot.append( vehicle )
                 if not queue.empty():
                     chargePorts[ index ] = queue.get()   #careful
@@ -73,7 +74,7 @@ def updateVehiclesFCFS():
 
             # check if deadline reached            
             if currentTime >= vehicle.depTime and not removed:
-                exportVehicleToCSV( vehicle, "FAILURE" )
+                csvGen.exportVehicleToCSV( vehicle, "FAILURE" )
                 failedLot.append( vehicle )
                 if not queue.empty():
                     chargePorts[ index ] = queue.get()

@@ -1,6 +1,7 @@
 import csv
 import os
 import datetime
+import globals
 
 
 # --------- Exporting to CSV -----------
@@ -8,6 +9,7 @@ import datetime
 # every time an alrogithm is run, it will create csv files for vehicles and chargePorts
 # files will be save in /csv/<algorithm type>/timeStamp/
 # NOTE: folderName must be a String of one of our algorihtm names: "fcfs" , "edf" , or "llfSmart" , "llfSimple"
+
 def generateCSV( folderName ):
     global vehiclePath
     global chargePortPath

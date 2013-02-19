@@ -1,6 +1,7 @@
 import math
 import random
 import vehicle
+import globals
 
 
 from operator import attrgetter  # edf, llf, llfS
@@ -36,9 +37,9 @@ interval = 0
 # the main function for generating an interval on which to run an algorithmn
 # will create a 2-level array, the top level being the length of the interval
 # level 2 contains an array of the vehicle objects that will arrive during that minute
-def simulateInterval( simulationInterval ):
+def simulateInterval():
     global interval
-    interval = simulationInterval
+    interval = globals.interval
     global numberOfVehiclesInSimulation
     
     numberOfVehiclesInSimulation = 0

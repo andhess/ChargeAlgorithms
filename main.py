@@ -17,7 +17,7 @@ interval = int( sys.argv[ 1 ] )
 
 #  -------- Simulations ------------
 
-simulationInterval = poissonGen.simulateInterval( interval )
+simulationInterval = poissonGen.simulateInterval()
 
 print "number of vehicles in this simulation: ", poissonGen.numberOfVehiclesInSimulation
 

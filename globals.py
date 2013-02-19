@@ -1,3 +1,8 @@
+import main
+from chargePorts import resetChargePorts
+
+interval = main.interval
+
 # ---- storage lots ------
 
 doneChargingLot = []
