@@ -7,11 +7,11 @@
 # to create, pass in the vehicle and currentTime
 # when a vehicle is done charging, it will need the updated version of the same vehicle and again the currentTime
 
-# readouts of -1 for endTime, endVehicle, and timeCharging will denote that it's either still listening or something went very wrong
+# readouts of -1 for endTime, endVehicle, and elapsedTime will denote that it's either still listening or something went very wrong
 
 from vehicle import toString
 
-class chargingEvent:
+class ChargeEvent:
 	numEvents = 0
 
     def __init__( self, vehicle, startTime ):
@@ -22,22 +22,22 @@ class chargingEvent:
         self.initialVehicle     =     vehicle 					# we wil have all the stats of our vehicle object when it entered
         self.endTime			=     -1						# update to endTime
         self.endVehicle			=     -1						# and will write its properties when it exits
-        self.timeCharging       =     -1
+        self.elapsedTime       =     -1
 
 
         # keep tabs of the number of vehicles that have entered the model
         chargingEvent.numEvent += 1
 
     # when the vehicle is done charging, we'll gather its stats
-    def terminateCharge( currentTime, vehicle ):
+    def terminateCharge( vehicle, currentTime ):
     	self.endTime 	    = 	currentTime
     	self.endVehicle     = 	vehicle
-    	self.timeCharging   =   currentTime - self.startTime
+    	self.elapsedTime   =   currentTime - self.startTime
 
     # probably useful to have
     def toString():
 
-    	vehicleEnd = -1
+    	vehicleEnd = "No endVehicle"
 
     	if self.endVehicle != -1:
     		vehicleEnd = self.endVehicle.toString()
@@ -47,9 +47,9 @@ class chargingEvent:
               	"  initial vehicle properties : " , self.initialVehicle.toString() , \
               	"  ending time : " , self.endTime , \
               	"  ending vehicle properties : " , vehicleEnd , \
-              	"  time charging : " , self.timeCharging
+              	"  elapsedTime : " , self.elapsedTime
 
-        print body
+        return body
 
     # this will be a line in the CSV file, just have writerow jot down this stuff
     # FIXME: add some vehicle properties like chargeReceived, etc

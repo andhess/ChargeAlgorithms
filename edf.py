@@ -23,20 +23,15 @@ def simulateEDF( arrayOfVehicleArrivals ):
 
     # iterate through each vehicle in each minute
     for minute, numVehiclesPerMin in enumerate( arrayOfVehicleArrivals ):
-        # print "minute: ", minute, " ", common.vehicleIdsInList(numVehiclesPerMin)
         for vehicle in numVehiclesPerMin:
-            # print vehicle.id
             port = chargePorts.openChargePort()
 
             if port is not None:
                 chargePorts.chargePorts[ port ] = vehicle
             else:
                 edfQueue.append( vehicle )
-                # print "vehicle ", vehicle.id, " appended"
                 if earliestDLIndex == -1 or vehicle.depTime < edfQueue[ earliestDLIndex ].depTime:
                     earliestDLIndex = len( edfQueue ) - 1
-                # print "earliestDLIndex is ", earliestDLIndex, " which is vehicle ", edfQueue[ earliestDLIndex ].id
-        # print "vehicle ", vehicle.id, " arrived and edfQueue is ", common.vehicleIdsInList(edfQueue)
         updateVehiclesEDF()
         common.currentTime += 1
 
@@ -58,7 +53,6 @@ def updateVehiclesEDF():
     global earliestDLIndex
     global latestChargePortDLIndex
 
-    # print "------ minute -------"
 
     # update chargePortCSV
     csvGen.exportChargePortsToCSV()
@@ -70,11 +64,9 @@ def updateVehiclesEDF():
         if vehicle is not None:
             vehicle.currentCharge += ( vehicle.chargeRate ) / 60
             removed = False
-            # print"---"
 
             #check if done charging
             if vehicle.currentCharge >= vehicle.chargeNeeded:
-                # print vehicle.id, " done charging"
                 csvGen.exportVehicleToCSV( vehicle, "SUCCESS" )
                 common.doneChargingLot.append( vehicle )
                 
@@ -88,21 +80,15 @@ def updateVehiclesEDF():
 
             # check if deadline reached
             if common.currentTime >= vehicle.depTime and not removed:
-                # print vehicle.id, " departure time reached"
                 csvGen.exportVehicleToCSV( vehicle, "FAILURE" )
                 common.failedLot.append( vehicle )
                 
-                # print "before replacement: ", common.vehicleIdsInList(edfQueue)
                 if len( edfQueue ) > 0:
-                    # print "replace with ", edfQueue[ earliestDLIndex ].id
                     chargePorts.chargePorts[ index ] = edfQueue[ earliestDLIndex ]
                     del edfQueue[ earliestDLIndex ]
                     earliestDLIndex = earliestDL()
                 else:
-                    # print "replaced with None"
                     chargePorts.chargePorts[ index ] = None
-                # print "after replacement: ", common.vehicleIdsInList(edfQueue)
-                # print "chargePorts are: ", chargePorts.toString()
 
 
     # now we want to make sure that all the cars in the chargePorts are the best choices
@@ -116,13 +102,7 @@ def updateVehiclesEDF():
     
     # prioritize edge cases, loop until swap the top DL are all in the queue
     while len( edfQueue ) > 0 and latestChargePortDLIndex != -1 and edfQueue[ earliestDLIndex ].depTime < chargePorts.chargePorts[ latestChargePortDLIndex ].depTime:
-
-        print "before swap chargePorts are: ", common.vehicleIdsInList(chargePorts.chargePorts, latestChargePortDLIndex )
-        
-        print "replacing ", chargePorts.chargePorts[ latestChargePortDLIndex ].id, " with ", edfQueue[ earliestDLIndex ].id
-        
-        print "latestChargePortDLIndex: ", latestChargePortDLIndex, " earliestDLIndex: ", earliestDLIndex
-        
+                        
         # make a swap
         temp = chargePorts.chargePorts[ latestChargePortDLIndex ]
         chargePorts.chargePorts[ latestChargePortDLIndex ] = edfQueue[ earliestDLIndex ]
@@ -131,11 +111,6 @@ def updateVehiclesEDF():
         # now update values for comparison
         earliestDLIndex = earliestDL()
         latestChargePortDLIndex = latestChargePortDL()
-
-        print "after swap chargePorts are: ", common.vehicleIdsInList(chargePorts.chargePorts, latestChargePortDLIndex)
-        
-        print "edfqueue is: ", common.vehicleIdsInList( edfQueue, earliestDLIndex )
-
 
         # NOTE: we are explicitly choosing to grab a clean version of each index because accuracy cannot be guaranteed
 

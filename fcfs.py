@@ -25,8 +25,11 @@ def simulateFCFS( arrayOfVehicleArrivals ):
         for vehicle in numVehiclesPerMin:       
             port = chargePorts.openChargePort()
 
+            # a port is open so start charging the vehicle
             if port is not None:
                 chargePorts.chargePorts[ port ] = vehicle
+                
+            # no ports are available so put the vehicle in the queue
             else:
                 queue.put( vehicle )
 

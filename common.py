@@ -10,6 +10,7 @@ numberOfVehiclesInSimulation = 0
 currentTime = 0 
 interval = 0
 
+# used in main.py to set the common interval variable
 def setInterval( newInterval ):
 	global interval
 	interval = newInterval
@@ -26,8 +27,11 @@ def updateGlobals():
     doneChargingLot = []
     global failedLot
     failedLot = []
-    resetChargePorts()
+    resetChargePorts()	# function in chargePorts.py to empty all chargePorts
 
+# returns string representation of all vehicles in a list by id in form [0,1,2,3,4...] 
+# with one id highlighted which is useful for viewing llfIndex or earliestDLIndex, etc
+# pass in -1 for highlight for no highlight
 def vehicleIdsInList( list, highlight ):
 	output = "["
 	for index, item in enumerate( list ):
@@ -42,6 +46,7 @@ def vehicleIdsInList( list, highlight ):
 	output += "]"
 	return output
 
+# returns string representation of all vehicles in 2d array, most notably simulationInterval in main.py
 def vehicleIdsIn2DList( list ):
 	output = "["
 	count = 0

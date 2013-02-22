@@ -20,9 +20,7 @@ print "---------------- start of simulations -----------------------"
 
 simulationInterval = poissonGen.simulateInterval()
 
-print "number of vehicles in this simulation: ", common.numberOfVehiclesInSimulation
-
-print common.vehicleIdsIn2DList( simulationInterval )
+# print common.vehicleIdsIn2DList( simulationInterval )
 
 fcfs.simulateFCFS( simulationInterval )
 
