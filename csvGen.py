@@ -86,7 +86,7 @@ def exportChargePortsToCSV( folderName ):
     # timeStamp = datetime.datetime.now().strftime( "%Y%m%d-%H%M%S" )
 
     # make and write a CSV file for the logs of each chargePort
-    for index, chargePort in enumerate( hargePorts.chargePortListeners ):
+    for index, chargePort in enumerate( chargePorts.chargePortListeners ):
 
         # thank stack overflow for making this easy
         # setup file to save in a directory
