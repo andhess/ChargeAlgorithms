@@ -13,9 +13,8 @@ import chargePorts
 
 def generateCSV( folderName ):
     global vehiclePath
-    global chargePortPath
     global vehicleCSV
-    global chargePortCSV
+    global timeStamp
 
     # generate a unique filename with a time stamp
     timeStamp = datetime.datetime.now().strftime( "%Y%m%d-%H%M%S" )
@@ -32,11 +31,9 @@ def generateCSV( folderName ):
     
     # make a CSV for both Vehicle and ChargePorts
     vehiclePath = os.path.join( dest_dir, "vehicles.csv" )
-    chargePortPath = os.path.join( dest_dir, "chargePorts.csv" )
     
     # and now write them up
     vehicleCSV = csv.writer( open( vehiclePath , "wb" ) )
-    chargePortCSV = csv.writer( open( chargePortPath , "wb" ) )
 
     # write some basic info info in vehicleCSV
 
@@ -59,17 +56,6 @@ def generateCSV( folderName ):
                        "Original Laxity" \
                         ] )
 
-    # write some basic info in chargePortCSV
-
-    # basic stats
-    chargePortCSV.writerow( [ "Interval time" , common.interval , "Number of charge ports" , chargePorts.numChargePorts ] )
-
-    # initialize some columns for stuff
-    chargePortCSV.writerow( [ "ChargePort Number" , \
-                              "Vehicle ID" \
-                            ])
-
-
 # when a vehicle is leaving a lot, throw it into the CSV so we can study it
 def exportVehicleToCSV( vehicle, status ):
     global vehiclePath
@@ -91,10 +77,40 @@ def exportVehicleToCSV( vehicle, status ):
                        ] )
 
 
-def exportChargePortsToCSV():
+def exportChargePortsToCSV( folderName ):
+    global chargePortCSV
+    global chargePortPath
+    global timeStamp
 
-    for index, vehicle in enumerate( chargePorts.chargePorts ):
-        a = 0
-        # chargePortCSV.writerow( [ index , \
-        #                           vehicle \
-        #                           ] )
+    # should already be built
+    # timeStamp = datetime.datetime.now().strftime( "%Y%m%d-%H%M%S" )
+
+    # make and write a CSV file for the logs of each chargePort
+    for index, chargePort in enumerate( hargePorts.chargePortListeners ):
+
+        # thank stack overflow for making this easy
+        # setup file to save in a directory
+        script_dir = os.path.dirname( os.path.abspath( __file__ ) )
+        dest_dir = os.path.join( script_dir, 'csv' , folderName , timeStamp , 'chargePorts' )    
+
+        try:
+            os.makedirs(dest_dir)
+        except OSError:
+            pass # already exists
+
+        # make file name and reference path
+        fileName = 'port' , index , '.csv'
+        portPath = os.path.join( dest_dir, fileName )
+
+        # write the file
+        portCSV = csv.writer( open( portPath , "wb" ) )
+
+        # basic stats
+        portCSV.writerow( [ "Interval time" , common.interval , "Number of charge ports" , chargePorts.numChargePorts ] )
+
+        # initialize some columns for stuff
+        portCSV.writerow( [ "ChargePort Number" , \
+                              "Vehicle ID" \
+                            ])
+
+

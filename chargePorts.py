@@ -2,7 +2,13 @@ import chargeEvent
 # charge port constants
 numChargePorts = 3
 chargePorts = [ None ] * numChargePorts
-chargeEvents = [ None ] * numChargePorts
+chargePortListeners = [ ]
+
+# setup the chargePortListeners data structure
+for i in range( numChargePorts ):
+    chargePortListeners.append( [  ] )
+
+# print "listener object  " ,  chargePortListeners
 
 # reset the charge ports array, to be used in updateGlobals() in poissonGen.py
 def resetChargePorts():

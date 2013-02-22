@@ -2,6 +2,7 @@ import Queue
 import common
 import csvGen
 import chargePorts
+import chargeEvent
 
 #fcfs
 queue = Queue.Queue( 0 )
@@ -27,7 +28,12 @@ def simulateFCFS( arrayOfVehicleArrivals ):
 
             # a port is open so start charging the vehicle
             if port is not None:
+
+                # add to chargePort
                 chargePorts.chargePorts[ port ] = vehicle
+            
+                # initialize a listener object for its charging activity
+                chargePorts.chargePortListeners[ port ].insert( 0 , chargeEvent.chargingEvent( vehicle, common.currentTime ) )
                 
             # no ports are available so put the vehicle in the queue
             else:
@@ -49,13 +55,16 @@ def simulateFCFS( arrayOfVehicleArrivals ):
           "  failed charging lot: " , len( common.failedLot ) , \
           "  fcfsQueue size:  " , queue.qsize() , \
           "  chargePort " , chargePorts.toString()
-            
+
+    # for index in chargePorts.chargePortListeners:
+    #     for item in index:
+    #         print item.toString()
+
+    # write a CSV for all the chargePort logs
+    csvGen.exportChargePortsToCSV( "fcfs" )
 
 # called to update the vehicles for each minute of simulation
 def updateVehiclesFCFS():
-
-    # update chargePortCSV
-    csvGen.exportChargePortsToCSV()
 
     # check each chargePort
     for index, vehicle in enumerate( chargePorts.chargePorts ):        
@@ -67,10 +76,23 @@ def updateVehiclesFCFS():
 
             # check if done charging
             if vehicle.currentCharge >= vehicle.chargeNeeded:
+
+                # this vehicle is on the out, so wrap up its listener
+                chargePorts.chargePortListeners[ index ][ 0 ].terminateCharge( vehicle , common.currentTime )
+
+                # remove finished vehicle from grid and document it
                 csvGen.exportVehicleToCSV( vehicle, "SUCCESS" )
                 common.doneChargingLot.append( vehicle )
+                
+                # the next vehicle
                 if not queue.empty():
-                    chargePorts.chargePorts[ index ] = queue.get()   #careful
+
+                    nextVehicle = queue.get()
+                    chargePorts.chargePorts[ index ] = nextVehicle
+
+                    # and then make a new listener
+                    chargePorts.chargePortListeners[ index ].insert( 0 , chargeEvent.chargingEvent( nextVehicle , common.currentTime ) )
+
                 else:
                     chargePorts.chargePorts[ index ] = None
                 removed = True;
@@ -78,9 +100,23 @@ def updateVehiclesFCFS():
 
             # check if deadline reached            
             if common.currentTime >= vehicle.depTime and not removed:
-                csvGen.exportVehicleToCSV( vehicle, "FAILURE" )
+
+                # this vehicle is on the out, so wrap up its listener
+                chargePorts.chargePortListeners[ index ][ 0 ].terminateCharge( vehicle , common.currentTime )
+                
+                # remove finished vehicle from grid and document it
+                csvGen.exportVehicleToCSV( vehicle, "FAILURE" )               
                 common.failedLot.append( vehicle )
+                
+                # the next vehicle
                 if not queue.empty():
-                    chargePorts.chargePorts[ index ] = queue.get()
+
+                    nextVehicle = queue.get()
+                    chargePorts.chargePorts[ index ] = nextVehicle
+
+                    # and then make a new listener
+                    chargePorts.chargePortListeners[ index ].insert( 0 , chargeEvent.chargingEvent( nextVehicle , common.currentTime ) )
+
                 else:
                     chargePorts.chargePorts[ index ] = None
+
