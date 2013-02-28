@@ -16,7 +16,7 @@ def generateCSV( folderName ):
     global vehicleCSV
     global timeStamp
 
-    # generate a unique filename with a time stamp
+    # generate a unique fipame with a time stamp
     timeStamp = datetime.datetime.now().strftime( "%Y%m%d-%H%M%S" )
 
     # thank stack overflow for making this easy
@@ -99,7 +99,10 @@ def exportChargePortsToCSV( folderName ):
             pass # already exists
 
         # make file name and reference path
-        fileName = 'port' , index , '.csv'
+        print 'making a string of index'
+        print index
+        print str( index )
+        fileName = 'port' , str( index ) , '.csv'
         portPath = os.path.join( dest_dir, fileName )
 
         # write the file
@@ -109,8 +112,22 @@ def exportChargePortsToCSV( folderName ):
         portCSV.writerow( [ "Interval time" , common.interval , "Number of charge ports" , chargePorts.numChargePorts ] )
 
         # initialize some columns for stuff
-        portCSV.writerow( [ "ChargePort Number" , \
-                              "Vehicle ID" \
-                            ])
+        # the duplicate Vehicle ID is a parity check. If they don't match, shit broke
+        portCSV.writerow( [ "ChargePort Instance ID" , \
+                            "Start Time" , \
+                            "End Time" , \
+                            "Time Charging" , \
+                            "Initial Charge" , \
+                            "Charge Requested" , \
+                            "Vehicle ID" ,  \
+                            "Vehicle ID" , \
+                            "Final Charge" \
+                          ] )
+
+        # iterate through the chargePort and write it all out
+        for index, chargeEvent in enumerate( chargePort ):
+
+            # csvPrep does all the labor
+            portCSV.writerow( chargeEvent.csvPrep )
 
 

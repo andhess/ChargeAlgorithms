@@ -37,27 +37,85 @@ class ChargeEvent:
     # probably useful to have
     def toString( self ):
 
-    	vehicleEnd = -1
+        body = ''
 
-    	if self.endVehicle != -1:
-    		vehicleEnd = self.endVehicle.toString()
+        # ID
+        body += 'ID: ' , self.id , ' '
+        
+        # Start time
+        body += 'Start time: ' , self.startTime , ' '
 
-        body =  "ID: " , self.id , \
-        		"  starting time : " , self.startTime , \
-              	"  initial vehicle properties : " , self.initialVehicle.toString() , \
-              	"  ending time : " , self.endTime , \
-              	"  ending vehicle properties : " , vehicleEnd , \
-              	"  elapsedTime : " , self.elapsedTime
+        # End time ( will be -1 if there's an issue )
+        body += 'End time: ' , self.endTime , ' '
 
+        # Initial Charge
+        body += 'Initial charge: ' , self.initialCharge , ' '
+
+        # Time charging ( will be -1 if there's an issue )
+        body += 'Time charging: ' , self.timeCharging , ' '
+
+        # Charge Needed
+        body += 'Charge needed: ' , self.initialVehicle.chargeNeeded , ' '
+
+        # Initial Vehicle ID
+        body += 'Vehicle ID: ' , self.initialVehicle.id , ' '
+
+        # check if it exists to avoid an error
+        if self.endVehicle != -1:
+
+            # End Vehicle ID ( parity check )
+            body += 'End Vehicle ID: ' , self.endVehicle.id , ' '
+
+            # Final Charge
+            body += 'Final charge: ' , self.endVehicle.currentCharge
+
+        else:
+            body += 'Unable to locate end vehicle'
+            
         return body
 
     # this will be a line in the CSV file, just have writerow jot down this stuff
-    # FIXME: add some vehicle properties like chargeReceived, etc
-    def csvPrep():
-    	row = [ self.id , \
-                self.startTime , \
-                self.endTime , \
-                self.timeCharging , \
-              ]
+    # everything is tossed into an array and then the array is returned
+    def csvPrep( self ):
+
+        row = []
+
+        # first write down what we can
+        
+        # ID
+        row.append( self.id )
+        
+        # Start time
+        row.append( self.startTime )
+
+        # End time ( will be -1 if there's an issue )
+        row.append( self.endTime )
+
+        # Initial Charge
+        row.append( self.initialVehicle.initialCharge )
+
+        # Time charging ( will be -1 if there's an issue )
+        row.append( self.timeCharging )
+
+        # Charge Needed
+        row.append( self.initialVehicle.chargeNeeded )
+
+        # Initial Vehicle ID
+        row.append( self.initialVehicle.id )
+
+        # check it exists to avoid an error
+        if self.endVehicle != -1:
+
+            # End Vehicle ID ( parity check )
+            row.append( self.endVehicle.id )
+
+            # Final Charge
+            row.append( self.endVehicle.currentCharge )
+
+        # in case we lost vehicle ID, still fill up row
+        else:
+            row.append( -1 )
+            row.append( -1 )
+
         return row
 
