@@ -91,11 +91,11 @@ class chargingEvent:
         # End time ( will be -1 if there's an issue )
         row.append( self.endTime )
 
-        # Initial Charge
-        row.append( self.initialVehicle.initialCharge )
-
         # Time charging ( will be -1 if there's an issue )
         row.append( self.timeCharging )
+
+        # Initial Charge
+        row.append( self.initialVehicle.initialCharge )
 
         # Charge Needed
         row.append( self.initialVehicle.chargeNeeded )
