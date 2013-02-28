@@ -21,8 +21,6 @@ class ChargeEvent:
         self.startTime   		=     startTime					# the time that this vehicle began charging
         self.initialVehicle     =     vehicle 					# we wil have all the stats of our vehicle object when it entered
         self.endTime			=     -1						# update to endTime
-        self.endVehicle			=     -1						# and will write its properties when it exits
-        self.elapsedTime        =     -1
         self.endVehicle			=     -1						# will write its properties when it exits
         self.timeCharging       =     -1
 
@@ -39,7 +37,7 @@ class ChargeEvent:
     # probably useful to have
     def toString( self ):
 
-    	vehicleEnd = "No endVehicle"
+    	vehicleEnd = -1
 
     	if self.endVehicle != -1:
     		vehicleEnd = self.endVehicle.toString()
