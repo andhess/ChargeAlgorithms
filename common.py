@@ -10,6 +10,9 @@ numberOfVehiclesInSimulation = 0
 currentTime = 0 
 interval = 0
 
+# -------- price per kilowatt*hour -------
+electricityPrice = .1   # in dollars
+
 # used in main.py to set the common interval variable
 def setInterval( newInterval ):
 	global interval
