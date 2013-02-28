@@ -7,12 +7,12 @@
 # to create, pass in the vehicle and currentTime
 # when a vehicle is done charging, it will need the updated version of the same vehicle and again the currentTime
 
-# readouts of -1 for endTime, endVehicle, and timeCharging will denote that it's either still listening or something went very wrong
+# readouts of -1 for endTime, endVehicle, and elapsedTime will denote that it's either still listening or something went very wrong
 
 import vehicle
 
-class chargingEvent:
-    numEvents = 0
+class ChargeEvent:
+	numEvents = 0
 
     def __init__( self, vehicle, startTime ):
 
@@ -32,7 +32,7 @@ class chargingEvent:
     def terminateCharge( self, vehicle, currentTime ):
     	self.endTime 	    = 	currentTime
     	self.endVehicle     = 	vehicle
-    	self.timeCharging   =   currentTime - self.startTime
+    	self.elapsedTime   =   currentTime - self.startTime
 
     # probably useful to have
     def toString( self ):
@@ -71,7 +71,7 @@ class chargingEvent:
 
         else:
             body += 'Unable to locate end vehicle'
-    	
+            
         return body
 
     # this will be a line in the CSV file, just have writerow jot down this stuff
