@@ -99,10 +99,10 @@ def exportChargePortsToCSV( folderName ):
             pass # already exists
 
         # make file name and reference path
-        print 'making a string of index'
-        print index
-        print str( index )
         fileName = 'port' + str( index ) + '.csv'
+
+        print 'fileName:   ' , fileName
+
         portPath = os.path.join( dest_dir, fileName )
 
         # write the file
@@ -128,6 +128,6 @@ def exportChargePortsToCSV( folderName ):
         for index, chargeEvent in enumerate( chargePort ):
 
             # csvPrep does all the labor
-            portCSV.writerow( chargeEvent.csvPrep )
+            portCSV.writerow( chargeEvent.csvPrep() )
 
 
