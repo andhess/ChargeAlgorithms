@@ -102,7 +102,7 @@ def exportChargePortsToCSV( folderName ):
         print 'making a string of index'
         print index
         print str( index )
-        fileName = 'port' , str( index ) , '.csv'
+        fileName = 'port' + str( index ) + '.csv'
         portPath = os.path.join( dest_dir, fileName )
 
         # write the file
