@@ -1,4 +1,5 @@
 import common
+import copy
 
 class Vehicle:
     numVehiclesMade = 0
@@ -24,6 +25,12 @@ class Vehicle:
         self.laxity              =     self.freeTime / self.totalTime
         self.originalLaxity      =     self.freeTime / self.totalTime
         self.profit              =     ( chargeNeeded - currentCharge ) * common.electricityPrice
+        return self
+
+    def duplicate(self):
+        return copy.deepcopy(self)
+
+
 
     def toString( self ):
         body =  "ID: " , self.id , \
