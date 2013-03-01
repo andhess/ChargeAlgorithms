@@ -7,7 +7,7 @@ import common
 # ----------- Globals & Constants -------------
 
 # --- poissonStuff ---
-avgArrivalRate = 1 # cars per minute
+avgArrivalRate = .25 # cars per minute
 
 # --- charging stuff ---
 # chargeRateMu
