@@ -33,7 +33,7 @@ def simulateFCFS( arrayOfVehicleArrivals ):
                 chargePorts.chargePorts[ port ] = vehicle
             
                 # initialize a listener object for its charging activity
-                chargePorts.chargePortListeners[ port ].insert( 0 , chargeEvent.chargingEvent( vehicle, common.currentTime ) )
+                chargePorts.chargePortListeners[ port ].insert( 0 , chargeEvent.ChargeEvent( vehicle, common.currentTime ) )
                 
             # no ports are available so put the vehicle in the queue
             else:
@@ -91,7 +91,7 @@ def updateVehiclesFCFS():
                     chargePorts.chargePorts[ index ] = nextVehicle
 
                     # and then make a new listener
-                    chargePorts.chargePortListeners[ index ].insert( 0 , chargeEvent.chargingEvent( nextVehicle , common.currentTime ) )
+                    chargePorts.chargePortListeners[ index ].insert( 0 , chargeEvent.ChargeEvent( nextVehicle , common.currentTime ) )
 
                 else:
                     chargePorts.chargePorts[ index ] = None
@@ -115,7 +115,7 @@ def updateVehiclesFCFS():
                     chargePorts.chargePorts[ index ] = nextVehicle
 
                     # and then make a new listener
-                    chargePorts.chargePortListeners[ index ].insert( 0 , chargeEvent.chargingEvent( nextVehicle , common.currentTime ) )
+                    chargePorts.chargePortListeners[ index ].insert( 0 , chargeEvent.ChargeEvent( nextVehicle , common.currentTime ) )
 
                 else:
                     chargePorts.chargePorts[ index ] = None

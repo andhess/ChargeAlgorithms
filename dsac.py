@@ -68,10 +68,12 @@ def leastProfitConflict( vehicle ):
 
 		# split vehicle
 
-		# make 2 "halves" of that vehicle.  duplicate it -> write a duplicate vehicle in vehicle.py
+		# make 2 "halves" of that vehicle.  duplicate it -> write a duplicate vehicle in vehicle.pyg
 
 		# splice the vehilce in between the two halves
 		# this split is going to be where the start time is
+
+		# brute force
 
 
 
