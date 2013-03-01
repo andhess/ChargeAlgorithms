@@ -3,6 +3,7 @@ import common
 import csvGen
 import chargePorts
 import chargeEvent
+import itertools
 
 schedules = [[]] * chargePorts.numChargePorts
 
@@ -78,17 +79,28 @@ def leastProfitConflict( vehicle ):
 		duplicate.currentCharge += splitVehicle.timeToCharge * duplicate.chargeRate
 
 
-
-
-
-		# make 2 "halves" of that vehicle.  duplicate it -> write a duplicate vehicle in vehicle.pyg
+		tempSched.insert(splitVehicleIndex+1, duplicate)
+		tempSched.insert(splitVehicleIndex+1, vehicle)
 
 		# splice the vehilce in between the two halves
 		# this split is going to be where the start time is
 
 		# brute force
 
+def maxProfitCombination( subSchedule ):
+	if( chargeable(vehicle) for vehicle in subSchedule )
+		return subSchedule
+	# remove all vehicles that will never be able to pass to save time and RAM
+	# use itertools permutations (order matters) to get all permutations (of all sizes [1...len(subSchedule -1) ] )
+	# for each new subschedule correct all start times
+	# eliminate subschedules that fail
+	# from existing passable subschedules find most profitable
 
+
+
+
+def chargeable( vehicle ):
+	return (vehicle.depTime >= vehicle.startTime + vehicle.timeToCharge)
 
 def updateVehicles():
 	pass
