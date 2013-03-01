@@ -67,12 +67,14 @@ def leastProfitConflict( vehicle ):
 		while splitVehicleIndex >=0 and tempSched[ splitVehicleIndex ].startTime > vehicle.startTime:
 			splitVehicleIndex += 1
 
-		splitVehicle = schedulePort[splitVehicleIndex]
-		splitVehicle.timeToCharge = vehicle.startTime - splitVehicle.startTime - 1
+		splitVehicle = schedulePort[ splitVehicleIndex ]
 
-		duplicate = Vehicle.duplicate(splitVehicle) # represents the second half of the split vehicle
-		duplicate.startTime = vehicle.depTime + 1
-		duplicate.timeToCharge duplicate.timeToCharge - splitVehicle.timeToCharge
+		duplicate = Vehicle.duplicate(splitVehicle) # represents the second half of the split vehicle	
+		
+		splitVehicle.timeToCharge = vehicle.startTime - splitVehicle.startTime
+
+		duplicate.startTime = vehicle.depTime 
+		duplicate.timeToCharge -= splitVehicle.timeToCharge
 		duplicate.currentCharge += splitVehicle.timeToCharge * duplicate.chargeRate
 
 
