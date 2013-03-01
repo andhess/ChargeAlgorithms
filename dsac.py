@@ -45,6 +45,7 @@ def simulateDSAC( arrayOfVehicleArrivals ):
 
 				# an ugly conflict
 				else:
+					vehicle.startTime = vehicle.depTime - vehicle.timeToCharge
 					# least profit conflict
 
 def leastProfitConflict( vehicle ):
@@ -66,7 +67,17 @@ def leastProfitConflict( vehicle ):
 		while splitVehicleIndex >=0 and tempSched[ splitVehicleIndex ].startTime > vehicle.startTime:
 			splitVehicleIndex += 1
 
-		# split vehicle
+		splitVehicle = schedulePort[splitVehicleIndex]
+		splitVehicle.timeToCharge = vehicle.startTime - splitVehicle.startTime - 1
+
+		duplicate = Vehicle.duplicate(splitVehicle) # represents the second half of the split vehicle
+		duplicate.startTime = vehicle.depTime + 1
+		duplicate.timeToCharge duplicate.timeToCharge - splitVehicle.timeToCharge
+		duplicate.currentCharge += splitVehicle.timeToCharge * duplicate.chargeRate
+
+
+
+
 
 		# make 2 "halves" of that vehicle.  duplicate it -> write a duplicate vehicle in vehicle.pyg
 
