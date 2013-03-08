@@ -50,11 +50,15 @@ def getAllPossibleSubSchedules( schedule, minSize):
 		fullList.append(list(item))
 	return fullList
 
+# this is the fastest of them all but it still can't handle numbers larger than 10 very well
+# uses memory allocation better so it is faster
+def allPermutations(seq):
+    return (x for i in range(len(seq),0,-1) for x in itertools.permutations(seq, i))
 
+schedule = range(10)
 
-schedule = range(6)
-
-mySet = getAllPossibleSubSchedulesOld(schedule, 1)
+# mySet = getAllPossibleSubSchedulesOld(schedule, 1)
+mySet = list(allPermutations(schedule))
 print " length: ", len(mySet)
 
 
