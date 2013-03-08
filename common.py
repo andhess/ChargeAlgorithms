@@ -12,6 +12,7 @@ interval = 0
 
 # -------- price per kilowatt*hour -------
 electricityPrice = .1   # in dollars
+penaltyThreshold = .8	# ratio of how much charging costs vs how much the penalty is worth
 
 # used in main.py to set the common interval variable
 def setInterval( newInterval ):
