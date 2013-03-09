@@ -1,6 +1,7 @@
 import common
 import csvGen
 import chargePorts
+import chargeEvent
 from operator import attrgetter
 
 edfQueue = []
@@ -26,8 +27,21 @@ def simulateEDF( arrayOfVehicleArrivals ):
         for vehicle in numVehiclesPerMin:
             port = chargePorts.openChargePort()
 
+            if vehicle.currentCharge > vehicle.chargeNeeded:
+                csvGen.exportVehicleToCSV( vehicle, "Charge Not Needed" )
+                common.cantChargeLot.append( vehicle )
+                continue
+
+            # a port is open so start charging the vehicle
             if port is not None:
+
+                # add to chargePort
                 chargePorts.chargePorts[ port ] = vehicle
+
+                # initialize a listener object for its charging activity
+                chargePorts.chargePortListeners[ port ].insert( 0 , chargeEvent.ChargeEvent( vehicle, common.currentTime ) )
+
+            # no ports available so put in queue
             else:
                 edfQueue.append( vehicle )
                 if earliestDLIndex == -1 or vehicle.depTime < edfQueue[ earliestDLIndex ].depTime:
@@ -44,49 +58,76 @@ def simulateEDF( arrayOfVehicleArrivals ):
           "  elapsed time: " , common.currentTime , \
           "  done charging lot: " , len( common.doneChargingLot ) , \
           "  failed charging lot: " , len( common.failedLot ) , \
+          "  cant charge lot: " , len( common.cantChargeLot ) , \
           "  edfQueue size:  " , len( edfQueue ) , \
           "  chargePort " , chargePorts.toString()
 
+    # write a CSV with all the chargePort logs
+    csvGen.exportChargePortsToCSV( "edf" )
 
 # called to update the vehicles for each minute of simulation
 def updateVehiclesEDF():
     global earliestDLIndex
     global latestChargePortDLIndex
 
-
-    # update chargePortCSV
-    csvGen.exportChargePortsToCSV()
-
     # cheack each chargePort
     for index, vehicle in enumerate( chargePorts.chargePorts ):
 
         # add one minute of charge
         if vehicle is not None:
-            vehicle.currentCharge += ( vehicle.chargeRate ) / 60
+            vehicle.currentCharge += ( vehicle.chargeRate ) / 60.0
             removed = False
 
             #check if done charging
             if vehicle.currentCharge >= vehicle.chargeNeeded:
+
+                # finish up the listener for this vehicle
+                chargePorts.chargePortListeners[ index ][ 0 ].terminateCharge( vehicle , common.currentTime )
+
+                # remove finished vehicle from grid and document it
                 csvGen.exportVehicleToCSV( vehicle, "SUCCESS" )
                 common.doneChargingLot.append( vehicle )
                 
                 if len( edfQueue ) > 0:
-                    chargePorts.chargePorts[ index ] = edfQueue[ earliestDLIndex ]
+
+                    # get next vehicle and throw in chargePort
+                    nextVehicle = edfQueue[ earliestDLIndex ]
+                    chargePorts.chargePorts[ index ] = nextVehicle
+
+                    # make it a listener
+                    chargePorts.chargePortListeners[ index ].insert( 0 , chargeEvent.ChargeEvent( nextVehicle , common.currentTime ) )
+
+                    # update queue
                     del edfQueue[ earliestDLIndex ]  
                     earliestDLIndex = earliestDL()
+
                 else:
                     chargePorts.chargePorts[ index ] = None
                 removed = True
 
             # check if deadline reached
             if common.currentTime >= vehicle.depTime and not removed:
+
+                # this vehicle is on the out, so wrap up its listener
+                chargePorts.chargePortListeners[ index ][ 0 ].terminateCharge( vehicle , common.currentTime )
+
+                # remove finished vehicle and document it
                 csvGen.exportVehicleToCSV( vehicle, "FAILURE" )
                 common.failedLot.append( vehicle )
                 
                 if len( edfQueue ) > 0:
-                    chargePorts.chargePorts[ index ] = edfQueue[ earliestDLIndex ]
+
+                    # get nextVehicle
+                    nextVehicle = edfQueue[ earliestDLIndex ]
+                    chargePorts.chargePorts[ index ] = nextVehicle
+
+                    # make new listener
+                    chargePorts.chargePortListeners[ index ][ 0 ].terminateCharge( vehicle , common.currentTime )
+
+                    # update queue
                     del edfQueue[ earliestDLIndex ]
                     earliestDLIndex = earliestDL()
+
                 else:
                     chargePorts.chargePorts[ index ] = None
 
@@ -102,11 +143,21 @@ def updateVehiclesEDF():
     
     # prioritize edge cases, loop until swap the top DL are all in the queue
     while len( edfQueue ) > 0 and latestChargePortDLIndex != -1 and edfQueue[ earliestDLIndex ].depTime < chargePorts.chargePorts[ latestChargePortDLIndex ].depTime:
-                        
-        # make a swap
-        temp = chargePorts.chargePorts[ latestChargePortDLIndex ]
-        chargePorts.chargePorts[ latestChargePortDLIndex ] = edfQueue[ earliestDLIndex ]
-        edfQueue[ earliestDLIndex ] = temp
+
+        swappingOut = chargePorts.chargePorts[ latestChargePortDLIndex ]
+        swappingIn  = edfQueue[ earliestDLIndex ]
+
+        # close the listener for swappingOut
+        chargePorts.chargePortListeners[ latestChargePortDLIndex ][ 0 ].terminateCharge( swappingOut , common.currentTime )
+
+        # swap occurs in the chargePorts
+        chargePorts.chargePorts[ latestChargePortDLIndex ] = swappingIn
+
+        # create a new listener for the vehicle that just got swapped in
+        chargePorts.chargePortListeners[ index ].insert( 0 , chargeEvent.ChargeEvent( swappingIn , common.currentTime ) )
+
+        # swap finishes in the queue
+        edfQueue[ earliestDLIndex ] = swappingOut
 
         # now update values for comparison
         earliestDLIndex = earliestDL()

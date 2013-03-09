@@ -7,7 +7,7 @@
 # to create, pass in the vehicle and currentTime
 # when a vehicle is done charging, it will need the updated version of the same vehicle and again the currentTime
 
-# readouts of -1 for endTime, endVehicle, and elapsedTime will denote that it's either still listening or something went very wrong
+# readouts of -1 for endTime, endVehicle, and timeCharging will denote that it's either still listening or something went very wrong
 
 import vehicle
 
@@ -31,7 +31,7 @@ class ChargeEvent:
     def terminateCharge( self, vehicle, currentTime ):
     	self.endTime 	    = 	currentTime
     	self.endVehicle     = 	vehicle
-    	self.elapsedTime   =   currentTime - self.startTime
+    	self.timeCharging   =   currentTime - self.startTime
 
     # probably useful to have
     def toString( self ):

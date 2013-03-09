@@ -26,6 +26,11 @@ def simulateFCFS( arrayOfVehicleArrivals ):
         for vehicle in numVehiclesPerMin:       
             port = chargePorts.openChargePort()
 
+            if vehicle.currentCharge > vehicle.chargeNeeded:
+                csvGen.exportVehicleToCSV( vehicle, "Charge Not Needed" )
+                common.cantChargeLot.append( vehicle )
+                continue
+
             # a port is open so start charging the vehicle
             if port is not None:
 
@@ -53,12 +58,9 @@ def simulateFCFS( arrayOfVehicleArrivals ):
           "  elapsed time: " , common.currentTime , \
           "  done charging lot: " , len( common.doneChargingLot ) , \
           "  failed charging lot: " , len( common.failedLot ) , \
+          "  cant charge lot: " , len( common.cantChargeLot ) , \
           "  fcfsQueue size:  " , queue.qsize() , \
           "  chargePort " , chargePorts.toString()
-
-    # for index in chargePorts.chargePortListeners:
-    #     for item in index:
-    #         print item.toString()
 
     # write a CSV for all the chargePort logs
     csvGen.exportChargePortsToCSV( "fcfs" )
@@ -71,7 +73,7 @@ def updateVehiclesFCFS():
 
         # add 1 minute of charge
         if vehicle is not None:
-            vehicle.currentCharge += ( vehicle.chargeRate ) / 60
+            vehicle.currentCharge +=  ( vehicle.chargeRate ) / 60.0
             removed = False;
 
             # check if done charging

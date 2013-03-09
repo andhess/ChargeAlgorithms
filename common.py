@@ -4,6 +4,10 @@ from chargePorts import resetChargePorts
 doneChargingLot = []
 failedLot = []
 
+# adding a lot of cars that don't need to be charged
+# might help when we're trying to pick distribution values
+cantChargeLot = []
+
 numberOfVehiclesInSimulation = 0
 
 # ----- global time vars ------
@@ -30,6 +34,8 @@ def updateGlobals():
     doneChargingLot = []
     global failedLot
     failedLot = []
+    global cantChargeLot
+    cantChargeLot = []
     resetChargePorts()	# function in chargePorts.py to empty all chargePorts
 
 # returns string representation of all vehicles in a list by id in form [0,1,2,3,4...] 

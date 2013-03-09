@@ -46,7 +46,10 @@ def simulateDSAC( arrayOfVehicleArrivals ):
 				# an ugly conflict
 				else:
 					vehicle.startTime = vehicle.depTime - vehicle.timeToCharge
+					
 					# least profit conflict
+
+
 
 def leastProfitConflict( vehicle ):
 

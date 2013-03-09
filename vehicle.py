@@ -14,9 +14,6 @@ class Vehicle:
         self.arrivalTime         =     arrivalTime
         self.startTime           =     arrivalTime
         self.depTime             =     depTime
-        self.chargeNeeded        =     chargeNeeded
-        self.currentCharge       =     currentCharge
-        self.initialCharge       =     currentCharge
         self.chargeRate          =     chargeRate
         self.maxCapacity         =     maxCapacity
         self.timeToCharge        =     ( chargeNeeded - currentCharge ) / chargeRate  #linear
@@ -25,7 +22,22 @@ class Vehicle:
         self.laxity              =     self.freeTime / self.totalTime
         self.originalLaxity      =     self.freeTime / self.totalTime
         self.profit              =     ( chargeNeeded - currentCharge ) * common.electricityPrice
-        return self
+
+        # can't have a negative currentCharge
+        if currentCharge >= 0:
+            self.currentCharge  =   currentCharge
+            self.initialCharge  =   currentCharge
+        else:
+            self.currentCharge  =   0
+            self.initialCharge  =   0
+
+        # same goes with chargeRequest
+        if chargeNeeded >= 0:
+            self.chargeNeeded   =   chargeNeeded
+        else:
+            self.chargeNeeded   =   0
+
+        # return self  FIXME: what's going on with this?
 
     def duplicate(self):
         return copy.deepcopy(self)
@@ -33,11 +45,12 @@ class Vehicle:
 
 
     def toString( self ):
-        body =  "ID: " , self.id , \
-                "  current charge: " , self.currentCharge , \
-                "  charge needed: " , self.chargeNeeded , \
-                "  departure time: " , self.depTime , \
-                "  laxity: ", self.laxity
+        body =  'ID: ' , self.id , \
+                '  initialCharge:  ' , self.initialCharge, \
+                '  current charge: ' , self.currentCharge , \
+                '  charge needed: ' , self.chargeNeeded , \
+                '  departure time: ' , self.depTime , \
+                '  laxity: ', self.laxity
         return body
 
     # updates the laxity for vehicle. Requires the current time of the simulation
