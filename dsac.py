@@ -3,6 +3,8 @@ import common
 import csvGen
 import chargePorts
 import chargeEvent
+import itertools
+import copy
 
 schedules = [[]] * chargePorts.numChargePorts
 
@@ -54,12 +56,13 @@ def simulateDSAC( arrayOfVehicleArrivals ):
 def leastProfitConflict( vehicle ):
 
 	leastProfitConflict = vehicle.profit
+	leastProfitConflictPort = -1
 
 	# iterate through each schedule
 	for index, schedulePort in enumerate( schedules ):
 
 		# make a temporary one since we'll be messing with this
-		tempSched = schedulePort
+		tempSched = copy.deepcopy(schedulePort)
 
 		cutoffTime = vehicle.depTime - vehicle.timeToCharge
 
@@ -80,18 +83,88 @@ def leastProfitConflict( vehicle ):
 		duplicate.timeToCharge -= splitVehicle.timeToCharge
 		duplicate.currentCharge += splitVehicle.timeToCharge * duplicate.chargeRate
 
+		appendedIndex = len(tempSched)
+		tempSched.append(duplicate)
+		tempSched.append(vehicle)
 
+		profitChange = vehicle.profit
+		for i, task in enumerate(tempSched[appendedIndex + 1:]:
+			task.startTime = tempSched[i-1].startTime + tempSched[i-1].timeToCharge
+			if task.startTime + task.timeToCharge <= task.depTime:
+				profitChange += task.profit
+			else:
+				profitChange -= common.penaltyThreshold * ( task.depTime - (task.startTime + task.timeToCharge) ) * chargeRate
 
-
-
-		# make 2 "halves" of that vehicle.  duplicate it -> write a duplicate vehicle in vehicle.pyg
-
-		# splice the vehilce in between the two halves
-		# this split is going to be where the start time is
+		if profitChange >= leastProfitConflict:
+			leastProfitConflict = profitChange
+			leastProfitConflictPort = index
 
 		# brute force
 
+def maxProfitCombination( subSchedule, newVehicle ):
+	numLargerVehicles = 0
+	if chargeable(vehicle) for vehicle in subSchedule:
+		return subSchedule
+	else:
+		for index, vehicle in enumerate(subSchedule):
+			if vehicle.depTime < newVehicle.startTime:
+				if vehicle.profit > newVehicle.profit:
+					# this means a more profitable vehicle will not be charged regardless of schedule changes
+					return -1
+				subSchedule.remove(index) # remove all vehilcles that will have left by this time anyway
 
+			#keep track of larger vehicles to create a minimum permutation size for the next step
+			if vehicle.profit > newVehicle.profit:
+				numLargerVehicles += 1
+
+		
+		listOfSubSchedules = getAllPossibleSubSchedules(subSchedule, numLargerVehicles)
+
+		# have to convert to tuples to add to a set
+		
+
+
+	# remove all vehicles that will never be able to pass to save time and RAM
+	# use itertools permutations (order matters) to get all permutations (of all sizes [1...len(subSchedule -1) ] )
+	# never remove vehicles larger than new vehicle (can use this to find smallest possible permuatation size)
+	# for each new subschedule correct all start times
+	# eliminate subschedules that fail
+	# from existing passable subschedules find most profitable
+
+def getAllPossibleSubSchedules( schedule, minSize):
+	fullSet = set()
+	curSet = set()
+	curSet.add(schedule)
+	for i in range(minSize, len(schedule)):
+		permutations = itertools.permutations(curSet, i)
+		curSet = set(permutations)
+		for permutation in permutations:
+			fullSet.add(permutation)
+	return fullSet
+
+# # recursive method to get all sub-schedules (order matters) of sizes: (n-1, n-2, ... , numLargerVehicles)
+# # works by iterating through list, removing one element and finding all permutations of each smaller list
+# # while recursively calling the method again on each smaller list, this method will return duplicates so that has to be checked
+# def getAllPossibleSubSchedulesHelper( schedule, minSize, fullList ):
+# 	if len(schedule) == minSize:
+# 		return fullList
+# 	else:
+# 		newSubSchedules = []
+# 		for index,vehicle in enumerate(schedule):
+# 			schedule.remove(vehicle)
+# 			for combo in itertools.permutations(schedule):
+# 				newSubSchedules.append(list(combo))
+# 				fullList.append(list(combo))
+# 			schedule.insert(index, vehicle)
+# 		for newSubSchedule in newSubSchedules:
+# 			getAllPossibleSubSchedulesHelper( newSubSchedule, minSize, fullList)
+
+
+
+
+
+def chargeable( vehicle ):
+	return (vehicle.depTime >= vehicle.startTime + vehicle.timeToCharge)
 
 def updateVehicles():
 	pass
