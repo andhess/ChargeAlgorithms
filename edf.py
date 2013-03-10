@@ -140,6 +140,8 @@ def updateVehiclesEDF():
 
     # start out by grabbing the latest chargePort
     latestChargePortDLIndex = latestChargePortDL()
+
+    print chargePorts.toString() , " !!!!"
     
     # prioritize edge cases, loop until swap the top DL are all in the queue
     while len( edfQueue ) > 0 and latestChargePortDLIndex != -1 and edfQueue[ earliestDLIndex ].depTime < chargePorts.chargePorts[ latestChargePortDLIndex ].depTime:
@@ -163,7 +165,11 @@ def updateVehiclesEDF():
         earliestDLIndex = earliestDL()
         latestChargePortDLIndex = latestChargePortDL()
 
+        print chargePorts.toString()
+
         # NOTE: we are explicitly choosing to grab a clean version of each index because accuracy cannot be guaranteed
+
+    print "exit loop"
 
 # gets the index of earliest deadline of all the vehicles in edfQueue
 def earliestDL():
