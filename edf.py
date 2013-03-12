@@ -46,6 +46,7 @@ def simulateEDF( arrayOfVehicleArrivals ):
                 edfQueue.append( vehicle )
                 if earliestDLIndex == -1 or vehicle.depTime < edfQueue[ earliestDLIndex ].depTime:
                     earliestDLIndex = len( edfQueue ) - 1
+        
         updateVehiclesEDF()
         common.currentTime += 1
 
@@ -122,7 +123,7 @@ def updateVehiclesEDF():
                     chargePorts.chargePorts[ index ] = nextVehicle
 
                     # make new listener
-                    chargePorts.chargePortListeners[ index ][ 0 ].terminateCharge( vehicle , common.currentTime )
+                    chargePorts.chargePortListeners[ index ].insert( 0 , chargeEvent.ChargeEvent( nextVehicle , common.currentTime ) )
 
                     # update queue
                     del edfQueue[ earliestDLIndex ]
@@ -140,8 +141,6 @@ def updateVehiclesEDF():
 
     # start out by grabbing the latest chargePort
     latestChargePortDLIndex = latestChargePortDL()
-
-    print chargePorts.toString() , " !!!!"
     
     # prioritize edge cases, loop until swap the top DL are all in the queue
     while len( edfQueue ) > 0 and latestChargePortDLIndex != -1 and edfQueue[ earliestDLIndex ].depTime < chargePorts.chargePorts[ latestChargePortDLIndex ].depTime:
@@ -165,11 +164,7 @@ def updateVehiclesEDF():
         earliestDLIndex = earliestDL()
         latestChargePortDLIndex = latestChargePortDL()
 
-        print chargePorts.toString()
-
         # NOTE: we are explicitly choosing to grab a clean version of each index because accuracy cannot be guaranteed
-
-    print "exit loop"
 
 # gets the index of earliest deadline of all the vehicles in edfQueue
 def earliestDL():
