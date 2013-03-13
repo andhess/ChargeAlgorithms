@@ -27,6 +27,7 @@ def simulateEDF( arrayOfVehicleArrivals ):
         for vehicle in numVehiclesPerMin:
             port = chargePorts.openChargePort()
 
+            # check if it actually needs to be charged
             if vehicle.currentCharge > vehicle.chargeNeeded:
                 csvGen.exportVehicleToCSV( vehicle, "Charge Not Needed" )
                 common.cantChargeLot.append( vehicle )

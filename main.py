@@ -24,9 +24,9 @@ simulationInterval = poissonGen.simulateInterval()
 
 # fcfs.simulateFCFS( simulationInterval )
 
-edf.simulateEDF( simulationInterval )
+# edf.simulateEDF( simulationInterval )
 
-# llfSmart.simulateLLF( simulationInterval )
+llfSmart.simulateLLF( simulationInterval )
 
 # llfSimple.simulateLLFSimple( simulationInterval )
 
