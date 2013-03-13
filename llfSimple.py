@@ -1,6 +1,7 @@
 import common
 import csvGen
 import chargePorts
+import chargeEvent
 from operator import attrgetter
 
 llfSimpleQueue = []
@@ -28,9 +29,20 @@ def simulateLLFSimple( arrayOfVehicleArrivals ):
         for vehicle in numVehiclesPerMin:
             port = chargePorts.openChargePort()
 
+            # check if it actually needs to be charged
+            if vehicle.currentCharge > vehicle.chargeNeeded:
+                csvGen.exportVehicleToCSV( vehicle, "Charge Not Needed" )
+                common.cantChargeLot.append( vehicle )
+                continue
+
             # there is an open chargePort, add vehicle to it
             if port is not None:
+
+                # add to chargePort
                 chargePorts.chargePorts[ port ] = vehicle
+
+                # make listener
+                chargePorts.chargePortListeners[ port ].insert( 0 , chargeEvent.ChargeEvent( vehicle , common.currentTime ) )
 
             # no open chargePort, append to llfQueue
             else:
@@ -52,25 +64,26 @@ def simulateLLFSimple( arrayOfVehicleArrivals ):
     print "LLF Simple: total number of cars: ", common.numberOfVehiclesInSimulation , \
           "  elapsed time: " , common.currentTime , \
           "  done charging lot: " , len( common.doneChargingLot ) , \
-          "  failed charing lot: " , len( common.failedLot ) , \
+          "  failed charging lot: " , len( common.failedLot ) , \
+          "  cant charge lot: " , len( common.cantChargeLot ) , \
           "  llfQueue size:  " , len( llfSimpleQueue ) , \
           "  chargePort " , chargePorts.toString()
         
+    # write a CSV of all the data in chargePortListeners
+    csvGen.exportChargePortsToCSV( "llfSimple" )
+
 
 # called to update the vehicles for each minute of simulation
 def updateVehiclesLLFSimple():
     global currentTime
     global llfSimpleIndex
 
-    # update chargePortCSV
-    csvGen.exportChargePortsToCSV()
-
     # increment the charge for the cars that were charging
     for index, vehicle in enumerate( chargePorts.chargePorts ):
 
         # add one minute of charge
         if vehicle is not None:
-            vehicle.currentCharge += ( vehicle.chargeRate ) / 60
+            vehicle.currentCharge += ( vehicle.chargeRate ) / 60.0
 
     # now move cars around so the laxity property is maintained
     for index, vehicle in enumerate( chargePorts.chargePorts ):
@@ -79,28 +92,54 @@ def updateVehiclesLLFSimple():
 
             #check if done charging
             if vehicle.currentCharge >= vehicle.chargeNeeded:
+
+                # finish up listener
+                chargePorts.chargePortListeners[ index][ 0 ].terminateCharge( vehicle , common.currentTime )
+
+                # remove finished vehicle from grid, document it
                 csvGen.exportVehicleToCSV( vehicle, "SUCCESS" )
                 common.doneChargingLot.append( vehicle )
                 
                 if len( llfSimpleQueue ) > 0:
-                    chargePorts.chargePorts[ index ] = llfSimpleQueue[ llfSimpleIndex ]
+
+                    # get next vehicle, throw in chargePort
+                    nextVehicle = llfSimpleQueue[ llfSimpleIndex ]
+                    chargePorts.chargePorts[ index ] = nextVehicle
+
+                    # make it a listener
+                    chargePorts.chargePortListeners[ index ].insert( 0 , chargeEvent.ChargeEvent( nextVehicle, common.currentTime ) )
+                    
+                    # update queue
                     del llfSimpleQueue[ llfSimpleIndex ]  
                     llfSimpleIndex = lowestLaxity()
+
                 else:
                     chargePorts.chargePorts[ index ] = None
-                removed = True
-            
-            
+                removed = True 
 
             # check if deadline reached
             if common.currentTime >= vehicle.depTime and not removed:
+
+                # wrap up listener
+                chargePorts.chargePortListeners[ index ][ 0 ].terminateCharge( vehicle , common.currentTime )
+
+                # remove finished vehicle, document it
                 csvGen.exportVehicleToCSV( vehicle, "FAILURE" )
                 common.failedLot.append( vehicle )
         
                 if len( llfSimpleQueue ) > 0:
-                    chargePorts.chargePorts[ index ] = llfSimpleQueue[ llfSimpleIndex ]
+
+                    # get next vehicle
+                    nextVehicle = llfSimpleQueue[ llfSimpleIndex ]
+                    chargePorts.chargePorts[ index ] = nextVehicle
+
+                    # make new listener
+                    chargePorts.chargePortListeners[ index ].insert( 0 , chargeEvent.ChargeEvent( nextVehicle , common.currentTime ) )
+
+                    # update queue 
                     del llfSimpleQueue[ llfSimpleIndex ]
                     llfSimpleIndex = lowestLaxity() # function defined in LLF section, iterates through llfQueue for lowest laxity
+
                 else:
                     chargePorts.chargePorts[ index ] = None
 
@@ -109,10 +148,20 @@ def updateVehiclesLLFSimple():
             # check if all cars in chargePorts still have lowest laxity
             while len( llfSimpleQueue ) > 0 and highestLaxityChargePortIndex != -1 and llfSimpleQueue[ llfSimpleIndex ].laxity > chargePorts.chargePorts[ highestLaxityChargePortIndex ].laxity:
 
-                # make a swap
-                temp = chargePorts.chargePorts[ highestLaxityChargePortIndex ]
-                chargePorts.chargePorts[ highestLaxityChargePortIndex ] = llfSimpleQueue[ llfSimpleIndex ]
-                llfSimpleQueue[ llfSimpleIndex ] = temp
+                swappingOut = chargePorts.chargePorts[ highestLaxityChargePortIndex ]
+                swappingIn  = llfSimpleQueue[ llfSimpleIndex ]
+
+                # close the listener for swappingOut
+                chargePorts.chargePortListeners[ highestLaxityChargePortIndex ][ 0 ].terminateCharge( swappingOut , common.currentTime )
+
+                # swap occurs in chargePorts
+                chargePorts.chargePorts[ highestLaxityChargePortIndex ] = swappingIn
+
+                # create a new listener
+                chargePorts.chargePortListeners[ index ].insert( 0 , chargeEvent.ChargeEvent( swappingIn , common.currentTime ) )
+
+                # swap occurs in the queue
+                llfSimpleQueue[ llfSimpleIndex ] = swappingOut
 
                 # now update values for comparison
                 llfSimpleIndex = lowestLaxity()

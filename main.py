@@ -26,9 +26,9 @@ simulationInterval = poissonGen.simulateInterval()
 
 # edf.simulateEDF( simulationInterval )
 
-llfSmart.simulateLLF( simulationInterval )
+#llfSmart.simulateLLF( simulationInterval )
 
-# llfSimple.simulateLLFSimple( simulationInterval )
+llfSimple.simulateLLFSimple( simulationInterval )
 
 # poissonGen.testPoissonDistribution(1000)
 
