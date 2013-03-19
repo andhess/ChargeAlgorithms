@@ -3,7 +3,6 @@ import common
 import csvGen
 import chargePorts
 import chargeEvent
-import itertools
 import copy
 
 schedules = [[]] * chargePorts.numChargePorts
@@ -55,7 +54,7 @@ def simulateDSAC( arrayOfVehicleArrivals ):
 
 def leastProfitConflict( vehicle ):
 
-	leastProfitConflict = vehicle.profit
+	profitGained = 0
 	leastProfitConflictPort = -1
 
 	# iterate through each schedule
@@ -79,85 +78,73 @@ def leastProfitConflict( vehicle ):
 		
 		splitVehicle.timeToCharge = vehicle.startTime - splitVehicle.startTime
 
-		duplicate.startTime = vehicle.depTime 
+		# need to create a list of all vehicles (including the one that is split)
+		# that gets appended to the end of the schedule
+
+		duplicate.startTime = tempSched[ len(tempSched)-1 ].depTime # duplicate will be appended to the end of the schedule 
 		duplicate.timeToCharge -= splitVehicle.timeToCharge
 		duplicate.currentCharge += splitVehicle.timeToCharge * duplicate.chargeRate
 
-		appendedIndex = len(tempSched)
-		tempSched.append(duplicate)
-		tempSched.append(vehicle)
+		pushToEnd = [] # represents the part of the schedule that the new vehicle is kicking out
+		pushToEnd.append(duplicate)
 
-		profitChange = vehicle.profit
-		for i, task in enumerate(tempSched[appendedIndex + 1:]:
-			task.startTime = tempSched[i-1].startTime + tempSched[i-1].timeToCharge
-			if task.startTime + task.timeToCharge <= task.depTime:
-				profitChange += task.profit
-			else:
-				profitChange -= common.penaltyThreshold * ( task.depTime - (task.startTime + task.timeToCharge) ) * chargeRate
+		#need to split the second vehicle that the new vehicle overlaps partially 
 
-		if profitChange >= leastProfitConflict:
-			leastProfitConflict = profitChange
-			leastProfitConflictPort = index
+		secondSplitVehicleIndex = splitVehicleIndex + 1 # the index after the first split vehicle
 
-		# brute force
+		while secondSplitVehicleIndex < len(tempSched): 
+			if tempSched[secondSplitVehicleIndex].startTime + tempSched[secondSplitVehicleIndex].timeToCharge > vehicle.depTime:
+				break
+			secondSplitVehicleIndex += 1
 
-def maxProfitCombination( subSchedule, newVehicle ):
-	numLargerVehicles = 0
-	if chargeable(vehicle) for vehicle in subSchedule:
-		return subSchedule
-	else:
-		for index, vehicle in enumerate(subSchedule):
-			if vehicle.depTime < newVehicle.startTime:
-				if vehicle.profit > newVehicle.profit:
-					# this means a more profitable vehicle will not be charged regardless of schedule changes
-					return -1
-				subSchedule.remove(index) # remove all vehilcles that will have left by this time anyway
+		if secondSplitVehicleIndex < len(tempSched):	
+			secondSplitVehicle = tempSched[ secondSplitVehicleIndex ]
 
-			#keep track of larger vehicles to create a minimum permutation size for the next step
-			if vehicle.profit > newVehicle.profit:
-				numLargerVehicles += 1
+			duplicateSecondSplitVehicle = copy.deepcopy( secondSplitVehicle ) # represents second part of split vehicle
 
-		
-		listOfSubSchedules = getAllPossibleSubSchedules(subSchedule, numLargerVehicles)
+			duplicateSecondSplitVehicle.startTime = vehicle.depTime
+			duplicateSecondSplitVehicle.timeToCharge -= vehicle.depTime
 
-		# have to convert to tuples to add to a set
-		
+			# this will eventually be after duplicateSecondSplitVehicle in the schedule
+			secondSplitVehicle.timeToCharge -= duplicateSecondSplitVehicle.timeToCharge
+			secondSplitVehicle.currentCharge += duplicateSecondSplitVehicle.timeToCharge * secondSplitVehicle.chargeRate
+
+			pushToEnd.append( duplicateSecondSplitVehicle )
+			# pushToEnd now containts the 2nd half of the first split vehicle and the 1st half of the second split vehicle
+
+		# now move everything that the new vehicle kicks out to the end of the list
+		# first put the overlapped part into pushToEnd after the first split part and before the second split part (if it exists)
+		pushToEnd[1:1] = tempSched[splitVehicleIndex + 1: secondSplitVehicleIndex] 
+
+		# then delete the remove the overlapped part, add in the new vehicle and append the overlapped part to then end
+		del tempSched[splitVehicleIndex+1 : secondSplitVehicleIndex] # remove the overlapped part of the list
+
+		tempSched.insert(splitVehicleIndex + 1, vehicle)  # insert the new vehicle after split vehicle
+
+		startOfMovedTasks = len(tempSched)
+
+		tempSched += pushToEnd # move the ovelapped part to the end
+
+		# update all start times
+		for taskIndex, task in enumerate(tempSched[1:]):
+			prevTask = tempSched[ taskIndex - 1 ]
+			task.startTime = prevTask.startTime + prevTask.timeToCharge
 
 
-	# remove all vehicles that will never be able to pass to save time and RAM
-	# use itertools permutations (order matters) to get all permutations (of all sizes [1...len(subSchedule -1) ] )
-	# never remove vehicles larger than new vehicle (can use this to find smallest possible permuatation size)
-	# for each new subschedule correct all start times
-	# eliminate subschedules that fail
-	# from existing passable subschedules find most profitable
+		# now that tempSched is has been updated with the new vehicle and the overlapped part pushed to the end
+		# check to see if the profit is better by checking if the 'pushed to end' tasks are finishable before their deadlines
 
-def getAllPossibleSubSchedules( schedule, minSize):
-	fullSet = set()
-	curSet = set()
-	curSet.add(schedule)
-	for i in range(minSize, len(schedule)):
-		permutations = itertools.permutations(curSet, i)
-		curSet = set(permutations)
-		for permutation in permutations:
-			fullSet.add(permutation)
-	return fullSet
+		profitGained = vehicle.profit
 
-# # recursive method to get all sub-schedules (order matters) of sizes: (n-1, n-2, ... , numLargerVehicles)
-# # works by iterating through list, removing one element and finding all permutations of each smaller list
-# # while recursively calling the method again on each smaller list, this method will return duplicates so that has to be checked
-# def getAllPossibleSubSchedulesHelper( schedule, minSize, fullList ):
-# 	if len(schedule) == minSize:
-# 		return fullList
-# 	else:
-# 		newSubSchedules = []
-# 		for index,vehicle in enumerate(schedule):
-# 			schedule.remove(vehicle)
-# 			for combo in itertools.permutations(schedule):
-# 				newSubSchedules.append(list(combo))
-# 				fullList.append(list(combo))
-# 			schedule.insert(index, vehicle)
-# 		for newSubSchedule in newSubSchedules:
-# 			getAllPossibleSubSchedulesHelper( newSubSchedule, minSize, fullList)
+		for task in tempSched[startOfMovedTasks:]
+			if 
+
+
+
+
+
+
+
 
 
 
