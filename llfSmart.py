@@ -161,7 +161,7 @@ def updateVehiclesLLF():
             highestLaxityChargePortIndex = highestLaxityChargePort()
 
             # check if all cars in chargePorts still have lowest laxity
-            while len( llfQueue ) > 0 and highestLaxityChargePortIndex != -1 and llfQueue[ llfIndex ].laxity > chargePorts.chargePorts[ highestLaxityChargePortIndex ].laxity:
+            while len( llfQueue ) > 0 and highestLaxityChargePortIndex != -1 and llfQueue[ llfIndex ].laxity < chargePorts.chargePorts[ highestLaxityChargePortIndex ].laxity:
 
                 swappingOut = chargePorts.chargePorts[ highestLaxityChargePortIndex ]
                 swappingIn  = llfQueue[ llfIndex ]
@@ -173,7 +173,7 @@ def updateVehiclesLLF():
                 chargePorts.chargePorts[ highestLaxityChargePortIndex ] = swappingIn
                 
                 # create a new listener for swappingIn
-                chargePorts.chargePortListeners[ index ].insert( 0 , chargeEvent.ChargeEvent( swappingIn , common.currentTime ) )
+                chargePorts.chargePortListeners[ highestLaxityChargePortIndex ].insert( 0 , chargeEvent.ChargeEvent( swappingIn , common.currentTime ) )
 
                 # swap finishes up in the queue
                 llfQueue[ llfIndex ] = swappingOut

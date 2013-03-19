@@ -10,19 +10,6 @@ class Vehicle:
         # keep tabs of the number of vehicles that have entered the model
         Vehicle.numVehiclesMade += 1
 
-        # parameters for each vehicle, not all are used for each algorithm implementation
-        self.arrivalTime         =     arrivalTime
-        self.startTime           =     arrivalTime
-        self.depTime             =     depTime
-        self.chargeRate          =     chargeRate
-        self.maxCapacity         =     maxCapacity
-        self.timeToCharge        =     ( chargeNeeded - currentCharge ) / chargeRate  #linear
-        self.totalTime           =     depTime - arrivalTime
-        self.freeTime            =     self.totalTime - self.timeToCharge
-        self.laxity              =     self.freeTime / self.totalTime
-        self.originalLaxity      =     self.freeTime / self.totalTime
-        self.profit              =     ( chargeNeeded - currentCharge ) * common.electricityPrice
-
         # can't have a negative currentCharge
         if currentCharge >= 0:
             self.currentCharge  =   currentCharge
@@ -36,6 +23,19 @@ class Vehicle:
             self.chargeNeeded   =   chargeNeeded
         else:
             self.chargeNeeded   =   0
+
+        # parameters for each vehicle, not all are used for each algorithm implementation
+        self.arrivalTime         =     arrivalTime
+        self.startTime           =     arrivalTime
+        self.depTime             =     depTime
+        self.chargeRate          =     chargeRate
+        self.maxCapacity         =     maxCapacity
+        self.timeToCharge        =     ( self.chargeNeeded - self.currentCharge ) / chargeRate  #linear
+        self.totalTime           =     depTime - arrivalTime
+        self.freeTime            =     self.totalTime - self.timeToCharge
+        self.laxity              =     self.freeTime / self.totalTime
+        self.originalLaxity      =     self.freeTime / self.totalTime
+        self.profit              =     ( self.chargeNeeded - currentCharge ) * common.electricityPrice
 
         # return self  FIXME: what's going on with this?
 
