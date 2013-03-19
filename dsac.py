@@ -137,7 +137,10 @@ def leastProfitConflict( vehicle ):
 		profitGained = vehicle.profit
 
 		for task in tempSched[startOfMovedTasks:]
+			#check to see if task is finishable, if it is not then subtract (penaltyCoefficient * amountNotCharged) from profitGained
 			if 
+
+			#otherwise add task.profit() to profitGained
 
 
 
