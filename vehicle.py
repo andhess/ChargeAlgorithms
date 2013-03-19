@@ -37,7 +37,7 @@ class Vehicle:
         self.originalLaxity      =     self.freeTime / self.totalTime
         self.profit              =     ( self.chargeNeeded - currentCharge ) * common.electricityPrice
 
-        # return self  FIXME: what's going on with this?
+        # return self
 
     def duplicate(self):
         return copy.deepcopy(self)
