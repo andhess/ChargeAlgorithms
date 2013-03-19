@@ -22,11 +22,11 @@ simulationInterval = poissonGen.simulateInterval()
 
 # print common.vehicleIdsIn2DList( simulationInterval )
 
-# fcfs.simulateFCFS( simulationInterval )
+fcfs.simulateFCFS( simulationInterval )
 
-# edf.simulateEDF( simulationInterval )
+edf.simulateEDF( simulationInterval )
 
-#llfSmart.simulateLLF( simulationInterval )
+llfSmart.simulateLLF( simulationInterval )
 
 llfSimple.simulateLLFSimple( simulationInterval )
 
