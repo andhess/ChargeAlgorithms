@@ -67,6 +67,7 @@ def simulateEDF( arrayOfVehicleArrivals ):
     # write a CSV with all the chargePort logs
     csvGen.exportChargePortsToCSV( "edf" )
 
+
 # called to update the vehicles for each minute of simulation
 def updateVehiclesEDF():
     global earliestDLIndex
@@ -142,7 +143,7 @@ def updateVehiclesEDF():
 
     # start out by grabbing the latest chargePort
     latestChargePortDLIndex = latestChargePortDL()
-    
+
     # prioritize edge cases, loop until swap the top DL are all in the queue
     while len( edfQueue ) > 0 and latestChargePortDLIndex != -1 and edfQueue[ earliestDLIndex ].depTime < chargePorts.chargePorts[ latestChargePortDLIndex ].depTime:
 
@@ -156,7 +157,7 @@ def updateVehiclesEDF():
         chargePorts.chargePorts[ latestChargePortDLIndex ] = swappingIn
 
         # create a new listener for the vehicle that just got swapped in
-        chargePorts.chargePortListeners[ index ].insert( 0 , chargeEvent.ChargeEvent( swappingIn , common.currentTime ) )
+        chargePorts.chargePortListeners[ latestChargePortDLIndex ].insert( 0 , chargeEvent.ChargeEvent( swappingIn , common.currentTime ) )
 
         # swap finishes in the queue
         edfQueue[ earliestDLIndex ] = swappingOut
@@ -166,6 +167,7 @@ def updateVehiclesEDF():
         latestChargePortDLIndex = latestChargePortDL()
 
         # NOTE: we are explicitly choosing to grab a clean version of each index because accuracy cannot be guaranteed
+
 
 # gets the index of earliest deadline of all the vehicles in edfQueue
 def earliestDL():
