@@ -1,4 +1,6 @@
-from chargePorts import resetChargePorts
+from chargePorts import resetChargePorts, resetChargePortListeners
+import vehicle
+
 # ---- storage lots ------
 
 doneChargingLot = []
@@ -28,7 +30,7 @@ def setNumberOfVehiclesInSimulation( n ):
 	numberOfVehiclesInSimulation = n
 
 # function to reset time, failed/done lots etc. Called at start of every algorithm simlulation
-def updateGlobals():
+def updateGlobals( arrayOfVehicleArrivals ):
     global currentTime
     currentTime = 0
     global doneChargingLot
@@ -38,6 +40,13 @@ def updateGlobals():
     global cantChargeLot
     cantChargeLot = []
     resetChargePorts()	# function in chargePorts.py to empty all chargePorts
+    resetChargePortListeners()
+    
+    # reset charge for each vehicle
+    for minute, numVehiclesPerMin in enumerate( arrayOfVehicleArrivals ):
+        for vehicle in numVehiclesPerMin:
+        	vehicle.resetVehicleCharge()
+
 
 # returns string representation of all vehicles in a list by id in form [0,1,2,3,4...] 
 # with one id highlighted which is useful for viewing llfIndex or earliestDLIndex, etc

@@ -15,7 +15,7 @@ queue = Queue.Queue( 0 )
 def simulateFCFS( arrayOfVehicleArrivals ):
     
     # reset global variables such as time, done/failed lots
-    common.updateGlobals()
+    common.updateGlobals( arrayOfVehicleArrivals )
     global currentTime
 
     # initialize a CSV document for storing all data

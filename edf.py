@@ -15,7 +15,7 @@ earliestDLIndex = -1;
 def simulateEDF( arrayOfVehicleArrivals ):
     
     # reset global variables such as time, done/failed lots
-    common.updateGlobals()
+    common.updateGlobals( arrayOfVehicleArrivals )
     global currentTime
     global earliestDLIndex
 

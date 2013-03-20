@@ -70,6 +70,9 @@ class Vehicle:
     def updateStartTime( self, newStartingTime ):
         self.startTime = newStartingTime
 
+    def resetVehicleCharge( self ):
+        self.currentCharge = self.initialCharge
+
  #   def getStartingTime( self ):
  #       return max( self.startTime 
 

@@ -18,7 +18,7 @@ def resetChargePorts():
 	chargePorts = [ ] * numChargePorts
 
 def resetChargePortListeners():
-    chargePortListeners = [ [ ] ] * numChargePorts
+    chargePortListeners = [ ] * numChargePorts
     for i in range( numChargePorts ):
         chargePortListeners.append( [ ] )
 

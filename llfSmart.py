@@ -25,7 +25,7 @@ llfIndex = -1
 def simulateLLF( arrayOfVehicleArrivals ):
     
     # reset global variables such as time, done/failed lots
-    common.updateGlobals()
+    common.updateGlobals( arrayOfVehicleArrivals )
     global currentTime
     global llfIndex
 
@@ -146,7 +146,7 @@ def updateVehiclesLLF():
                     chargePorts.chargePorts[ index ] = nextVehicle
 
                     # make it a listener
-                    chargePorts.chargePortListeners[ index ].insert( 0, chargeEvent.chargeEvent( nextVehicle, common.currentTime ) )
+                    chargePorts.chargePortListeners[ index ].insert( 0, chargeEvent.ChargeEvent( nextVehicle, common.currentTime ) )
                     
                     # update queue
                     del llfQueue[ llfIndex ]
