@@ -1,5 +1,6 @@
 import common
 import copy
+import math
 
 class Vehicle:
     numVehiclesMade = 0
@@ -30,7 +31,7 @@ class Vehicle:
         self.depTime             =     depTime
         self.chargeRate          =     chargeRate
         self.maxCapacity         =     maxCapacity
-        self.timeToCharge        =     ( self.chargeNeeded - self.currentCharge ) / chargeRate  #linear
+        self.timeToCharge        =     math.ceil( self.chargeNeeded - self.currentCharge ) / chargeRate  #linear
         self.totalTime           =     depTime - arrivalTime
         self.freeTime            =     self.totalTime - self.timeToCharge
         self.laxity              =     self.freeTime / self.totalTime
