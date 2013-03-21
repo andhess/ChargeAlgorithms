@@ -101,7 +101,7 @@ def exportChargePortsToCSV( folderName ):
         # make file name and reference path
         fileName = 'port' + str( index ) + '.csv'
 
-        print 'fileName:   ' , fileName
+        # print 'fileName:   ' , fileName
 
         portPath = os.path.join( dest_dir, fileName )
 

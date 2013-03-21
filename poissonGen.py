@@ -9,6 +9,11 @@ import common
 # --- poissonStuff ---
 avgArrivalRate = .4 # cars per minute
 
+# sets the arrival rate to a specificed value. Used for mass simulation
+def setArrivalRate( newArrivalRate ):
+    global avgArrivalRate
+    avgArrivalRate = newArrivalRate
+
 # --- charging stuff ---
 # chargeRateMu
 # chargeRateSigma

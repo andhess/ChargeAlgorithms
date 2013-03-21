@@ -77,7 +77,8 @@ def simulateDSAC( arrayOfVehicleArrivals ):
           "  chargePorts " , chargePorts.toString()
 
     # write a CSV for all the chargePort logs
-    csvGen.exportChargePortsToCSV( "fcfs" )
+    csvGen.exportChargePortsToCSV( "dsac" )
+
 
 def leastProfitConflict( vehicle ):
 

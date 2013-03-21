@@ -61,16 +61,18 @@ def simulateLLFSimple( arrayOfVehicleArrivals ):
         updateVehiclesLLFSimple()
         common.currentTime += 1
 
-    print "LLF Simple: total number of cars: ", common.numberOfVehiclesInSimulation , \
-          "  elapsed time: " , common.currentTime , \
-          "  done charging lot: " , len( common.doneChargingLot ) , \
-          "  failed charging lot: " , len( common.failedLot ) , \
-          "  cant charge lot: " , len( common.cantChargeLot ) , \
-          "  llfQueue size:  " , len( llfSimpleQueue ) , \
-          "  chargePort " , chargePorts.toString()
+    # print "LLF Simple: total number of cars: ", common.numberOfVehiclesInSimulation , \
+    #       "  elapsed time: " , common.currentTime , \
+    #       "  done charging lot: " , len( common.doneChargingLot ) , \
+    #       "  failed charging lot: " , len( common.failedLot ) , \
+    #       "  cant charge lot: " , len( common.cantChargeLot ) , \
+    #       "  llfQueue size:  " , len( llfSimpleQueue ) , \
+    #       "  chargePort " , chargePorts.toString()
         
     # write a CSV of all the data in chargePortListeners
     csvGen.exportChargePortsToCSV( "llfSimple" )
+
+    return ( 1.0 * len( common.doneChargingLot ) / len( common.numberOfVehiclesInSimulation ) )
 
 
 # called to update the vehicles for each minute of simulation

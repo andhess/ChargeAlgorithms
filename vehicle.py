@@ -20,10 +20,10 @@ class Vehicle:
             self.initialCharge  =   0
 
         # same goes with chargeRequest
-        if chargeNeeded >= 0:
+        if chargeNeeded >= 20:
             self.chargeNeeded   =   chargeNeeded
         else:
-            self.chargeNeeded   =   0
+            self.chargeNeeded   =   20
 
         # parameters for each vehicle, not all are used for each algorithm implementation
         self.arrivalTime         =     arrivalTime

@@ -15,21 +15,41 @@ interval = int( sys.argv[ 1 ] )
 common.setInterval(interval)
 
 
-#  -------- Simulations ------------
-print "---------------- start of simulations -----------------------"
+simulationData = []
 
-simulationInterval = poissonGen.simulateInterval()
+arrivalRate = .01
 
-# print common.vehicleIdsIn2DList( simulationInterval )
+# do tons and tons of simulations
+for i in range(0, 1000):
 
-fcfs.simulateFCFS( simulationInterval )
+	poissonGen.setArrivalRate( arrivalRate )
 
-edf.simulateEDF( simulationInterval )
+	simulationRound = []
 
-llfSmart.simulateLLF( simulationInterval )
+	simulationRound.append( arrivalRate )
 
-llfSimple.simulateLLFSimple( simulationInterval )
+	#  -------- Simulations ------------
+	#print "---------------- start of simulations -----------------------"
 
-# poissonGen.testPoissonDistribution(1000)
+	simulationInterval = poissonGen.simulateInterval()
 
-print "----------------- end of simulations ------------------------"
+	# print common.vehicleIdsIn2DList( simulationInterval )
+
+	simulationRound.append( fcfs.simulateFCFS( simulationInterval ) )
+
+	simulationRound.append( edf.simulateEDF( simulationInterval ) )
+
+	simulationRound.append( llfSmart.simulateLLF( simulationInterval ) )
+
+	simulationRound.append( llfSimple.simulateLLFSimple( simulationInterval ) )
+
+	simulationRound.append( dsac.simulateDSAC( simulationInterval ) )
+
+	arrivalRate += .02
+
+	# poissonGen.testPoissonDistribution(1000)
+
+	# print "----------------- end of simulations ------------------------"
+
+csvGen.exportSimulationDataToCSV( simulationData )
+
