@@ -6,6 +6,7 @@ import llfSmart
 import llfSimple
 import dsac
 import poissonGen
+import csvGen
 
 
 if len( sys.argv ) != 2:
@@ -16,23 +17,47 @@ interval = int( sys.argv[ 1 ] )
 common.setInterval(interval)
 
 
+simulationData = []
+
+arrivalRate = .5
+
+# do tons and tons of simulations
+for i in range(0, 5):
+
+poissonGen.setArrivalRate( arrivalRate )
+
+simulationRound = []
+
+simulationRound.append( arrivalRate )
+
 #  -------- Simulations ------------
-print "---------------- start of simulations -----------------------"
+#print "---------------- start of simulations -----------------------"
 
 simulationInterval = poissonGen.simulateInterval()
 
 # print common.vehicleIdsIn2DList( simulationInterval )
 
-# fcfs.simulateFCFS( simulationInterval )
+simulationRound.append( fcfs.simulateFCFS( simulationInterval ) )
 
-# edf.simulateEDF( simulationInterval )
+simulationRound.append( edf.simulateEDF( simulationInterval ) )
 
-# llfSmart.simulateLLF( simulationInterval )
+simulationRound.append( llfSmart.simulateLLF( simulationInterval ) )
 
-# llfSimple.simulateLLFSimple( simulationInterval )
+simulationRound.append( llfSimple.simulateLLFSimple( simulationInterval ) )
 
-dsac.simulateDSAC( simulationInterval )
+#simulationRound.append( dsac.simulateDSAC( simulationInterval ) )
+
+# print "----------------- end of simulations ------------------------"
+
+
+simulationData.append( simulationRound )
+arrivalRate += 1
+
+#print "running"
+#print simulationData
 
 # poissonGen.testPoissonDistribution(1000)
 
-print "----------------- end of simulations ------------------------"
+
+csvGen.exportSimulationDataToCSV( simulationData )
+
