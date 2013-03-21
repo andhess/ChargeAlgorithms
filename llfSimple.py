@@ -72,7 +72,7 @@ def simulateLLFSimple( arrayOfVehicleArrivals ):
     # write a CSV of all the data in chargePortListeners
     csvGen.exportChargePortsToCSV( "llfSimple" )
 
-    return ( 1.0 * len( common.doneChargingLot ) / len( common.numberOfVehiclesInSimulation ) )
+    return ( 1.0 * len( common.doneChargingLot ) / common.numberOfVehiclesInSimulation )
 
 
 # called to update the vehicles for each minute of simulation

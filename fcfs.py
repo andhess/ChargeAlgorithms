@@ -65,7 +65,7 @@ def simulateFCFS( arrayOfVehicleArrivals ):
     # write a CSV for all the chargePort logs
     csvGen.exportChargePortsToCSV( "fcfs" )
 
-    return ( 1.0 * len( common.doneChargingLot ) / len( common.numberOfVehiclesInSimulation ) )
+    return ( 1.0 * len( common.doneChargingLot ) / common.numberOfVehiclesInSimulation )
 
 # called to update the vehicles for each minute of simulation
 def updateVehiclesFCFS():

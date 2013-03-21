@@ -5,6 +5,7 @@ import edf
 import llfSmart
 import llfSimple
 import poissonGen
+import csvGen
 
 
 if len( sys.argv ) != 2:
@@ -17,10 +18,10 @@ common.setInterval(interval)
 
 simulationData = []
 
-arrivalRate = .01
+arrivalRate = .1
 
 # do tons and tons of simulations
-for i in range(0, 1000):
+for i in range(0, 10):
 
 	poissonGen.setArrivalRate( arrivalRate )
 
@@ -43,13 +44,15 @@ for i in range(0, 1000):
 
 	simulationRound.append( llfSimple.simulateLLFSimple( simulationInterval ) )
 
-	simulationRound.append( dsac.simulateDSAC( simulationInterval ) )
+	#simulationRound.append( dsac.simulateDSAC( simulationInterval ) )
 
-	arrivalRate += .02
+	# print "----------------- end of simulations ------------------------"
+
+	simulationData.append( simulationRound )
+	arrivalRate += .2
 
 	# poissonGen.testPoissonDistribution(1000)
 
-	# print "----------------- end of simulations ------------------------"
 
 csvGen.exportSimulationDataToCSV( simulationData )
 
