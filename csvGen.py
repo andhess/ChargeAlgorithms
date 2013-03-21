@@ -157,5 +157,5 @@ def exportSimulationDataToCSV( simulationData ):
     writeCSV.writerow( [ "Arrival Rate" , "FCFS" , "EDF" , "LLFsmart" , "LLFsimple" ] )
     
     # write each row
-    for simulationRound in simulationData:
-        writeCSV.writerow( simulationData.pop( 0 ) )
+    for index, simulationRound in enumerate( simulationData ):
+        writeCSV.writerow( simulationData[ index ] )

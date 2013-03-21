@@ -18,10 +18,10 @@ common.setInterval(interval)
 
 simulationData = []
 
-arrivalRate = .1
+arrivalRate = .5
 
 # do tons and tons of simulations
-for i in range(0, 10):
+for i in range(0, 5):
 
 	poissonGen.setArrivalRate( arrivalRate )
 
@@ -48,8 +48,12 @@ for i in range(0, 10):
 
 	# print "----------------- end of simulations ------------------------"
 
+
 	simulationData.append( simulationRound )
-	arrivalRate += .2
+	arrivalRate += 1
+
+	#print "running"
+	#print simulationData
 
 	# poissonGen.testPoissonDistribution(1000)
 
