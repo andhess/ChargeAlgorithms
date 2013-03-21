@@ -4,6 +4,7 @@ import fcfs
 import edf
 import llfSmart
 import llfSimple
+import dsac
 import poissonGen
 
 
@@ -22,13 +23,15 @@ simulationInterval = poissonGen.simulateInterval()
 
 # print common.vehicleIdsIn2DList( simulationInterval )
 
-fcfs.simulateFCFS( simulationInterval )
+# fcfs.simulateFCFS( simulationInterval )
 
-edf.simulateEDF( simulationInterval )
+# edf.simulateEDF( simulationInterval )
 
-llfSmart.simulateLLF( simulationInterval )
+# llfSmart.simulateLLF( simulationInterval )
 
-llfSimple.simulateLLFSimple( simulationInterval )
+# llfSimple.simulateLLFSimple( simulationInterval )
+
+dsac.simulateDSAC( simulationInterval )
 
 # poissonGen.testPoissonDistribution(1000)
 

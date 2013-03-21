@@ -21,25 +21,31 @@ def simulateDSAC( arrayOfVehicleArrivals ):
 		for vehicle in numVehiclesPerMin:   
 			port = chargePorts.openChargePort()
 
-            if vehicle.currentCharge > vehicle.chargeNeeded:
-                csvGen.exportVehicleToCSV( vehicle, "Charge Not Needed" )
-                common.cantChargeLot.append( vehicle )
-                continue
+			print "openChargePort, ",port
+
+			if vehicle.currentCharge > vehicle.chargeNeeded:
+				csvGen.exportVehicleToCSV( vehicle, "Charge Not Needed" )
+				common.cantChargeLot.append( vehicle )
+				continue
 
 			# a port is open so start charging the vehicle
 			if port is not None:
+
+				print "there is an open chargePort"
 
 				# add to chargePort
 				chargePorts.chargePorts[ port ] = vehicle
 			
 				# initialize a listener object for its charging activity
-				chargePorts.chargePortListeners[ port ].insert( 0 , chargeEvent.chargingEvent( vehicle, common.currentTime ) )
-                
+				chargePorts.chargePortListeners[ port ].insert( 0 , chargeEvent.ChargeEvent( vehicle, common.currentTime ) )
+				
 			# no ports are available so put the vehicle in the queue
 			else:
 
 				# any appendables?
 				appendable = findAppendableChargePort( vehicle )
+
+				print "appendable, ",appendable
 
 				# add to schedule
 				if appendable != -1:
@@ -52,7 +58,18 @@ def simulateDSAC( arrayOfVehicleArrivals ):
 				else:
 					vehicle.startTime = vehicle.depTime - vehicle.timeToCharge
 					
-					# least profit conflict
+					leastProfitConflictResults = leastProfitConflict( vehicle )
+					leastProfitConflictPort = leastProfitConflictResults[0]
+					leastProfitConflictSchedule = leastProfitConflictResults[1]
+
+					# vehicle declined
+					if leastProfitConflictPort[0] == -1:
+						# CSV to decline car
+						print "declined"
+
+					else:
+						schedules[ leastProfitConflictPort ] = leastProfitConflictSchedule
+					
 
 
 
@@ -63,26 +80,27 @@ def simulateDSAC( arrayOfVehicleArrivals ):
 		updateVehicles()
 		common.currentTime += 1
 
-    # vehicles done arriving, now continue with the simulation
-    while chargePorts.chargePortsEmpty() == False or schedulesEmpty() == False:
-        updateVehiclesEDF()
-        common.currentTime += 1
+	# vehicles done arriving, now continue with the simulation
+	while chargePorts.chargePortsEmpty() == False or schedulesEmpty() == False:
+		updateVehiclesEDF()
+		common.currentTime += 1
 
-    print "DSAC: total number of cars: ", common.numberOfVehiclesInSimulation , \
-          "  elapsed time: " , common.currentTime , \
-          "  done charging lot: " , len( common.doneChargingLot ) , \
-          "  failed charging lot: " , len( common.failedLot ) , \
-          "  cant charge lot: " , len( common.cantChargeLot ) , \
-          "  schedules:  " , schedulesToString() , \
-          "  chargePorts " , chargePorts.toString()
+	print "DSAC: total number of cars: ", common.numberOfVehiclesInSimulation , \
+		  "  elapsed time: " , common.currentTime , \
+		  "  done charging lot: " , len( common.doneChargingLot ) , \
+		  "  failed charging lot: " , len( common.failedLot ) , \
+		  "  cant charge lot: " , len( common.cantChargeLot ) , \
+		  "  schedules:  " , schedulesToString() , \
+		  "  chargePorts " , chargePorts.toString()
 
-    # write a CSV for all the chargePort logs
-    csvGen.exportChargePortsToCSV( "fcfs" )
+	# write a CSV for all the chargePort logs
+	csvGen.exportChargePortsToCSV( "fcfs" )
 
 def leastProfitConflict( vehicle ):
 
 	profitGained = 0
 	leastProfitConflictPort = -1
+	bestSchedule = []
 
 	# iterate through each schedule
 	for index, schedulePort in enumerate( schedules ):
@@ -96,10 +114,14 @@ def leastProfitConflict( vehicle ):
 		# looking for the car that cutOff time interrupts
 		splitVehicleIndex = len( tempSched ) - 1
 
-		while splitVehicleIndex >=0 and tempSched[ splitVehicleIndex ].startTime > vehicle.startTime:
+		while splitVehicleIndex >=0 and tempSched[ splitVehicleIndex ].startTime < vehicle.startTime:
 			splitVehicleIndex += 1
 
-		splitVehicle = schedulePort[ splitVehicleIndex ]
+		splitVehicleIndex -= 1
+
+		print "tempSched ",tempSched
+		print "splitVehicleIndex ",splitVehicleIndex
+		splitVehicle = tempSched[ splitVehicleIndex ]
 
 		duplicate = Vehicle.duplicate(splitVehicle) # represents the second half of the split vehicle	
 		
@@ -161,13 +183,23 @@ def leastProfitConflict( vehicle ):
 		# now that tempSched is has been updated with the new vehicle and the overlapped part pushed to the end
 		# check to see if the profit is better by checking if the 'pushed to end' tasks are finishable before their deadlines
 
-		profitGained = vehicle.profit
+		profitGainedPerPort = vehicle.profit
 
-		for task in tempSched[startOfMovedTasks:]
-			#check to see if task is finishable, if it is not then subtract (penaltyCoefficient * amountNotCharged) from profitGained
-			if 
+		for task in tempSched[startOfMovedTasks:]:
+			#check to see if task is finishable, if it is not then subtract (penaltyCoefficient * amountNotCharged) from profitGainedPerPort
+			timeDifference = ( task.startTime + task.timeToCharge ) - task.depTime
+			if timeDifference < 0 :
+				profitGainedPerPort += common.penaltyCoefficient * (timeDifference / 60.0) * task.chargeRate * common.electricityPrice
 
-			#otherwise add task.profit() to profitGained
+			# otherwise add task.profit() to profitGainedPerPort
+			else:
+				profitGainedPerPort += task.profit()
+
+		if profitGainedPerPort > profitGained:
+			profitGained = profitGainedPerPort
+			leastProfitConflictPort = index
+
+	return [leastProfitConflictPort, tempSched]
 
 
 
@@ -195,48 +227,52 @@ def updateVehicles():
 
 			# when would we kick out a vehicle?
 
+			print index
+			print schedules
+
 			# definitely when it's hit its charge or when one is scheduled to start next
-			if ( vehicle.currentCharge >= vehicle.chargeNeeded ) or ( schedules[ index ][ 0 ].startTime - 1 == common.currentTime ):
+			if ( vehicle.currentCharge >= vehicle.chargeNeeded ) or ( len(schedules[index]) > 0 and schedules[ index ][ 0 ].startTime - 1 == common.currentTime ):
 
-	            # finish up the listener for this vehicle
-	            chargePorts.chargePortListeners[ index ][ 0 ].terminateCharge( vehicle , common.currentTime )
+				# finish up the listener for this vehicle
+				chargePorts.chargePortListeners[ index ][ 0 ].terminateCharge( vehicle , common.currentTime )
 
-	            # remove finished vehicle from grid and document it
-	            csvGen.exportVehicleToCSV( vehicle, "SUCCESS" )
-	            common.doneChargingLot.append( vehicle )
+				# remove finished vehicle from grid and document it
+				csvGen.exportVehicleToCSV( vehicle, "SUCCESS" )
+				common.doneChargingLot.append( vehicle )
 
-	            # now add the next vehicle from the schedule, if possible
-	            if len( schedules[ index ] ) > 0:
+				# now add the next vehicle from the schedule, if possible
+				if len( schedules[ index ] ) > 0:
 
-	            	# next vehicle
-	            	nextVehicle = schedules[ index ].pop( 0 )
-	            	chargePorts.chargePorts[ index ] = nextVehicle
+					# next vehicle
+					nextVehicle = schedules[ index ].pop( 0 )
+					chargePorts.chargePorts[ index ] = nextVehicle
 
-	                # make new listener
-                    chargePorts.chargePortListeners[ index ].insert( 0 , chargeEvent.ChargeEvent( nextVehicle , common.currentTime ) )
+					# make new listener
+					chargePorts.chargePortListeners[ index ].insert( 0 , chargeEvent.ChargeEvent( nextVehicle , common.currentTime ) )
 
+			#DOES REMOVED NEED TO BE SET TO TRUE????
 
-            # probably not going to be used, but we can still check for depTime
-            if common.currentTime >= vehicle.depTime and not removed:
+			# probably not going to be used, but we can still check for depTime
+			if common.currentTime >= vehicle.depTime and not removed:
 
-            	print "CAUTION: a deadline was passed"
+				print "CAUTION: a deadline was passed"
 
-                # this vehicle is on the out, so wrap up its listener
-                chargePorts.chargePortListeners[ index ][ 0 ].terminateCharge( vehicle , common.currentTime )
+				# this vehicle is on the out, so wrap up its listener
+				chargePorts.chargePortListeners[ index ][ 0 ].terminateCharge( vehicle , common.currentTime )
 
-                # remove finished vehicle and document it
-                csvGen.exportVehicleToCSV( vehicle, "FAILURE" )
-                common.failedLot.append( vehicle )
+				# remove finished vehicle and document it
+				csvGen.exportVehicleToCSV( vehicle, "FAILURE" )
+				common.failedLot.append( vehicle )
 
-	            # now add the next vehicle from the schedule, if possible
-	            if len( schedules[ index ] ) > 0:
+				# now add the next vehicle from the schedule, if possible
+				if len( schedules[ index ] ) > 0:
 
-	            	# next vehicle
-	            	nextVehicle = schedules[ index ].pop( 0 )
-	            	chargePorts.chargePorts[ index ] = nextVehicle
+					# next vehicle
+					nextVehicle = schedules[ index ].pop( 0 )
+					chargePorts.chargePorts[ index ] = nextVehicle
 
-	                # make new listener
-                    chargePorts.chargePortListeners[ index ].insert( 0 , chargeEvent.ChargeEvent( nextVehicle , common.currentTime ) )
+					# make new listener
+					chargePorts.chargePortListeners[ index ].insert( 0 , chargeEvent.ChargeEvent( nextVehicle , common.currentTime ) )
 
 
 
@@ -246,7 +282,7 @@ def updateVehicles():
 # returns -1 if none are possible
 def findAppendableChargePort( vehicle ):
 	tightestWindowIndex = -1
-	bestWindow = vehicle.deadline - currentTime
+	bestWindow = vehicle.depTime - common.currentTime
 
 	# iterate througbh each schedulels
 	for index, portSchedule in enumerate( schedules ):
@@ -270,30 +306,30 @@ def scheduleEndTime( scheduleIndex ):
 		return schedules[ scheduleIndex ][ lastItem ].depTime
 
 	# should never happen, make it break
-	return false
+	return False
 
 # checks to see if any vehicles are still in the schedule
 # returns true if all schedules are empty
 def scheduleEmpty():
 	empty = True
 
-		# check for each schedule
-		for schedule in schedules:
-			if len( schedule ) > 0
-				empty = False
-				break
+	# check for each schedule
+	for schedule in schedules:
+		if len( schedule ) > 0:
+			empty = False
+			break
 
 	return empty
 
 def schedulesToString():
-    output = "["
-    for index, schedule in enumerate( schedules ):
-        if len( schedule ) == 0:
-            output += "None"
-        else:
-            output += "Occupied"
-        if index != len( chargePorts ) - 1:
-            output += ", "
-    output += "]"
-    return output
+	output = "["
+	for index, schedule in enumerate( schedules ):
+		if len( schedule ) == 0:
+			output += "None"
+		else:
+			output += "Occupied"
+		if index != len( chargePorts ) - 1:
+			output += ", "
+	output += "]"
+	return output
 
