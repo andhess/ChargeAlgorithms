@@ -19,14 +19,18 @@ def setArrivalRate( newArrivalRate ):
 # chargeRateSigma
 
 # chargeNeeded - the charge needed at the end 
-chargeNeededMu = 20 #kwh
-chargeNeededSigma = 20 #kwh
+chargeNeededMu = .9 #kwh in $
+chargeNeededSigma = .1 #kwh in %
 
-currentChargeMu = 12 #kwh
-currentChargeSigma = 6 #kwh
+currentChargeMu = .4 #kwh in %
+currentChargeSigma = .15 #kwh in %
 
 uniformMaxCapacity = 100 #kwh
-uniformChargeRate = 59 #kw
+uniformChargeRate = 20 #kw
+
+# just some values of common cars.. Volt: 16, Leaf: 24, Model S: 60
+# more of some vs others to reprsent realistic distribution
+batteryCapacities = [ 16, 16, 16, 16, 24, 24, 24, 24, 24, 16, 16, 16, 16, 16, 16, 24, 60 ]
 
 # ------------ Poisson Generator ------------
 
@@ -69,11 +73,11 @@ def vehicleGen( arrayOfArrivalsPerMin ):
 
             for i in range( 0, arrivalesDuringMin ):
                 depart = minute + random.randint( 60 , 180 )
-                chargeNeeded = random.gauss( chargeNeededMu, chargeNeededSigma )
-                currentCharge = random.gauss( currentChargeMu, currentChargeSigma )
+                batteryCapacity = random.choice( batteryCapacities )
+                chargeNeeded = random.gauss( ( chargeNeededMu * batteryCapacity ) , ( chargeNeededSigma * batteryCapacity ) )
+                currentCharge = random.gauss( ( currentChargeMu * batteryCapacity ) , ( currentChargeSigma * batteryCapacity ) )
                 chargeRate = uniformChargeRate
-                maxCapacity = uniformMaxCapacity
-                vehiclesDuringMin.append( vehicle.Vehicle( minute, depart, chargeNeeded, currentCharge, chargeRate, maxCapacity ) )
+                vehiclesDuringMin.append( vehicle.Vehicle( minute, depart, chargeNeeded, currentCharge, chargeRate, batteryCapacity ) )
             
             vehicles.append( vehiclesDuringMin )
 

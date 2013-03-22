@@ -54,13 +54,13 @@ def simulateFCFS( arrayOfVehicleArrivals ):
         updateVehiclesFCFS()
         common.currentTime += 1
 
-    # print "FCFS: total number of cars: ", common.numberOfVehiclesInSimulation , \
-    #       "  elapsed time: " , common.currentTime , \
-    #       "  done charging lot: " , len( common.doneChargingLot ) , \
-    #       "  failed charging lot: " , len( common.failedLot ) , \
-    #       "  cant charge lot: " , len( common.cantChargeLot ) , \
-    #       "  fcfsQueue size:  " , queue.qsize() , \
-    #       "  chargePort " , chargePorts.toString()
+    print "FCFS: total number of cars: ", common.numberOfVehiclesInSimulation , \
+          "  elapsed time: " , common.currentTime , \
+          "  done charging lot: " , len( common.doneChargingLot ) , \
+          "  failed charging lot: " , len( common.failedLot ) , \
+          "  cant charge lot: " , len( common.cantChargeLot ) , \
+          "  fcfsQueue size:  " , queue.qsize() , \
+          "  chargePort " , chargePorts.toString()
 
     # write a CSV for all the chargePort logs
     csvGen.exportChargePortsToCSV( "fcfs" )
