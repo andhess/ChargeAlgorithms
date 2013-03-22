@@ -67,15 +67,17 @@ def vehicleIdsInList( list, highlight ):
 
 # returns string representation of all vehicles in 2d array, most notably simulationInterval in main.py
 def vehicleIdsIn2DList( list ):
-	output = "["
-	count = 0
+	print"------2d List-----"
 	for row in list:
 		if row is not None:
+			count = 0
+			output = "["
 			for item  in row:
 				if item is not None:
 					output += str(item.id)
 					count += 1
 					if count != numberOfVehiclesInSimulation:
 						output += ", "
-	output += "]"
-	return output
+			output += "]"
+		print output
+	print"------------------"

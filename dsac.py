@@ -7,6 +7,8 @@ import copy
 
 schedules = [[]] * chargePorts.numChargePorts
 
+declinedLot = []
+
 def simulateDSAC( arrayOfVehicleArrivals ):
 
 	# reset global variables such as time, done/failed lots
@@ -18,7 +20,11 @@ def simulateDSAC( arrayOfVehicleArrivals ):
 
 	# iterate through each vehicle in each minute
 	for minute, numVehiclesPerMin in enumerate( arrayOfVehicleArrivals ):
+
 		print minute
+		print"schedules:"
+		common.vehicleIdsIn2DList(schedules)
+
 		for vehicle in numVehiclesPerMin: 
 			port = chargePorts.openChargePort()
 
@@ -33,7 +39,7 @@ def simulateDSAC( arrayOfVehicleArrivals ):
 			# a port is open so start charging the vehicle
 			if port is not None:
 
-				# print "there is an open chargePort"
+				print "charged right away"
 
 				# add to chargePort
 				chargePorts.chargePorts[ port ] = vehicle
@@ -51,6 +57,8 @@ def simulateDSAC( arrayOfVehicleArrivals ):
 
 				# add to schedule
 				if appendable != -1:
+					print "appended"
+
 					# there is at least one car in the schedule
 					if len(schedules[ appendable ]) > 0:
 						tempVehicle = schedules[ appendable ][ len( schedules[ appendable ] ) - 1  ]
@@ -77,7 +85,10 @@ def simulateDSAC( arrayOfVehicleArrivals ):
 						# CSV to decline car
 						print "declined"
 
+						declinedLot.append(vehicle)
+
 					else:
+						print "appended with conflict"
 						schedules[ leastProfitConflictPort ] = leastProfitConflictSchedule
 
 		updateVehicles()
@@ -99,15 +110,19 @@ def simulateDSAC( arrayOfVehicleArrivals ):
 
     # write a CSV for all the chargePort logs
 	csvGen.exportChargePortsToCSV( "dsac" )
-
+leastProfitConflictCount = 0
 def leastProfitConflict( vehicle ):
-
+	global leastProfitConflictCount
+	print "leastProfitConflictCount ", leastProfitConflictCount
+	leastProfitConflictCount+=1
 	profitGained = 0
 	leastProfitConflictPort = -1
 	bestSchedule = []
 
 	# iterate through each schedule
 	for index, schedulePort in enumerate( schedules ):
+
+		print "trying to put vehicle ", vehicle.id," into ", common.vehicleIdsInList(schedulePort,-1)
 
 		# make a temporary one since we'll be messing with this
 		tempSched = copy.deepcopy(schedulePort)
@@ -203,6 +218,7 @@ def leastProfitConflict( vehicle ):
 		if profitGainedPerPort > profitGained:
 			profitGained = profitGainedPerPort
 			leastProfitConflictPort = index
+		print "tempSched: ", common.vehicleIdsInList(tempSched, -1)
 
 	return [leastProfitConflictPort, tempSched]
 
@@ -252,7 +268,7 @@ def updateVehicles():
 			# probably not going to be used, but we can still check for depTime
 			if common.currentTime >= vehicle.depTime and not removed:
 
-				# print "CAUTION: a deadline was passed"
+				print "CAUTION: a deadline was passed"
 
 				# this vehicle is on the out, so wrap up its listener
 				chargePorts.chargePortListeners[ index ][ 0 ].terminateCharge( vehicle , common.currentTime )

@@ -11,39 +11,39 @@ class Vehicle:
 		# keep tabs of the number of vehicles that have entered the model
 		Vehicle.numVehiclesMade += 1
 
-        # can't have a negative currentCharge, also keeps the distribution within a range
-        if ( 1.0 * currentCharge / maxCapacity ) >= 0:
-            if ( 1.0 * currentCharge / maxCapacity ) <= .55:
-                self.currentCharge  =   currentCharge
-                self.initialCharge  =   currentCharge
-            else:
-                self.currentCharge  =   .55 * maxCapacity
-                self.initialCharge  =   .55 * maxCapacity
-        else:
-            self.currentCharge  =   0
-            self.initialCharge  =   0
+		# can't have a negative currentCharge, also keeps the distribution within a range
+		if ( 1.0 * currentCharge / maxCapacity ) >= 0:
+			if ( 1.0 * currentCharge / maxCapacity ) <= .55:
+				self.currentCharge  =   currentCharge
+				self.initialCharge  =   currentCharge
+			else:
+				self.currentCharge  =   .55 * maxCapacity
+				self.initialCharge  =   .55 * maxCapacity
+		else:
+			self.currentCharge  =   0
+			self.initialCharge  =   0
 
-        # same goes with chargeRequest
-        if ( 1.0 * chargeNeeded / maxCapacity ) >= .8:
-            if ( 1.0 * chargeNeeded / maxCapacity ) <= 1:
-                self.chargeNeeded   =   chargeNeeded
-            else:
-                self.chargeNeeded   =   maxCapacity
-        else:
-            self.chargeNeeded   =   .8 * maxCapacity
+		# same goes with chargeRequest
+		if ( 1.0 * chargeNeeded / maxCapacity ) >= .8:
+			if ( 1.0 * chargeNeeded / maxCapacity ) <= 1:
+				self.chargeNeeded   =   chargeNeeded
+			else:
+				self.chargeNeeded   =   maxCapacity
+		else:
+			self.chargeNeeded   =   .8 * maxCapacity
 
-        # parameters for each vehicle, not all are used for each algorithm implementation
-        self.arrivalTime         =     arrivalTime
-        self.startTime           =     arrivalTime
-        self.depTime             =     depTime
-        self.chargeRate          =     chargeRate
-        self.maxCapacity         =     maxCapacity
-        self.timeToCharge        =     ( ( self.chargeNeeded - self.currentCharge ) * 1.0 ) / chargeRate  #linear
-        self.totalTime           =     depTime - arrivalTime
-        self.freeTime            =     self.totalTime - self.timeToCharge
-        self.laxity              =     self.freeTime / self.totalTime
-        self.originalLaxity      =     self.freeTime / self.totalTime
-        self.profit              =     (self.timeToCharge / 60.0) * self.chargeRate * common.electricityPrice
+		# parameters for each vehicle, not all are used for each algorithm implementation
+		self.arrivalTime         =     arrivalTime
+		self.startTime           =     arrivalTime
+		self.depTime             =     depTime
+		self.chargeRate          =     chargeRate
+		self.maxCapacity         =     maxCapacity
+		self.timeToCharge        =     ( ( self.chargeNeeded - self.currentCharge ) * 1.0 ) / chargeRate  #linear
+		self.totalTime           =     depTime - arrivalTime
+		self.freeTime            =     self.totalTime - self.timeToCharge
+		self.laxity              =     self.freeTime / self.totalTime
+		self.originalLaxity      =     self.freeTime / self.totalTime
+		self.profit              =     (self.timeToCharge / 60.0) * self.chargeRate * common.electricityPrice
 
 		# return self
 
