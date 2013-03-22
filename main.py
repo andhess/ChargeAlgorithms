@@ -24,39 +24,39 @@ arrivalRate = .5
 # do tons and tons of simulations
 for i in range(0, 5):
 
-poissonGen.setArrivalRate( arrivalRate )
+	poissonGen.setArrivalRate( arrivalRate )
 
-simulationRound = []
+	simulationRound = []
 
-simulationRound.append( arrivalRate )
+	simulationRound.append( arrivalRate )
 
-#  -------- Simulations ------------
-#print "---------------- start of simulations -----------------------"
+	#  -------- Simulations ------------
+	#print "---------------- start of simulations -----------------------"
 
-simulationInterval = poissonGen.simulateInterval()
+	simulationInterval = poissonGen.simulateInterval()
 
-# print common.vehicleIdsIn2DList( simulationInterval )
+	# print common.vehicleIdsIn2DList( simulationInterval )
 
-simulationRound.append( fcfs.simulateFCFS( simulationInterval ) )
+	# simulationRound.append( fcfs.simulateFCFS( simulationInterval ) )
 
-simulationRound.append( edf.simulateEDF( simulationInterval ) )
+	# simulationRound.append( edf.simulateEDF( simulationInterval ) )
 
-simulationRound.append( llfSmart.simulateLLF( simulationInterval ) )
+	# simulationRound.append( llfSmart.simulateLLF( simulationInterval ) )
 
-simulationRound.append( llfSimple.simulateLLFSimple( simulationInterval ) )
+	# simulationRound.append( llfSimple.simulateLLFSimple( simulationInterval ) )
 
-#simulationRound.append( dsac.simulateDSAC( simulationInterval ) )
+	simulationRound.append( dsac.simulateDSAC( simulationInterval ) )
 
-# print "----------------- end of simulations ------------------------"
+	# print "----------------- end of simulations ------------------------"
 
 
-simulationData.append( simulationRound )
-arrivalRate += 1
+	simulationData.append( simulationRound )
+	arrivalRate += 1
 
-#print "running"
-#print simulationData
+	#print "running"
+	#print simulationData
 
-# poissonGen.testPoissonDistribution(1000)
+	# poissonGen.testPoissonDistribution(1000)
 
 
 csvGen.exportSimulationDataToCSV( simulationData )

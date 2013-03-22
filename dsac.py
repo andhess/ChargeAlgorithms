@@ -84,8 +84,8 @@ def simulateDSAC( arrayOfVehicleArrivals ):
 		common.currentTime += 1
 
 	# vehicles done arriving, now continue with the simulation
-	while chargePorts.chargePortsEmpty() == False or schedulesEmpty() == False:
-		print common.currentTime
+	while chargePorts.chargePortsEmpty() != False or schedulesEmpty() == False:
+		# print common.currentTime
 		updateVehicles()
 		common.currentTime += 1
 
@@ -98,7 +98,7 @@ def simulateDSAC( arrayOfVehicleArrivals ):
 		  "  chargePorts " , chargePorts.toString()
 
     # write a CSV for all the chargePort logs
-    csvGen.exportChargePortsToCSV( "dsac" )
+	csvGen.exportChargePortsToCSV( "dsac" )
 
 def leastProfitConflict( vehicle ):
 
@@ -196,6 +196,8 @@ def leastProfitConflict( vehicle ):
 
 			# otherwise add task.profit() to profitGainedPerPort
 			else:
+				print task
+				print "task profit: ", task.profit()
 				profitGainedPerPort += task.profit()
 
 		if profitGainedPerPort > profitGained:
@@ -203,14 +205,6 @@ def leastProfitConflict( vehicle ):
 			leastProfitConflictPort = index
 
 	return [leastProfitConflictPort, tempSched]
-
-
-
-
-
-
-
-
 
 
 def chargeable( vehicle ):
@@ -316,16 +310,15 @@ def scheduleEndTime( scheduleIndex ):
 
 # checks to see if any vehicles are still in the schedule
 # returns true if all schedules are empty
-def scheduleEmpty():
-	empty = True
+def schedulesEmpty():
 
 	# check for each schedule
 	for schedule in schedules:
 		if len( schedule ) > 0:
-			empty = False
-			break
+			print len(schedule)
+			return False
 
-	return empty
+	return True
 
 def schedulesToString():
 	output = "["
@@ -334,7 +327,7 @@ def schedulesToString():
 			output += "None"
 		else:
 			output += "Occupied"
-		if index != len( chargePorts ) - 1:
+		if index != len( schedules ) - 1:
 			output += ", "
 	output += "]"
 	return output

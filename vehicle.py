@@ -3,76 +3,76 @@ import copy
 import math
 
 class Vehicle:
-    numVehiclesMade = 0
+	numVehiclesMade = 0
 
-    def __init__( self, arrivalTime, depTime, chargeNeeded, currentCharge, chargeRate, maxCapacity ):
-        self.id = Vehicle.numVehiclesMade
-        
-        # keep tabs of the number of vehicles that have entered the model
-        Vehicle.numVehiclesMade += 1
+	def __init__( self, arrivalTime, depTime, chargeNeeded, currentCharge, chargeRate, maxCapacity ):
+		self.id = Vehicle.numVehiclesMade
+		
+		# keep tabs of the number of vehicles that have entered the model
+		Vehicle.numVehiclesMade += 1
 
-        # can't have a negative currentCharge
-        if currentCharge >= 0:
-            self.currentCharge  =   currentCharge
-            self.initialCharge  =   currentCharge
-        else:
-            self.currentCharge  =   0
-            self.initialCharge  =   0
+		# can't have a negative currentCharge
+		if currentCharge >= 0:
+			self.currentCharge  =   currentCharge
+			self.initialCharge  =   currentCharge
+		else:
+			self.currentCharge  =   0
+			self.initialCharge  =   0
 
-        # same goes with chargeRequest
-        if chargeNeeded >= 20:
-            self.chargeNeeded   =   chargeNeeded
-        else:
-            self.chargeNeeded   =   20
+		# same goes with chargeRequest
+		if chargeNeeded >= 20:
+			self.chargeNeeded   =   chargeNeeded
+		else:
+			self.chargeNeeded   =   20
 
-        # parameters for each vehicle, not all are used for each algorithm implementation
-        self.arrivalTime         =     arrivalTime
-        self.startTime           =     arrivalTime
-        self.depTime             =     depTime
-        self.chargeRate          =     chargeRate
-        self.maxCapacity         =     maxCapacity
-        self.timeToCharge        =     math.ceil( ( ( self.chargeNeeded - self.currentCharge ) * 1.0 ) / chargeRate )  #linear
-        self.totalTime           =     depTime - arrivalTime
-        self.freeTime            =     self.totalTime - self.timeToCharge
-        self.laxity              =     self.freeTime / self.totalTime
-        self.originalLaxity      =     self.freeTime / self.totalTime
-        self.profit              =     (self.timeToCharge / 60.0) * self.chargeRate * common.electricityPrice
+		# parameters for each vehicle, not all are used for each algorithm implementation
+		self.arrivalTime         =     arrivalTime
+		self.startTime           =     arrivalTime
+		self.depTime             =     depTime
+		self.chargeRate          =     chargeRate
+		self.maxCapacity         =     maxCapacity
+		self.timeToCharge        =     math.ceil( ( ( self.chargeNeeded - self.currentCharge ) * 1.0 ) / chargeRate )  #linear
+		self.totalTime           =     depTime - arrivalTime
+		self.freeTime            =     self.totalTime - self.timeToCharge
+		self.laxity              =     self.freeTime / self.totalTime
+		self.originalLaxity      =     self.freeTime / self.totalTime
+		self.profit              =     (self.timeToCharge / 60.0) * self.chargeRate * common.electricityPrice
 
-        # return self
+		# return self
 
-    def duplicate(self):
-        return copy.deepcopy(self)
+	def duplicate(self):
+		return copy.deepcopy(self)
 
-    def profit(self):
-        return (self.timeToCharge / 60.0) * self.chargeRate * common.electricityPrice
+	def profit(self):
+		return (self.timeToCharge / 60.0) * self.chargeRate * common.electricityPrice
 
-    def toString( self ):
-        body =  'ID: ' , self.id , \
-                '  initialCharge:  ' , self.initialCharge, \
-                '  current charge: ' , self.currentCharge , \
-                '  charge needed: ' , self.chargeNeeded , \
-                '  departure time: ' , self.depTime , \
-                '  laxity: ', self.laxity
-        return body
+	def toString( self ):
+		body =  'ID: ' , self.id , \
+				'  initialCharge:  ' , self.initialCharge, \
+				'  current charge: ' , self.currentCharge , \
+				'  charge needed: ' , self.chargeNeeded , \
+				'  departure time: ' , self.depTime , \
+				'  laxity: ', self.laxity
+		return body
 
-    # updates the laxity for vehicle. Requires the current time of the simulation
-    def updateLaxity( self, currentTime ):
-        timeToCharge =  ( self.chargeNeeded - self.currentCharge ) / self.chargeRate
-        totalTime    =  self.depTime - currentTime
-        freeTime     =  totalTime - timeToCharge
+	# updates the laxity for vehicle. Requires the current time of the simulation
+	def updateLaxity( self, currentTime ):
+		timeToCharge =  ( self.chargeNeeded - self.currentCharge ) / self.chargeRate
+		totalTime    =  self.depTime - currentTime
+		freeTime     =  totalTime - timeToCharge
 
-        # in case time ends up, we can't divide by 0
-        if totalTime == 0:
-            self.laxity = 1
-        else:
-            self.laxity  =  freeTime / totalTime
+		# in case time ends up, we can't divide by 0
+		if totalTime == 0:
+			self.laxity = 1
+		else:
+			self.laxity  =  freeTime / totalTime
 
-    # alter the starting time
-    def updateStartTime( self, newStartingTime ):
-        self.startTime = newStartingTime
+	# alter the starting time
+	def updateStartTime( self, newStartingTime ):
+		self.startTime = newStartingTime
 
-    def resetVehicleCharge( self ):
-        self.currentCharge = self.initialCharge
+	def resetVehicleCharge( self ):
+		self.currentCharge = self.initialCharge
 
  #   def getStartingTime( self ):
  #       return max( self.startTime 
