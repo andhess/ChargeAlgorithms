@@ -5,9 +5,8 @@ import chargePorts
 import chargeEvent
 import copy
 
-schedules = [[] for y in range(chargePorts.numChargePorts)]
+schedules = [ [ ] for y in range( chargePorts.numChargePorts ) ]
 
-declinedLot = []
 numOverlapInserts = 0
 
 def simulateDSAC( arrayOfVehicleArrivals ):
@@ -100,8 +99,8 @@ def simulateDSAC( arrayOfVehicleArrivals ):
 						# CSV to decline car
 						print "declined: ",vehicle.id
 						csvGen.exportVehicleToCSV( vehicle, "DECLINED" )
-						declinedLot.append(vehicle)
-						
+                        common.declinedLot.append( vehicle )
+
 
 		updateVehicles()
 		common.currentTime += 1
@@ -120,12 +119,12 @@ def simulateDSAC( arrayOfVehicleArrivals ):
 		  "  elapsed time: " , common.currentTime , \
 		  "  done charging lot: " , len( common.doneChargingLot ) , \
 		  "  failed charging lot: " , len( common.failedLot ) , \
-		  "  declind lot: ", len( declinedLot ) , \
+		  "  declind lot: ", len( common.declinedLot ) , \
 		  "  cant charge lot: " , len( common.cantChargeLot ) , \
 		  "  schedules:  " , schedulesToString() , \
 		  "  chargePorts " , chargePorts.toString()
 	print "numOverlapInserts: ",numOverlapInserts
-	print "number of vehicles in all lots at end: ", len(common.doneChargingLot) + len(common.failedLot) + len(declinedLot)
+	print "number of vehicles in all lots at end: ", len(common.doneChargingLot) + len(common.failedLot) + len( common.declinedLot )
 
     # write a CSV for all the chargePort logs
 	csvGen.exportChargePortsToCSV( "dsac" )
@@ -291,6 +290,7 @@ def updateVehicles():
 				print "after delete: ", common.vehicleIdsInList( schedules[index], -1 )
 				print "schedules now: "
 				common.vehicleIdsIn2DList(schedules)
+
 				# now add the next vehicle from the schedule, if possible
 				if len( schedules[ index ] ) > 0:
 

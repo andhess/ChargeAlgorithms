@@ -3,8 +3,9 @@ import vehicle
 
 # ---- storage lots ------
 
-doneChargingLot = []
-failedLot = []
+doneChargingLot = [ ]
+failedLot = [ ]
+declinedLot = [ ]
 
 # adding a lot of cars that don't need to be charged
 # might help when we're trying to pick distribution values
@@ -37,6 +38,8 @@ def updateGlobals( arrayOfVehicleArrivals ):
     doneChargingLot = []
     global failedLot
     failedLot = []
+    global declinedLot
+    declinedLot = []
     global cantChargeLot
     cantChargeLot = []
     resetChargePorts()	# function in chargePorts.py to empty all chargePorts
