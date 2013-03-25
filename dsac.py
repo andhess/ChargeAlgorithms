@@ -90,17 +90,18 @@ def simulateDSAC( arrayOfVehicleArrivals ):
 					leastProfitConflictPort = leastProfitConflictResults[0]
 					leastProfitConflictSchedule = leastProfitConflictResults[1]
 
-					# vehicle declined
-					if leastProfitConflictPort == -1:
+					# vehicle appended with conflict
+					if leastProfitConflictPort > 0:
+						print "appended with conflict"
+						schedules[ leastProfitConflictPort ] = leastProfitConflictSchedule
+						numOverlapInserts += 1
+
+					else:
 						# CSV to decline car
 						print "declined: ",vehicle.id
 						csvGen.exportVehicleToCSV( vehicle, "DECLINED" )
 						declinedLot.append(vehicle)
-
-					else:
-						print "appended with conflict"
-						schedules[ leastProfitConflictPort ] = leastProfitConflictSchedule
-						numOverlapInserts += 1
+						
 
 		updateVehicles()
 		common.currentTime += 1
@@ -124,6 +125,7 @@ def simulateDSAC( arrayOfVehicleArrivals ):
 		  "  schedules:  " , schedulesToString() , \
 		  "  chargePorts " , chargePorts.toString()
 	print "numOverlapInserts: ",numOverlapInserts
+	print "number of vehicles in all lots at end: ", len(common.doneChargingLot) + len(common.failedLot) + len(declinedLot)
 
     # write a CSV for all the chargePort logs
 	csvGen.exportChargePortsToCSV( "dsac" )
@@ -165,9 +167,12 @@ def leastProfitConflict( vehicle ):
 		
 		splitVehicle.timeToCharge = vehicle.startTime - splitVehicle.startTime
 
-		duplicate.startTime = tempSched[ len(tempSched)-1 ].depTime # duplicate will be appended to the end of the schedule 
+		if len(tempSched) - 1 == splitVehicleIndex:
+			duplicate.startTime = vehicle.depTime
+		else:
+			duplicate.startTime = tempSched[ len(tempSched)-1 ].depTime # duplicate will be appended to the end of the schedule 
 		duplicate.timeToCharge -= splitVehicle.timeToCharge
-		duplicate.currentCharge += splitVehicle.timeToCharge * duplicate.chargeRate
+		duplicate.currentCharge += splitVehicle.timeToCharge * ( duplicate.chargeRate / 60.0 )
 		duplicate.arrivalTime = str(duplicate.arrivalTime) + "(duplicate)"
 
 
@@ -193,11 +198,12 @@ def leastProfitConflict( vehicle ):
 			duplicateSecondSplitVehicle = copy.deepcopy( secondSplitVehicle ) # represents second part of split vehicle
 
 			duplicateSecondSplitVehicle.startTime = vehicle.depTime
-			duplicateSecondSplitVehicle.timeToCharge -= vehicle.depTime
+			duplicateSecondSplitVehicle.timeToCharge -= (vehicle.depTime - duplicateSecondSplitVehicle.startTime)
+			duplicateSecondSplitVehicle.arrivalTime = str(duplicateSecondSplitVehicle.arrivalTime) + "(2nd duplicate)"
 
 			# this will eventually be after duplicateSecondSplitVehicle in the schedule
 			secondSplitVehicle.timeToCharge -= duplicateSecondSplitVehicle.timeToCharge
-			secondSplitVehicle.currentCharge += duplicateSecondSplitVehicle.timeToCharge * secondSplitVehicle.chargeRate
+			secondSplitVehicle.currentCharge += duplicateSecondSplitVehicle.timeToCharge * (secondSplitVehicle.chargeRate / 60 )
 
 			pushToEnd.append( duplicateSecondSplitVehicle )
 			# pushToEnd now containts the 2nd half of the first split vehicle and the 1st half of the second split vehicle
@@ -252,6 +258,7 @@ def chargeable( vehicle ):
 
 # iterates from one minute to the next for the model
 def updateVehicles():
+	print "------------ next update -----------"
 	
 	# check each chargePort
 	for index, vehicle in enumerate( chargePorts.chargePorts ):
@@ -270,6 +277,8 @@ def updateVehicles():
 			# definitely when it's hit its charge or when one is scheduled to start next
 			if ( vehicle.currentCharge >= vehicle.chargeNeeded ) or ( len(schedules[index]) > 1 and schedules[ index ][ 1 ].startTime == common.currentTime ):
 
+				print "vehicle ", vehicle.id, " is done or the next one is starting"
+
 				# finish up the listener for this vehicle
 				chargePorts.chargePortListeners[ index ][ 0 ].terminateCharge( vehicle , common.currentTime )
 
@@ -287,9 +296,10 @@ def updateVehicles():
 
 					# next vehicle
 					nextVehicle = schedules[ index ][ 0 ]
-					while nextVehicle.depTime < common.currentTime:
+					while nextVehicle is not None and nextVehicle.depTime < common.currentTime:
 						print "vehicle ",nextVehicle.id," was next but its depTime passed"
 						csvGen.exportVehicleToCSV( nextVehicle, "FAILURE" )
+						common.failedLot.append(nextVehicle)
 						del schedules[ index ][ 0 ]
 						nextVehicle = None
 						if len(schedules[ index ]) > 0:
@@ -301,6 +311,9 @@ def updateVehicles():
 						# make new listener
 						chargePorts.chargePortListeners[ index ].insert( 0 , chargeEvent.ChargeEvent( nextVehicle , common.currentTime ) )
 				
+					else:
+						chargePorts.chargePorts[ index ] = None
+
 				# no vehicles to add in schedule
 				else:
 					chargePorts.chargePorts[index] = None
@@ -329,6 +342,7 @@ def updateVehicles():
 					while nextVehicle is not None and nextVehicle.depTime < common.currentTime:
 						print "vehicle ",nextVehicle.id," was next but its depTime passed"
 						csvGen.exportVehicleToCSV( nextVehicle, "FAILURE" )
+						common.failedLot.append(nextVehicle)
 						del schedules[ index ][ 0 ]
 						nextVehicle = None
 						if len(schedules[ index ]) > 0:
