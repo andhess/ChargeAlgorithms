@@ -17,7 +17,7 @@ def generateCSV( folderName ):
     global timeStamp
 
     # generate a unique fipame with a time stamp
-    timeStamp = datetime.datetime.now().strftime( "%Y%m%d-%H%M%S" )
+    timeStamp = datetime.datetime.now().strftime( "%d%m%Y-%H%M%S%f" )
 
     # thank stack overflow for making this easy
     # setup file to save in a directory

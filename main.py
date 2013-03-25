@@ -19,25 +19,22 @@ common.setInterval(interval)
 
 simulationData = []
 
-arrivalRate = 1
-poissonGen.setArrivalRate( arrivalRate )
-simulationInterval = poissonGen.simulateInterval()
-dsac.simulateDSAC( simulationInterval )
+arrivalRate = .75
+# poissonGen.setArrivalRate( arrivalRate )
+# simulationInterval = poissonGen.simulateInterval()
+# dsac.simulateDSAC( simulationInterval )
 
 
 
-sys.exit(0)
+# sys.exit( 0 )
 
 # ------------------ real simulations -------------------------
 
 # # do tons and tons of simulations
-for i in range(0, 200):
-
-
-	poissonGen.setArrivalRate( arrivalRate )
+for i in range( 0, 10 ):
 
 	simulationRound = []
-
+	poissonGen.setArrivalRate( arrivalRate )
 	simulationRound.append( arrivalRate )
 
 	simulationInterval = poissonGen.simulateInterval()
@@ -48,17 +45,22 @@ for i in range(0, 200):
 
 	# print common.vehicleIdsIn2DList( simulationInterval )
 
-	# simulationRound.append( fcfs.simulateFCFS( simulationInterval ) )
-	# simulationRound.append( edf.simulateEDF( simulationInterval ) )
+	simulationRound.append( fcfs.simulateFCFS( simulationInterval ) )
+	
+	simulationRound.append( edf.simulateEDF( simulationInterval ) )
 	# simulationRound.append( llfSmart.simulateLLF( simulationInterval ) )
-	simulationRound.append( llfSimple.simulateLLFSimple( simulationInterval ) )
-	#simulationRound.append( dsac.simulateDSAC( simulationInterval ) )
+
+	#simulationRound.append( llfSimple.simulateLLFSimple( simulationInterval ) )
+	
+	# simulationRound.append( dsac.simulateDSAC( simulationInterval ) )
+	
 	# print simulationRound
+	
 	simulationData.append( simulationRound )
-	arrivalRate += .025
+	arrivalRate += .25
 
 	# poissonGen.testPoissonDistribution(1000)
-	if i % 10 == 0:
+	if i % 5 == 0:
 		print "iteration: ",i
 
 

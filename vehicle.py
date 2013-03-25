@@ -38,7 +38,7 @@ class Vehicle:
 		self.depTime             =     depTime
 		self.chargeRate          =     chargeRate
 		self.maxCapacity         =     maxCapacity
-		self.timeToCharge        =     Math.ceiling( 60 * ( ( self.chargeNeeded - self.currentCharge ) * 1.0 ) / chargeRate )  #linear
+		self.timeToCharge        =     math.ceil( 60 * ( ( self.chargeNeeded - self.currentCharge ) * 1.0 ) / chargeRate )  #linear
 		self.totalTime           =     depTime - arrivalTime
 		self.freeTime            =     self.totalTime - self.timeToCharge
 		self.laxity              =     self.freeTime / self.totalTime

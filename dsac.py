@@ -124,7 +124,7 @@ def simulateDSAC( arrayOfVehicleArrivals ):
 		  "  schedules:  " , schedulesToString() , \
 		  "  chargePorts " , chargePorts.toString()
 	print "numOverlapInserts: ",numOverlapInserts
-	print "number of vehicles in all lots at end: ", len(common.doneChargingLot) + len(common.failedLot) + len( common.declinedLot )
+	print "number of vehicles in all lots at end: ", len( common.doneChargingLot ) + len( common.failedLot ) + len( common.declinedLot )
 
     # write a CSV for all the chargePort logs
 	csvGen.exportChargePortsToCSV( "dsac" )
