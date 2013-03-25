@@ -38,7 +38,7 @@ class Vehicle:
 		self.depTime             =     depTime
 		self.chargeRate          =     chargeRate
 		self.maxCapacity         =     maxCapacity
-		self.timeToCharge        =     ( ( self.chargeNeeded - self.currentCharge ) * 1.0 ) / chargeRate  #linear
+		self.timeToCharge        =     60 * ( ( self.chargeNeeded - self.currentCharge ) * 1.0 ) / chargeRate  #linear
 		self.totalTime           =     depTime - arrivalTime
 		self.freeTime            =     self.totalTime - self.timeToCharge
 		self.laxity              =     self.freeTime / self.totalTime
@@ -50,7 +50,8 @@ class Vehicle:
 	def duplicate(self):
 		return copy.deepcopy(self)
 
-	def profit(self):
+	def getProfit(self):
+		print "profit function should return ",(self.timeToCharge / 60.0) * self.chargeRate * common.electricityPrice
 		return (self.timeToCharge / 60.0) * self.chargeRate * common.electricityPrice
 
 	def toString( self ):

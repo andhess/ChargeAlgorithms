@@ -19,51 +19,49 @@ common.setInterval(interval)
 
 simulationData = []
 
-arrivalRate = .4
+arrivalRate = .2
 poissonGen.setArrivalRate( arrivalRate )
-
 simulationInterval = poissonGen.simulateInterval()
-dsac.simulateDSAC( simulationInterval ) 
+dsac.simulateDSAC( simulationInterval )
+
+
+
+sys.exit(0)
 
 # ------------------ real simulations -------------------------
 
 # # do tons and tons of simulations
-# for i in range(0, 10000):
+for i in range(0, 200):
 
 
-# 	poissonGen.setArrivalRate( arrivalRate )
+	poissonGen.setArrivalRate( arrivalRate )
 
-# 	simulationRound = []
+	simulationRound = []
 
-# 	simulationRound.append( arrivalRate )
+	simulationRound.append( arrivalRate )
 
-# 	simulationInterval = poissonGen.simulateInterval()
+	simulationInterval = poissonGen.simulateInterval()
 
-# 	# print common.vehicleIdsIn2DList( simulationInterval )
+	# don't want a simulation with no cars
+	while common.numberOfVehiclesInSimulation == 0:
+		simulationInterval = poissonGen.simulateInterval()
 
-# 	simulationRound.append( fcfs.simulateFCFS( simulationInterval ) )
-# 	simulationRound.append( edf.simulateEDF( simulationInterval ) )
-# 	simulationRound.append( llfSmart.simulateLLF( simulationInterval ) )
-# 	simulationRound.append( llfSimple.simulateLLFSimple( simulationInterval ) )
-# 	#simulationRound.append( dsac.simulateDSAC( simulationInterval ) )
+	# print common.vehicleIdsIn2DList( simulationInterval )
 
-# 	simulationData.append( simulationRound )
-# 	arrivalRate += .001
+	# simulationRound.append( fcfs.simulateFCFS( simulationInterval ) )
+	# simulationRound.append( edf.simulateEDF( simulationInterval ) )
+	# simulationRound.append( llfSmart.simulateLLF( simulationInterval ) )
+	simulationRound.append( llfSimple.simulateLLFSimple( simulationInterval ) )
+	#simulationRound.append( dsac.simulateDSAC( simulationInterval ) )
+	# print simulationRound
+	simulationData.append( simulationRound )
+	arrivalRate += .025
 
-# 	# poissonGen.testPoissonDistribution(1000)
-
-# 	csvGen.exportSimulationDataToCSV( simulationData )
-
-
-# 	simulationData.append( simulationRound )
-# 	arrivalRate += 1
-
-# 	#print "running"
-# 	#print simulationData
-
-# 	# poissonGen.testPoissonDistribution(1000)
+	# poissonGen.testPoissonDistribution(1000)
+	if i % 10 == 0:
+		print "iteration: ",i
 
 
-# csvGen.exportSimulationDataToCSV( simulationData )
+csvGen.exportSimulationDataToCSV( simulationData )
 
 

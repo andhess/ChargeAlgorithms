@@ -5,15 +5,17 @@ import chargePorts
 import chargeEvent
 import copy
 
-schedules = [[]] * chargePorts.numChargePorts
+schedules = [[] for y in range(chargePorts.numChargePorts)]
 
 declinedLot = []
+numOverlapInserts = 0
 
 def simulateDSAC( arrayOfVehicleArrivals ):
 
 	# reset global variables such as time, done/failed lots
 	common.updateGlobals( arrayOfVehicleArrivals )
 	global currentTime
+	global numOverlapInserts
 
 	# initialize a CSV document for storing all data
 	csvGen.generateCSV( "dsac" )
@@ -22,6 +24,7 @@ def simulateDSAC( arrayOfVehicleArrivals ):
 	for minute, numVehiclesPerMin in enumerate( arrayOfVehicleArrivals ):
 
 		print minute
+		print "chargePorts: ", common.vehicleIdsInList(chargePorts.chargePorts, -1)
 		print"schedules:"
 		common.vehicleIdsIn2DList(schedules)
 
@@ -39,33 +42,38 @@ def simulateDSAC( arrayOfVehicleArrivals ):
 			# a port is open so start charging the vehicle
 			if port is not None:
 
-				print "charged right away"
+				print "charged right away: ", vehicle.id
 
-				# add to chargePort
+				# add to chargePort and respective schedule
 				chargePorts.chargePorts[ port ] = vehicle
-			
+				schedules[ port ].append( vehicle )
+
+				print "should be new vehicle in schedules ",common.vehicleIdsIn2DList(schedules)
+
 				# initialize a listener object for its charging activity
 				chargePorts.chargePortListeners[ port ].insert( 0 , chargeEvent.ChargeEvent( vehicle, common.currentTime ) )
-				
+	
+				continue
 			# no ports are available so put the vehicle in the queue
 			else:
 
 				# any appendables?
 				appendable = findAppendableChargePort( vehicle )
 
-				# print "appendable, ",appendable
+				print "appendable, ",appendable, " for vehicle ", vehicle.id
 
 				# add to schedule
 				if appendable != -1:
-					print "appended"
+					print "appended: ",vehicle.id
 
 					# there is at least one car in the schedule
 					if len(schedules[ appendable ]) > 0:
-						tempVehicle = schedules[ appendable ][ len( schedules[ appendable ] ) - 1  ]
-						newStartTime = tempVehicle.startTime + tempVehicle.timeToCharge + 1
+						tempVehicle = schedules[ appendable ][ len( schedules[ appendable ] ) - 1  ] #last item
+						newStartTime = tempVehicle.startTime + tempVehicle.timeToCharge
 
 					# schedule is appendable because it is empty 
 					else:
+						print "Trying to put vehicle ", vehicle.id, " into schedule ",appendable
 						carInChargePort = chargePorts.chargePorts[ appendable ]
 						newStartTime = carInChargePort.startTime + carInChargePort.timeToCharge
 
@@ -74,29 +82,36 @@ def simulateDSAC( arrayOfVehicleArrivals ):
 
 				# an ugly conflict
 				else:
-					vehicle.startTime = vehicle.depTime - vehicle.timeToCharge
+					print "ugly conflict with vehicle ", vehicle.id
+					vehicle.updateStartTime( vehicle.depTime - vehicle.timeToCharge )
 					
 					leastProfitConflictResults = leastProfitConflict( vehicle )
+					print "leastProfitConflictResults: ",leastProfitConflictResults
 					leastProfitConflictPort = leastProfitConflictResults[0]
 					leastProfitConflictSchedule = leastProfitConflictResults[1]
 
 					# vehicle declined
 					if leastProfitConflictPort == -1:
 						# CSV to decline car
-						print "declined"
-
+						print "declined: ",vehicle.id
+						csvGen.exportVehicleToCSV( vehicle, "DECLINED" )
 						declinedLot.append(vehicle)
 
 					else:
 						print "appended with conflict"
 						schedules[ leastProfitConflictPort ] = leastProfitConflictSchedule
+						numOverlapInserts += 1
 
 		updateVehicles()
 		common.currentTime += 1
 
 	# vehicles done arriving, now continue with the simulation
-	while chargePorts.chargePortsEmpty() != False or schedulesEmpty() == False:
-		# print common.currentTime
+	while not chargePorts.chargePortsEmpty() or not schedulesEmpty():
+		print common.currentTime
+		print "chargePorts: ", common.vehicleIdsInList(chargePorts.chargePorts, -1)
+		print "schedules:"
+		common.vehicleIdsIn2DList(schedules)
+
 		updateVehicles()
 		common.currentTime += 1
 
@@ -104,12 +119,15 @@ def simulateDSAC( arrayOfVehicleArrivals ):
 		  "  elapsed time: " , common.currentTime , \
 		  "  done charging lot: " , len( common.doneChargingLot ) , \
 		  "  failed charging lot: " , len( common.failedLot ) , \
+		  "  declind lot: ", len( declinedLot ) , \
 		  "  cant charge lot: " , len( common.cantChargeLot ) , \
 		  "  schedules:  " , schedulesToString() , \
 		  "  chargePorts " , chargePorts.toString()
+	print "numOverlapInserts: ",numOverlapInserts
 
     # write a CSV for all the chargePort logs
 	csvGen.exportChargePortsToCSV( "dsac" )
+
 leastProfitConflictCount = 0
 def leastProfitConflict( vehicle ):
 	global leastProfitConflictCount
@@ -122,7 +140,7 @@ def leastProfitConflict( vehicle ):
 	# iterate through each schedule
 	for index, schedulePort in enumerate( schedules ):
 
-		print "trying to put vehicle ", vehicle.id," into ", common.vehicleIdsInList(schedulePort,-1)
+		print "Profit Conflict: Trying to put vehicle ", vehicle.id," into ", common.vehicleIdsInList(schedulePort,-1)
 
 		# make a temporary one since we'll be messing with this
 		tempSched = copy.deepcopy(schedulePort)
@@ -138,19 +156,23 @@ def leastProfitConflict( vehicle ):
 		while splitVehicleIndex >=0 and tempSched[ splitVehicleIndex ].startTime > vehicle.startTime:
 			splitVehicleIndex -= 1
 
-		# print "splitVehicleIndex ",splitVehicleIndex
 		splitVehicle = tempSched[ splitVehicleIndex ]
+		print "found splitVehicle"
+		print "splitVehicle ", splitVehicle.id, " starts at ",splitVehicle.startTime, " and ends at ",splitVehicle.startTime + splitVehicle.timeToCharge
+		print "new vehicle ",vehicle.id," starts at ",vehicle.startTime, " and ends at ",vehicle.startTime + vehicle.timeToCharge
 
 		duplicate = splitVehicle.duplicate() # represents the second half of the split vehicle	
 		
 		splitVehicle.timeToCharge = vehicle.startTime - splitVehicle.startTime
 
-		# need to create a list of all vehicles (including the one that is split)
-		# that gets appended to the end of the schedule
-
 		duplicate.startTime = tempSched[ len(tempSched)-1 ].depTime # duplicate will be appended to the end of the schedule 
 		duplicate.timeToCharge -= splitVehicle.timeToCharge
 		duplicate.currentCharge += splitVehicle.timeToCharge * duplicate.chargeRate
+		duplicate.arrivalTime = str(duplicate.arrivalTime) + "(duplicate)"
+
+
+		# need to create a list of all vehicles (including the one that is split)
+		# that gets appended to the end of the schedule
 
 		pushToEnd = [] # represents the part of the schedule that the new vehicle is kicking out
 		pushToEnd.append(duplicate)
@@ -164,6 +186,7 @@ def leastProfitConflict( vehicle ):
 				break
 			secondSplitVehicleIndex += 1
 
+		# need to make sure there is a second vehicle that needs to be split
 		if secondSplitVehicleIndex < len(tempSched):	
 			secondSplitVehicle = tempSched[ secondSplitVehicleIndex ]
 
@@ -205,22 +228,23 @@ def leastProfitConflict( vehicle ):
 
 		for task in tempSched[startOfMovedTasks:]:
 			#check to see if task is finishable, if it is not then subtract (penaltyCoefficient * amountNotCharged) from profitGainedPerPort
-			timeDifference = ( task.startTime + task.timeToCharge ) - task.depTime
+			timeDifference = task.depTime - ( task.startTime + task.timeToCharge )
 			if timeDifference < 0 :
 				profitGainedPerPort += common.penaltyCoefficient * (timeDifference / 60.0) * task.chargeRate * common.electricityPrice
 
 			# otherwise add task.profit() to profitGainedPerPort
 			else:
 				print task
-				print "task profit: ", task.profit()
-				profitGainedPerPort += task.profit()
+				print "task profit: ", task.getProfit()
+				profitGainedPerPort += task.getProfit()
 
 		if profitGainedPerPort > profitGained:
 			profitGained = profitGainedPerPort
 			leastProfitConflictPort = index
+			bestSchedule = tempSched
 		print "tempSched: ", common.vehicleIdsInList(tempSched, -1)
 
-	return [leastProfitConflictPort, tempSched]
+	return [leastProfitConflictPort, bestSchedule]
 
 
 def chargeable( vehicle ):
@@ -244,7 +268,7 @@ def updateVehicles():
 			# print "schedules: ",schedules
 
 			# definitely when it's hit its charge or when one is scheduled to start next
-			if ( vehicle.currentCharge >= vehicle.chargeNeeded ) or ( len(schedules[index]) > 0 and schedules[ index ][ 0 ].startTime - 1 == common.currentTime ):
+			if ( vehicle.currentCharge >= vehicle.chargeNeeded ) or ( len(schedules[index]) > 1 and schedules[ index ][ 1 ].startTime == common.currentTime ):
 
 				# finish up the listener for this vehicle
 				chargePorts.chargePortListeners[ index ][ 0 ].terminateCharge( vehicle , common.currentTime )
@@ -253,22 +277,40 @@ def updateVehicles():
 				csvGen.exportVehicleToCSV( vehicle, "SUCCESS" )
 				common.doneChargingLot.append( vehicle )
 
+				print "error: ", common.vehicleIdsInList( schedules[index], -1 )
+				del schedules[ index ][ 0 ] # remove the vehicle that was charging from the front of the schedule
+				print "after delete: ", common.vehicleIdsInList( schedules[index], -1 )
+				print "schedules now: "
+				common.vehicleIdsIn2DList(schedules)
 				# now add the next vehicle from the schedule, if possible
 				if len( schedules[ index ] ) > 0:
 
 					# next vehicle
-					nextVehicle = schedules[ index ].pop( 0 )
-					chargePorts.chargePorts[ index ] = nextVehicle
+					nextVehicle = schedules[ index ][ 0 ]
+					while nextVehicle.depTime < common.currentTime:
+						print "vehicle ",nextVehicle.id," was next but its depTime passed"
+						csvGen.exportVehicleToCSV( nextVehicle, "FAILURE" )
+						del schedules[ index ][ 0 ]
+						nextVehicle = None
+						if len(schedules[ index ]) > 0:
+							nextVehicle = schedules[ index ][ 0 ]
 
-					# make new listener
-					chargePorts.chargePortListeners[ index ].insert( 0 , chargeEvent.ChargeEvent( nextVehicle , common.currentTime ) )
+					if nextVehicle is not None:
+						chargePorts.chargePorts[ index ] = nextVehicle
 
-			removed = True;
+						# make new listener
+						chargePorts.chargePortListeners[ index ].insert( 0 , chargeEvent.ChargeEvent( nextVehicle , common.currentTime ) )
+				
+				# no vehicles to add in schedule
+				else:
+					chargePorts.chargePorts[index] = None
+
+				removed = True;
 
 			# probably not going to be used, but we can still check for depTime
 			if common.currentTime >= vehicle.depTime and not removed:
 
-				print "CAUTION: a deadline was passed"
+				print "CAUTION: a deadline was passed by vehicle ", vehicle.id
 
 				# this vehicle is on the out, so wrap up its listener
 				chargePorts.chargePortListeners[ index ][ 0 ].terminateCharge( vehicle , common.currentTime )
@@ -277,16 +319,30 @@ def updateVehicles():
 				csvGen.exportVehicleToCSV( vehicle, "FAILURE" )
 				common.failedLot.append( vehicle )
 
+				del schedules[ index ][ 0 ]
+
 				# now add the next vehicle from the schedule, if possible
 				if len( schedules[ index ] ) > 0:
 
 					# next vehicle
-					nextVehicle = schedules[ index ].pop( 0 )
-					chargePorts.chargePorts[ index ] = nextVehicle
+					nextVehicle = schedules[ index ][ 0 ]
+					while nextVehicle is not None and nextVehicle.depTime < common.currentTime:
+						print "vehicle ",nextVehicle.id," was next but its depTime passed"
+						csvGen.exportVehicleToCSV( nextVehicle, "FAILURE" )
+						del schedules[ index ][ 0 ]
+						nextVehicle = None
+						if len(schedules[ index ]) > 0:
+							nextVehicle = schedules[ index ][ 0 ]
 
-					# make new listener
-					chargePorts.chargePortListeners[ index ].insert( 0 , chargeEvent.ChargeEvent( nextVehicle , common.currentTime ) )
+					if nextVehicle is not None:
+						chargePorts.chargePorts[ index ] = nextVehicle
 
+						# make new listener
+						chargePorts.chargePortListeners[ index ].insert( 0 , chargeEvent.ChargeEvent( nextVehicle , common.currentTime ) )
+					else:
+						chargePorts.chargePorts[ index ] = None
+				else:
+					chargePorts.chargePorts[ index ] = None
 
 
 # iterate through all schedules
@@ -319,7 +375,7 @@ def scheduleEndTime( scheduleIndex ):
 	lastItem = len( schedules[ scheduleIndex ] ) - 1
 	
 	if lastItem != -1:
-		return schedules[ scheduleIndex ][ lastItem ].depTime
+		return schedules[ scheduleIndex ][ lastItem ].startTime + schedules[ scheduleIndex ][ lastItem ].timeToCharge
 
 	# should never happen, make it break
 	return False
