@@ -16,8 +16,8 @@ def generateCSV( folderName ):
     global vehicleCSV
     global timeStamp
 
-    # generate a unique fipame with a time stamp
-    timeStamp = datetime.datetime.now().strftime( "%d%m%Y-%H%M%S%f" )
+    # generate a unique fipame with a time stampg
+    timeStamp = datetime.datetime.now().strftime( "%H-%M-%S%f-%m-%d-%Y" )
 
     # thank stack overflow for making this easy
     # setup file to save in a directory
@@ -133,7 +133,7 @@ def exportChargePortsToCSV( folderName ):
 def exportSimulationDataToCSV( simulationData ):
 
     # generate a unique fipame with a time stamp
-    timeStamp = datetime.datetime.now().strftime( "%Y%m%d-%H%M%S" )
+    timeStamp = datetime.datetime.now().strftime( "%H-%M-%S%f-%m-%d-%Y" )
 
     # thank stack overflow for making this easy
     # setup file to save in a directory

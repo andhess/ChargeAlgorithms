@@ -20,13 +20,13 @@ common.setInterval(interval)
 simulationData = []
 
 arrivalRate = .75
-# poissonGen.setArrivalRate( arrivalRate )
-# simulationInterval = poissonGen.simulateInterval()
-# dsac.simulateDSAC( simulationInterval )
+poissonGen.setArrivalRate( arrivalRate )
+simulationInterval = poissonGen.simulateInterval()
+dsac.simulateDSAC( simulationInterval )
 
 
 
-# sys.exit( 0 )
+sys.exit( 0 )
 
 # ------------------ real simulations -------------------------
 
@@ -45,13 +45,23 @@ for i in range( 0, 10 ):
 
 	# print common.vehicleIdsIn2DList( simulationInterval )
 
+	#fcfs
 	simulationRound.append( fcfs.simulateFCFS( simulationInterval ) )
-	
-	simulationRound.append( edf.simulateEDF( simulationInterval ) )
-	# simulationRound.append( llfSmart.simulateLLF( simulationInterval ) )
+	simulationRound.append( fcfs.simulateFCFSAdmin( simulationInterval ) )
 
-	#simulationRound.append( llfSimple.simulateLLFSimple( simulationInterval ) )
-	
+	#edf
+	# simulationRound.append( edf.simulateEDF( simulationInterval ) )
+	# simulationRound.append( edf.simulateEDFAdmin( simulationInterval ) )
+
+	#llfSmart
+	# simulationRound.append( llfSmart.simulateLLF( simulationInterval ) )
+	# simulationRound.append( llfSmart.simulateLLFAdmin( simulationInterval ) )
+
+	#llfSimple
+	# simulationRound.append( llfSimple.simulateLLFSimple( simulationInterval ) )
+	# simulationRound.append( llfSimple.simulateLLFSimpleAdmin( simulationInterval ) )
+
+	#dsac
 	# simulationRound.append( dsac.simulateDSAC( simulationInterval ) )
 	
 	# print simulationRound
@@ -60,8 +70,8 @@ for i in range( 0, 10 ):
 	arrivalRate += .25
 
 	# poissonGen.testPoissonDistribution(1000)
-	if i % 5 == 0:
-		print "iteration: ",i
+	if i % 10 == 0:
+		print "iteration: " , i
 
 
 csvGen.exportSimulationDataToCSV( simulationData )

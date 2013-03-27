@@ -24,7 +24,7 @@ def simulateDSAC( arrayOfVehicleArrivals ):
 
 		print minute
 		print "chargePorts: ", common.vehicleIdsInList(chargePorts.chargePorts, -1)
-		print"schedules:"
+		print "schedules:"
 		common.vehicleIdsIn2DList(schedules)
 
 		for vehicle in numVehiclesPerMin: 
@@ -97,7 +97,7 @@ def simulateDSAC( arrayOfVehicleArrivals ):
 
 					else:
 						# CSV to decline car
-						print "declined: ",vehicle.id
+						print "declined: " , vehicle.id
 						csvGen.exportVehicleToCSV( vehicle, "DECLINED" )
                         common.declinedLot.append( vehicle )
 
@@ -257,16 +257,16 @@ def chargeable( vehicle ):
 
 # iterates from one minute to the next for the model
 def updateVehicles():
-	print "------------ next update -----------"
+    print "------------ next update -----------"
 	
 	# check each chargePort
-	for index, vehicle in enumerate( chargePorts.chargePorts ):
+    for index, vehicle in enumerate( chargePorts.chargePorts ):
 
-		if vehicle is not None:
-			removed = False
+        if vehicle is not None:
+            removed = False
 
 			# add 1 minute of charge
-			vehicle.currentCharge += ( vehicle.chargeRate ) / 60.0
+            vehicle.currentCharge += ( vehicle.chargeRate ) / 60.0
 
 			# when would we kick out a vehicle?
 
@@ -274,32 +274,34 @@ def updateVehicles():
 			# print "schedules: ",schedules
 
 			# definitely when it's hit its charge or when one is scheduled to start next
-			if ( vehicle.currentCharge >= vehicle.chargeNeeded ) or ( len(schedules[index]) > 1 and schedules[ index ][ 1 ].startTime == common.currentTime ):
+            if ( vehicle.currentCharge >= vehicle.chargeNeeded ) or ( len( schedules[ index ] ) > 1 and schedules[ index ][ 1 ].startTime == common.currentTime ):
 
-				print "vehicle ", vehicle.id, " is done or the next one is starting"
+                print "vehicle ", vehicle.id, " is done or the next one is starting"
 
-				# finish up the listener for this vehicle
-				chargePorts.chargePortListeners[ index ][ 0 ].terminateCharge( vehicle , common.currentTime )
+                # finish up the listener for this vehicle
+                chargePorts.chargePortListeners[ index ][ 0 ].terminateCharge( vehicle , common.currentTime )
 
-				# remove finished vehicle from grid and document it
-				csvGen.exportVehicleToCSV( vehicle, "SUCCESS" )
-				common.doneChargingLot.append( vehicle )
+                # remove finished vehicle from grid and document it
+                csvGen.exportVehicleToCSV( vehicle, "SUCCESS" )
+                common.doneChargingLot.append( vehicle )
 
-				print "error: ", common.vehicleIdsInList( schedules[index], -1 )
-				del schedules[ index ][ 0 ] # remove the vehicle that was charging from the front of the schedule
-				print "after delete: ", common.vehicleIdsInList( schedules[index], -1 )
-				print "schedules now: "
-				common.vehicleIdsIn2DList(schedules)
+                print "error: " , common.vehicleIdsInList( schedules[index] , -1 )
+
+                # remove the vehicle that was charging from the front of the schedule
+                del schedules[ index ][ 0 ]
+				
+                print "after delete: ", common.vehicleIdsInList( schedules[index], -1 )
+                print "schedules now: " , common.vehicleIdsIn2DList(schedules)
 
 				# now add the next vehicle from the schedule, if possible
-				if len( schedules[ index ] ) > 0:
+                if len( schedules[ index ] ) > 0:
 
 					# next vehicle
 					nextVehicle = schedules[ index ][ 0 ]
 					while nextVehicle is not None and nextVehicle.depTime < common.currentTime:
 						print "vehicle ",nextVehicle.id," was next but its depTime passed"
 						csvGen.exportVehicleToCSV( nextVehicle, "FAILURE" )
-						common.failedLot.append(nextVehicle)
+						common.failedLot.append( nextVehicle )
 						del schedules[ index ][ 0 ]
 						nextVehicle = None
 						if len(schedules[ index ]) > 0:
@@ -315,15 +317,15 @@ def updateVehicles():
 						chargePorts.chargePorts[ index ] = None
 
 				# no vehicles to add in schedule
-				else:
+                else:
 					chargePorts.chargePorts[index] = None
 
-				removed = True;
+                removed = True
 
-			# probably not going to be used, but we can still check for depTime
-			if common.currentTime >= vehicle.depTime and not removed:
+            # probably not going to be used, but we can still check for depTime
+            if common.currentTime >= vehicle.depTime and not removed:
 
-				print "CAUTION: a deadline was passed by vehicle ", vehicle.id
+				print "CAUTION: a deadline was passed by vehicle " , vehicle.id
 
 				# this vehicle is on the out, so wrap up its listener
 				chargePorts.chargePortListeners[ index ][ 0 ].terminateCharge( vehicle , common.currentTime )
