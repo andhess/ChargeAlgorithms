@@ -22,12 +22,13 @@ simulationData = []
 arrivalRate = .75
 poissonGen.setArrivalRate( arrivalRate )
 simulationInterval = poissonGen.simulateInterval()
-# dsac.simulateDSAC( simulationInterval )
-fcfs.simulateFCFS( simulationInterval )
+
+print edf.simulateEDF( simulationInterval )
 
 
+#dsac.simulateDSAC( simulationInterval )
 
-sys.exit( 0 )
+sys.exit()
 
 # ------------------ real simulations -------------------------
 

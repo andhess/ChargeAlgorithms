@@ -394,7 +394,7 @@ def scheduleEndTime( scheduleIndex ):
 		return schedules[ scheduleIndex ][ lastItem ].startTime + schedules[ scheduleIndex ][ lastItem ].timeToCharge
 
 	# should never happen, make it break
-	return False
+	raise Exception("Schedule should never be empty here, something is wrong")
 
 # checks to see if any vehicles are still in the schedule
 # returns true if all schedules are empty
