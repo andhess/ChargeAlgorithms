@@ -82,6 +82,9 @@ class Vehicle:
 	def resetVehicleCharge( self ):
 		self.currentCharge = self.initialCharge
 
+	def timeLeftToCharge( self ):
+		return math.ceil( 60 * ( ( self.chargeNeeded - self.currentCharge ) * 1.0 ) / chargeRate )
+
  #   def getStartingTime( self ):
  #       return max( self.startTime 
 
