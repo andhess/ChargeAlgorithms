@@ -51,19 +51,21 @@ def simulateFCFS( arrayOfVehicleArrivals ):
 
 				# vehicle declined
 				if vehicle.depTime - bestPortEndTime < vehicle.timeToCharge:
+					print "declined: " , vehicle.id
 					csvGen.exportVehicleToCSV( vehicle, "DECLINED" )
 					common.declinedLot.append( vehicle )
 
 				# vehicle appended
 				else:
-					schedules[ bestPortIndex ].appended( vehicle )
+					print "appended: " , vehicle.id
+					schedules[ bestPortIndex ].append( vehicle )
 		updateVehiclesFCFS()
 		common.currentTime += 1
 
 	# print "status:  " , openChargePort() , "  " , queue.empty()
 	
 	# run the clock until all vehicles have ran through the simulation
-	while chargePorts.chargePortsEmpty() == False or not queue.empty():
+	while chargePorts.chargePortsEmpty() == False or not schedulesEmpty():
 		updateVehiclesFCFS()
 		common.currentTime += 1
 
@@ -119,12 +121,15 @@ def updateVehiclesFCFS():
 			# check if deadline reached, should never happen with admission control           
 			if common.currentTime >= vehicle.depTime and not removed:
 
+				print "current time: ", common.currentTime, " depTime: ", vehicle.depTime, " timeLeft: ", vehicle.timeLeftToCharge()
+
 				# this vehicle is on the out, so wrap up its listener
 				chargePorts.chargePortListeners[ index ][ 0 ].terminateCharge( vehicle , common.currentTime )
 				
 				# remove finished vehicle from grid and document it
 				csvGen.exportVehicleToCSV( vehicle, "FAILURE" )               
 				common.failedLot.append( vehicle )
+				del schedules[ index ][ 0 ] # remove the vehicle for the schedule
 				
 				# the next vehicle
 				if len(schedules[ index ]) != 0:
@@ -143,15 +148,18 @@ def findEarliestEndingSchedule():
 	earliestEndTime = float("inf");
 	for index, portSchedule in enumerate(schedules):
 		length = len(portSchedule);
-		if lastIndex == 0:
+		if length == 0:
 			return index
 		endTime = portSchedule[0].timeLeftToCharge()	# this car is already in the chargePort and may have started charging
 		for i in range (1, length):
-			endtime += portSchedule[i].timeToCharge
-		if endtime < earliestEndTime:
+			endTime += portSchedule[i].timeToCharge
+		if endTime < earliestEndTime:
 			earliestIndex = index
-			earliestEndTime = endtime
+			earliestEndTime = endTime
 	return ( earliestIndex, earliestEndTime )
+
+def schedulesEmpty():
+	return all( len(subSchedule) == 0 for subSchedule in schedules)
 
 
 

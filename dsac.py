@@ -399,14 +399,7 @@ def scheduleEndTime( scheduleIndex ):
 # checks to see if any vehicles are still in the schedule
 # returns true if all schedules are empty
 def schedulesEmpty():
-
-	# check for each schedule
-	for schedule in schedules:
-		if len( schedule ) > 0:
-			print len(schedule)
-			return False
-
-	return True
+	return all( len(subSchedule) == 0 for subSchedule in schedules)
 
 def schedulesToString():
 	output = "["

@@ -83,7 +83,7 @@ class Vehicle:
 		self.currentCharge = self.initialCharge
 
 	def timeLeftToCharge( self ):
-		return math.ceil( 60 * ( ( self.chargeNeeded - self.currentCharge ) * 1.0 ) / chargeRate )
+		return math.ceil( 60 * ( ( self.chargeNeeded - self.currentCharge ) * 1.0 ) / self.chargeRate )
 
  #   def getStartingTime( self ):
  #       return max( self.startTime 

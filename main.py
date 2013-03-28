@@ -22,7 +22,8 @@ simulationData = []
 arrivalRate = .75
 poissonGen.setArrivalRate( arrivalRate )
 simulationInterval = poissonGen.simulateInterval()
-dsac.simulateDSAC( simulationInterval )
+# dsac.simulateDSAC( simulationInterval )
+fcfs.simulateFCFS( simulationInterval )
 
 
 
