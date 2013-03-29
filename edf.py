@@ -60,14 +60,14 @@ def simulateEDF( arrayOfVehicleArrivals ):
 		updateVehiclesEDF()
 		common.currentTime += 1
 
-	print "EDF: total number of cars: ", common.numberOfVehiclesInSimulation , \
-	      "  elapsed time: " , common.currentTime , \
-	      "  done charging lot: " , len( common.doneChargingLot ) , \
-	      "  failed charging lot: " , len( common.failedLot ) , \
-	      "  declined lot: ", len( common.declinedLot ), \
-	      "  cant charge lot: " , len( common.cantChargeLot ) , \
-	      "  edfQueue size:  " , len( edfQueue ) , \
-	      "  chargePort " , chargePorts.toString()
+	# print "EDF: total number of cars: ", common.numberOfVehiclesInSimulation , \
+	#       "  elapsed time: " , common.currentTime , \
+	#       "  done charging lot: " , len( common.doneChargingLot ) , \
+	#       "  failed charging lot: " , len( common.failedLot ) , \
+	#       "  declined lot: ", len( common.declinedLot ), \
+	#       "  cant charge lot: " , len( common.cantChargeLot ) , \
+	#       "  edfQueue size:  " , len( edfQueue ) , \
+	#       "  chargePort " , chargePorts.toString()
 
 	# write a CSV with all the chargePort logs
 	csvGen.exportChargePortsToCSV( "edf" )

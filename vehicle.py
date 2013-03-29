@@ -51,7 +51,7 @@ class Vehicle:
 		return copy.deepcopy(self)
 
 	def getProfit(self):
-		print "profit function should return ",(self.timeToCharge / 60.0) * self.chargeRate * common.electricityPrice
+		# print "profit function should return ",(self.timeToCharge / 60.0) * self.chargeRate * common.electricityPrice
 		return (self.timeToCharge / 60.0) * self.chargeRate * common.electricityPrice
 
 	def toString( self ):
@@ -81,6 +81,7 @@ class Vehicle:
 
 	def resetVehicleCharge( self ):
 		self.currentCharge = self.initialCharge
+		self.timeToCharge = math.ceil( 60 * ( ( self.chargeNeeded - self.currentCharge ) * 1.0 ) / self.chargeRate )  #linear
 
 	def timeLeftToCharge( self ):
 		return math.ceil( 60 * ( ( self.chargeNeeded - self.currentCharge ) * 1.0 ) / self.chargeRate )

@@ -2,11 +2,15 @@ import sys
 import common
 import fcfs
 import edf
+import llfSmartAC
 import llfSmart
+import llfSimpleAC
 import llfSimple
 import dsac
 import poissonGen
 import csvGen
+import gc
+
 
 
 if len( sys.argv ) != 2:
@@ -19,62 +23,80 @@ common.setInterval(interval)
 
 simulationData = []
 
-arrivalRate = .75
+arrivalRate = .1
 poissonGen.setArrivalRate( arrivalRate )
-simulationInterval = poissonGen.simulateInterval()
-
-print edf.simulateEDF( simulationInterval )
 
 
-#dsac.simulateDSAC( simulationInterval )
+# simulationInterval = poissonGen.simulateInterval()
 
-sys.exit()
+# print llfSmartAC.simulateLLF( simulationInterval )
+# print llfSmart.simulateLLF( simulationInterval )
+
+
+# #dsac.simulateDSAC( simulationInterval )
+
+# sys.exit()
 
 # ------------------ real simulations -------------------------
 
 # # do tons and tons of simulations
-for i in range( 0, 10 ):
+numIterations = 100
+maxArrivalRate = 2.0
+numRunsPerIteration = 5
+for i in range( numIterations ):
+	# gc.collect()
 
-	simulationRound = []
-	poissonGen.setArrivalRate( arrivalRate )
-	simulationRound.append( arrivalRate )
+	averageRates = [0] * 7    # a spot for every algo
 
-	simulationInterval = poissonGen.simulateInterval()
+	for k in range( numRunsPerIteration ):
+		gc.collect()
 
-	# don't want a simulation with no cars
-	while common.numberOfVehiclesInSimulation == 0:
+		individualRates = []
+		poissonGen.setArrivalRate( arrivalRate )
+
 		simulationInterval = poissonGen.simulateInterval()
 
-	# print common.vehicleIdsIn2DList( simulationInterval )
+		# don't want a simulation with no cars
+		while common.numberOfVehiclesInSimulation == 0:
+			simulationInterval = poissonGen.simulateInterval()
 
-	#fcfs
-	simulationRound.append( fcfs.simulateFCFS( simulationInterval ) )
-	simulationRound.append( fcfs.simulateFCFSAdmin( simulationInterval ) )
 
-	#edf
-	# simulationRound.append( edf.simulateEDF( simulationInterval ) )
-	# simulationRound.append( edf.simulateEDFAdmin( simulationInterval ) )
+		#fcfs
+		fcfsRate = fcfs.simulateFCFS( simulationInterval )
+		individualRates.append( fcfsRate )
 
-	#llfSmart
-	# simulationRound.append( llfSmart.simulateLLF( simulationInterval ) )
-	# simulationRound.append( llfSmart.simulateLLFAdmin( simulationInterval ) )
+		#edf
+		edfRate = edf.simulateEDF( simulationInterval ) 
+		individualRates.append( edfRate )
 
-	#llfSimple
-	# simulationRound.append( llfSimple.simulateLLFSimple( simulationInterval ) )
-	# simulationRound.append( llfSimple.simulateLLFSimpleAdmin( simulationInterval ) )
+		#llfSmart
+		llfSmartRate = llfSmart.simulateLLF( simulationInterval )
+		individualRates.append( llfSmartRate )
+		llfSmartACRate = llfSmartAC.simulateLLF( simulationInterval )
+		individualRates.append( llfSmartACRate )
 
-	#dsac
-	# simulationRound.append( dsac.simulateDSAC( simulationInterval ) )
+		#llfSimple
+		llfSimpleRate = llfSimple.simulateLLFSimple( simulationInterval )
+		individualRates.append( llfSimpleRate )
+		llfSimpleACRate = llfSimpleAC.simulateLLFSimpleAC( simulationInterval )
+		individualRates.append( llfSimpleACRate )
+
+		#dsac
+		dsacRate = dsac.simulateDSAC( simulationInterval )
+		individualRates.append( dsacRate )
+
+		for index, rate in enumerate(individualRates):
+			averageRates[index] += rate
 	
-	# print simulationRound
-	
-	simulationData.append( simulationRound )
-	arrivalRate += .25
+	for n in range( len(averageRates) ):
+		averageRates[n] /= ( numRunsPerIteration * 1.0 )
 
-	# poissonGen.testPoissonDistribution(1000)
+	simulationData.append( [arrivalRate] + averageRates)
+	arrivalRate += (maxArrivalRate / numIterations)
+
 	if i % 10 == 0:
-		print "iteration: " , i
-
+		print "iteration: " , i, " arrival rate: ", arrivalRate
+		print averageRates
 
 csvGen.exportSimulationDataToCSV( simulationData )
 
