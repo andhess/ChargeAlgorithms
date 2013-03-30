@@ -4,7 +4,8 @@ import chargePorts
 import chargeEvent
 from operator import attrgetter
 
-edfSchedules =  [ [ ] for y in range( chargePorts.numChargePorts ) ]
+schedules =  [ [ ] for y in range( chargePorts.numChargePorts ) ]
+edfQueue = []
 
 #  ------ EDF ------
 
@@ -216,14 +217,13 @@ def vehicleCanFitTest( vehicle ):
 def genAdmissionFeasiblity( index ):
     
     endTimes = []
-    endingTime = schedules[ index ][ 0 ].timeLeftToCharge() + common.currentTime
-    endTimes.append( endingTime )
+    endingTime = common.currentTime
 
-    # iterate through the schedle, for each car, add end time to array
-    for i in range( 1 , len( schedules[ index ] ) ):
+    # iterate through the schedule, for each car, add end time to array
+    for i, vehicle in enumerate( schedules[ index ] ):
 
         # update endingTime for the next vehicle, add it to endTimes
-        endingTime += schedules[ index ][ i ].timeToCharge()
+        endingTime += vehicle.timeToCharge
         endTimes.append( endingTime )
 
     # now have an array of scheduled endTimes for each vehicle
@@ -235,32 +235,38 @@ def genAdmissionFeasiblity( index ):
 # maintains a properly sorted schedule, based on deadlines 
 def insertIntoSchedule( vehicle, scheduleIndex ):
 
-    reference
-    depTime = vehicle.depTime
+    reference = -1
+    depTime   = vehicle.depTime
 
-    # iterate until it fits, insert, and then break from loop
-    for index, car in schedules[ scheduleIndex ]:
-        if depTime < car.depTime:
+    if len( schedules[ scheduleIndex ] ) > 0:
 
-            # check if it's the 1st vehicle, will need t
-            if index == 0:
-
-                break
-            else:
+        # iterate until it fits, insert, and then break from loop
+        for index, car in enumerate( schedules[ scheduleIndex ] ):
+            if depTime < car.depTime:
+                print "inserted  into " , index
                 reference = index
                 schedules[ scheduleIndex ].insert( index , vehicle )
                 break
 
-    # for now, a QA check
-    prev = schedules[ scheduleIndex ][ 0 ]
-    for i in range( 1 , len( schedules[ scheduleIndex ] ) ):
+    else:
+        "inserting in empty schedule"
 
-        # the prev car should always have a depTime <= to current
-        if prev.depTime > schedules[ scheduleIndex ][ i ].depTime:
-            return "insert not working, schedules out of order"
-        
-        # update prev
-        prev = schedules[ scheduleIndex ][ i ]
+        schedules[ scheduleIndex ].insert( 0 , vehicle )
+        reference = 0
+
+    # for now, a QA check
+    print schedules[ scheduleIndex ]
+    prev = schedules[ scheduleIndex ][ 0 ]
+
+    if len( schedules[ scheduleIndex ] ) > 1:
+        for i in range( 1 , len( schedules[ scheduleIndex ] ) ):
+
+            # the prev car should always have a depTime <= to current
+            if prev.depTime > schedules[ scheduleIndex ][ i ].depTime:
+                return "insert not working, schedules out of order"
+            
+            # update prev
+            prev = schedules[ scheduleIndex ][ i ]
 
     return reference
 
@@ -290,7 +296,14 @@ def admissionFeasibility( scheduleIndex , feasibilityArray ):
     return flexibility
 
 
+# returns True if there more vehicles in the schedules
+def schedulesEmpty():
+    return all( len( subSchedule ) == 0 for subSchedule in schedules )
+
+# simulates EDF with the queues for each chargePort
 def simulateEDFPro( arrayOfVehicleArrivals ):
+
+    #global schedules
 
     # reset global variables such as time, done/failed lots
     common.updateGlobals( arrayOfVehicleArrivals )
@@ -318,40 +331,155 @@ def simulateEDFPro( arrayOfVehicleArrivals ):
                 chargePorts.chargePorts[ port ] = vehicle
                 schedules[ port ].append( vehicle )
 
+                if len( schedules[ port ] ) > 1:
+                    print "empty chargePort, but shit was scheduled"
+                    break
+
                 # initialize a listener object for its charging activity
                 chargePorts.chargePortListeners[ port ].insert( 0 , chargeEvent.ChargeEvent( vehicle, common.currentTime ) )
 
-            # no ports available so try to put it in a queue
+            # no ports available so try to put it in a queue, but have to find one that will work
             else:
+
+                bestSchedule = -1
+                scheduleFlex = float( "inf" );
                 
-                    edfQueue.append( vehicle )
-                    if earliestDLIndex == -1 or vehicle.depTime < edfQueue[ earliestDLIndex ].depTime:
-                        earliestDLIndex = len( edfQueue ) - 1
+                # iterate through every schedule
+                for index, schedule in enumerate( schedules ):
+
+                    # try inserting a vehicle in the schedule, get its admission feasibility
+                    insertLocation = insertIntoSchedule( vehicle , index )
+                    admissionTest = genAdmissionFeasiblity( index )
+
+                    # will it work?
+                    tempFlex = admissionFeasibility( index , admissionTest )
+
+                    # check if it can work for this sched
+                    if tempFlex == False:
+                        del schedules[ index ][ insertLocation ]
+                        continue
+
+                    # now check if it's the best one
+                    if tempFlex < scheduleFlex:
+                        scheduleFlex = tempFlex
+                        bestSchedule = index
+
+                    # regardless, delete from schedule for now
+                    del schedule[ insertLocation ]
+
+                # now will we do an official insert? or decline
+                if bestSchedule >= 0:
+                    print "bestSchedule index: " , bestSchedule
+                    insertIntoSchedule( vehicle , bestSchedule )
+
+                # decline
                 else:
                     csvGen.exportVehicleToCSV( vehicle, "DECLINED" )
                     common.declinedLot.append( vehicle )
-        
-        updateVehiclesEDF()
+
+        updateVehiclesEDFPro()
         common.currentTime += 1
 
     # vehicles done arriving, now continue with the simulation
-    while chargePorts.chargePortsEmpty() == False or not len( edfQueue ) == 0:
-        updateVehiclesEDF()
+    while chargePorts.chargePortsEmpty() == False or not schedulesEmpty():
+        updateVehiclesEDFPro()
         common.currentTime += 1
 
-    # print "EDF: total number of cars: ", common.numberOfVehiclesInSimulation , \
-    #       "  elapsed time: " , common.currentTime , \
-    #       "  done charging lot: " , len( common.doneChargingLot ) , \
-    #       "  failed charging lot: " , len( common.failedLot ) , \
-    #       "  declined lot: ", len( common.declinedLot ), \
-    #       "  cant charge lot: " , len( common.cantChargeLot ) , \
-    #       "  edfQueue size:  " , len( edfQueue ) , \
-    #       "  chargePort " , chargePorts.toString()
+    print "EDF: total number of cars: ", common.numberOfVehiclesInSimulation , \
+          "  elapsed time: " , common.currentTime , \
+          "  done charging lot: " , len( common.doneChargingLot ) , \
+          "  failed charging lot: " , len( common.failedLot ) , \
+          "  declined lot: ", len( common.declinedLot ), \
+          "  cant charge lot: " , len( common.cantChargeLot ) , \
+          "  edfQueue size:  " , len( edfQueue ) , \
+          "  chargePort " , chargePorts.toString()
 
     # write a CSV with all the chargePort logs
-    csvGen.exportChargePortsToCSV( "edf" )
+    csvGen.exportChargePortsToCSV( "edfPro" )
 
     return ( 1.0 * len( common.doneChargingLot ) / common.numberOfVehiclesInSimulation )
+
+# update vehicles for the pro edf algorithm
+def updateVehiclesEDFPro():
+    #global schedules
+
+    # cheack each chargePort
+    for index, vehicle in enumerate( chargePorts.chargePorts ):
+
+        # add one minute of charge
+        if vehicle is not None:
+            vehicle.currentCharge += ( vehicle.chargeRate ) / 60.0
+            removed = False
+
+            #check if done charging
+            if vehicle.currentCharge >= vehicle.chargeNeeded:
+
+                # finish up the listener for this vehicle
+                chargePorts.chargePortListeners[ index ][ 0 ].terminateCharge( vehicle , common.currentTime )
+
+                # remove finished vehicle from grid and document it
+                csvGen.exportVehicleToCSV( vehicle, "SUCCESS" )
+                common.doneChargingLot.append( vehicle )
+                del schedules[ index ][ 0 ] # remove the vehicle from the schedule
+                
+                # the next vehicle
+                if len( schedules[ index ] ) > 0:
+
+                    # get next vehicle and throw in chargePort
+                    nextVehicle = schedules[ index ][ 0 ]
+                    chargePorts.chargePorts[ index ] = nextVehicle
+
+                    # make it a listener
+                    chargePorts.chargePortListeners[ index ].insert( 0 , chargeEvent.ChargeEvent( nextVehicle , common.currentTime ) )
+
+                else:
+                    chargePorts.chargePorts[ index ] = None
+                removed = True
+
+
+            # check if deadline reached
+            # shouldn't run into this with adminControl, but practice safe algorithms
+            if common.currentTime >= vehicle.depTime and not removed:
+
+                # this vehicle is on the out, so wrap up its listener
+                chargePorts.chargePortListeners[ index ][ 0 ].terminateCharge( vehicle , common.currentTime )
+
+                # remove finished vehicle and document it
+                csvGen.exportVehicleToCSV( vehicle, "FAILURE" )
+                common.failedLot.append( vehicle )
+                del schedules[ index ][ 0 ] # remove the vehicle for the schedule
+                
+                if len( schedules[ index ] ) > 0:
+
+                    # get nextVehicle
+                    nextVehicle = schedules[ index ][ 0 ]
+                    chargePorts.chargePorts[ index ] = nextVehicle
+
+                    # make new listener
+                    chargePorts.chargePortListeners[ index ].insert( 0 , chargeEvent.ChargeEvent( nextVehicle , common.currentTime ) )
+
+                else:
+                    chargePorts.chargePorts[ index ] = None
+
+
+    # there are cases when a new car arrived with the earliestDL, but all swaps are done at discrete intervals
+    # in this case, it is currently at index 0, but not being charged. This part will change that
+
+    # look through each schedule
+    for index, schedule in enumerate( schedules ):
+
+        # compare schedule[ 0 ].depTime with that in the chargePort. swap out if different
+        if len( schedule ) > 0:
+            if schedule[ 0 ].depTime < chargePorts.chargePorts[ index ].depTime:
+
+                # close the listener for swappingOut
+                chargePorts.chargePortListeners[ index ][ 0 ].terminateCharge( chargePorts.chargePorts[ index ] , common.currentTime )
+
+                # swap occurs in the chargePorts
+                chargePorts.chargePorts[ index ] = schedules[ index ][ 0 ]
+
+                # create a new listener for the vehicle that just got swapped in
+                chargePorts.chargePortListeners[ index ].insert( 0 , chargeEvent.ChargeEvent( schedules[ index ][ 0 ] , common.currentTime ) )
 
 
 

@@ -177,6 +177,6 @@ def findEarliestEndingSchedule():
 
 # returns True if there more vehicles in the schedules
 def schedulesEmpty():
-    return all( len(subSchedule) == 0 for subSchedule in schedules)
+    return all( len( subSchedule ) == 0 for subSchedule in schedules )
 
 
