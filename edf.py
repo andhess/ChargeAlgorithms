@@ -329,10 +329,10 @@ def simulateEDFPro( arrayOfVehicleArrivals ):
 
                 # add to chargePort and schedule
                 chargePorts.chargePorts[ port ] = vehicle
-                schedules[ port ].append( vehicle )
+                schedules[ port ].insert( 0 , vehicle )
 
                 if len( schedules[ port ] ) > 1:
-                    print "empty chargePort, but shit was scheduled"
+                    print "empty chargePort, but shit was scheduled to be there"
                     break
 
                 # initialize a listener object for its charging activity
@@ -347,15 +347,20 @@ def simulateEDFPro( arrayOfVehicleArrivals ):
                 # iterate through every schedule
                 for index, schedule in enumerate( schedules ):
 
-                    # try inserting a vehicle in the schedule, get its admission feasibility
-                    insertLocation = insertIntoSchedule( vehicle , index )
-                    admissionTest = genAdmissionFeasiblity( index )
+                    # insert a vehicle in the schedule and get its admission feasibility
+                    insertLocation =  insertIntoSchedule( vehicle , index )
+                    admissionTest  =  genAdmissionFeasiblity( index )
+
+                    print "insertLocation:  " , insertLocation
 
                     # will it work?
                     tempFlex = admissionFeasibility( index , admissionTest )
 
                     # check if it can work for this sched
+                    print "tempFlex:  " , tempFlex
                     if tempFlex == False:
+
+                        # if it can't work, delete from schedule and move on
                         del schedules[ index ][ insertLocation ]
                         continue
 
@@ -365,10 +370,10 @@ def simulateEDFPro( arrayOfVehicleArrivals ):
                         bestSchedule = index
 
                     # regardless, delete from schedule for now
-                    del schedule[ insertLocation ]
+                    del schedules[ index ][ insertLocation ]
 
                 # now will we do an official insert? or decline
-                if bestSchedule >= 0:
+                if bestSchedule >= 0 or tempFlex < 0:
                     print "bestSchedule index: " , bestSchedule
                     insertIntoSchedule( vehicle , bestSchedule )
 
@@ -391,7 +396,7 @@ def simulateEDFPro( arrayOfVehicleArrivals ):
           "  failed charging lot: " , len( common.failedLot ) , \
           "  declined lot: ", len( common.declinedLot ), \
           "  cant charge lot: " , len( common.cantChargeLot ) , \
-          "  edfQueue size:  " , len( edfQueue ) , \
+          "  schedules:  " , len( edfQueue ) , \
           "  chargePort " , chargePorts.toString()
 
     # write a CSV with all the chargePort logs
@@ -420,6 +425,10 @@ def updateVehiclesEDFPro():
                 # remove finished vehicle from grid and document it
                 csvGen.exportVehicleToCSV( vehicle, "SUCCESS" )
                 common.doneChargingLot.append( vehicle )
+
+                print "vehicle done charging....  index:  " ,  index
+                print schedules
+
                 del schedules[ index ][ 0 ] # remove the vehicle from the schedule
                 
                 # the next vehicle
@@ -471,6 +480,8 @@ def updateVehiclesEDFPro():
         # compare schedule[ 0 ].depTime with that in the chargePort. swap out if different
         if len( schedule ) > 0:
             if schedule[ 0 ].depTime < chargePorts.chargePorts[ index ].depTime:
+
+                print "swap swap baby"
 
                 # close the listener for swappingOut
                 chargePorts.chargePortListeners[ index ][ 0 ].terminateCharge( chargePorts.chargePorts[ index ] , common.currentTime )
