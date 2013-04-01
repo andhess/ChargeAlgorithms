@@ -311,7 +311,7 @@ def simulateEDFPro( arrayOfVehicleArrivals ):
     # global earliestDLIndex
 
     # initialize a CSV document for storing all data
-    csvGen.generateCSV( "edf" )
+    csvGen.generateCSV( "edfPro" )
 
     # iterate through each vehicle in each minute
     for minute, numVehiclesPerMin in enumerate( arrayOfVehicleArrivals ):
@@ -385,7 +385,7 @@ def simulateEDFPro( arrayOfVehicleArrivals ):
         updateVehiclesEDFPro()
         common.currentTime += 1
 
-    print "EDF: total number of cars: ", common.numberOfVehiclesInSimulation , \
+    print "EDFPro: total number of cars: ", common.numberOfVehiclesInSimulation , \
           "  elapsed time: " , common.currentTime , \
           "  done charging lot: " , len( common.doneChargingLot ) , \
           "  failed charging lot: " , len( common.failedLot ) , \
