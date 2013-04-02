@@ -238,6 +238,8 @@ def insertIntoSchedule( vehicle, scheduleIndex ):
     reference = -1
     depTime   = vehicle.depTime
 
+    print "schedule length:   : " ,  len( schedules[ scheduleIndex ] )
+
     if len( schedules[ scheduleIndex ] ) > 0:
 
         # iterate until it fits, insert, and then break from loop
@@ -248,6 +250,13 @@ def insertIntoSchedule( vehicle, scheduleIndex ):
                 schedules[ scheduleIndex ].insert( index , vehicle )
                 break
 
+            # add it to the end
+            else:
+                print "adding to end of schedule"
+                reference = len( schedules[ scheduleIndex ] )
+                schedules[ scheduleIndex ].append( vehicle )
+                break
+
     else:
         "inserting in empty schedule"
 
@@ -255,18 +264,21 @@ def insertIntoSchedule( vehicle, scheduleIndex ):
         reference = 0
 
     # for now, a QA check
-    print schedules[ scheduleIndex ]
+    print "----------"
+    print scheduleToString( scheduleIndex )
     prev = schedules[ scheduleIndex ][ 0 ]
 
     if len( schedules[ scheduleIndex ] ) > 1:
         for i in range( 1 , len( schedules[ scheduleIndex ] ) ):
-
+            print "depTimes:  " , prev.depTime ,  "  <   " , schedules[ scheduleIndex ][ i ].depTime
             # the prev car should always have a depTime <= to current
             if prev.depTime > schedules[ scheduleIndex ][ i ].depTime:
                 return "insert not working, schedules out of order"
             
             # update prev
             prev = schedules[ scheduleIndex ][ i ]
+
+    print "reference:   "  , reference , " ------- "
 
     return reference
 
@@ -349,7 +361,14 @@ def simulateEDFPro( arrayOfVehicleArrivals ):
 
                     # insert a vehicle in the schedule and get its admission feasibility
                     insertLocation =  insertIntoSchedule( vehicle , index )
+                    print type( insertLocation ) , " dicks dicks dicks dicks"
+                    insertLocation = int( insertLocation )
+                    print type( insertLocation ) , " penis penis penis"
                     admissionTest  =  genAdmissionFeasiblity( index )
+
+                    print "++++++------+++++___+++_+_+_+_+_++_"
+                    print type( insertLocation )
+
 
                     print "insertLocation:  " , insertLocation
 
@@ -493,5 +512,12 @@ def updateVehiclesEDFPro():
                 chargePorts.chargePortListeners[ index ].insert( 0 , chargeEvent.ChargeEvent( schedules[ index ][ 0 ] , common.currentTime ) )
 
 
+def scheduleToString( index ):
+    statement = "[ "
+    for position, vehicle in enumerate( schedules[ index ] ):
+        statement += vehicle.toStringID()
+        statement += " , "
+    return statement + " ] "
+    
 
 
