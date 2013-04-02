@@ -133,7 +133,7 @@ def updateVehiclesFCFS():
                 del schedules[ index ][ 0 ] # remove the vehicle for the schedule
                 
                 # the next vehicle
-                if len(schedules[ index ]) != 0:
+                if len( schedules[ index ] ) != 0:
 
                     nextVehicle = schedules[ index ][ 0 ]
                     chargePorts.chargePorts[ index ] = nextVehicle

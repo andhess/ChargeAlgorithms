@@ -231,46 +231,47 @@ def genAdmissionFeasiblity( index ):
     return endTimes
 
 
-# properly inserts a vehicle into a schedule, returns its index
-# maintains a properly sorted schedule, based on deadlines 
 def insertIntoSchedule( vehicle, scheduleIndex ):
 
     reference = -1
-    depTime   = vehicle.depTime
+    depTime = vehicle.depTime
+    spotted = False
 
-    print "schedule length:   : " ,  len( schedules[ scheduleIndex ] )
-
+    # if there's stuff there, we'll search through and find the spot to insert
     if len( schedules[ scheduleIndex ] ) > 0:
 
-        # iterate until it fits, insert, and then break from loop
+        # try finding a spot to insert
         for index, car in enumerate( schedules[ scheduleIndex ] ):
-            if depTime < car.depTime:
-                print "inserted  into " , index
-                reference = index
-                schedules[ scheduleIndex ].insert( index , vehicle )
+
+            if not spotted and depTime <= car.depTime:
+                reference =  index
+                spotted   =  True
                 break
 
-            # add it to the end
-            else:
-                print "adding to end of schedule"
-                reference = len( schedules[ scheduleIndex ] )
-                schedules[ scheduleIndex ].append( vehicle )
-                break
+        # now try and insert
 
+        # found a spot in the middle of the deal
+        if spotted:
+            schedules[ scheduleIndex ].insert( reference , vehicle )
+
+        # it needs to go at the end
+        else:
+            spotted = True
+            reference = len( schedules[ scheduleIndex ] )
+            schedules[ scheduleIndex ].append( vehicle )
+
+    # otherwise there's nothing and we can just throw it in
     else:
-        "inserting in empty schedule"
+        reference =  0
+        spotted   =  True
+        schedules[ scheduleIndex ].append( vehicle )
 
-        schedules[ scheduleIndex ].insert( 0 , vehicle )
-        reference = 0
 
-    # for now, a QA check
-    print "----------"
-    print scheduleToString( scheduleIndex )
-    prev = schedules[ scheduleIndex ][ 0 ]
-
+    # a quick QA check
     if len( schedules[ scheduleIndex ] ) > 1:
+        prev = schedules[ scheduleIndex ][ 0 ]
         for i in range( 1 , len( schedules[ scheduleIndex ] ) ):
-            print "depTimes:  " , prev.depTime ,  "  <   " , schedules[ scheduleIndex ][ i ].depTime
+            print "depTimes:  " , prev.depTime ,  "  <=   " , schedules[ scheduleIndex ][ i ].depTime
             # the prev car should always have a depTime <= to current
             if prev.depTime > schedules[ scheduleIndex ][ i ].depTime:
                 return "insert not working, schedules out of order"
@@ -278,9 +279,92 @@ def insertIntoSchedule( vehicle, scheduleIndex ):
             # update prev
             prev = schedules[ scheduleIndex ][ i ]
 
-    print "reference:   "  , reference , " ------- "
 
-    return reference
+    if spotted and reference >= 0:
+        return reference
+    else:
+        return "insert isn't working right"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# # properly inserts a vehicle into a schedule, returns its index
+# # maintains a properly sorted schedule, based on deadlines 
+# def insertIntoSchedule( vehicle, scheduleIndex ):
+
+#     print "******* attempting to insert " , vehicle.toStringID()
+
+#     reference = -1
+#     depTime   = vehicle.depTime
+
+#     print "schedule length:   : " ,  len( schedules[ scheduleIndex ] )
+
+#     if len( schedules[ scheduleIndex ] ) > 0:
+
+#         # iterate until it fits, insert, and then break from loop
+#         for index, car in enumerate( schedules[ scheduleIndex ] ):
+#             print "!!!!!:  " , depTime , "  <=  " , car.depTime
+#             print type( depTime) , "  " , type(car.depTime)
+#             if depTime <= car.depTime:
+#                 print "inserted  into " , index
+#                 reference = index
+#                 schedules[ scheduleIndex ].insert( index , vehicle )
+#                 break
+
+#             # add it to the end
+#             else:
+#                 print "adding to end of schedule"
+#                 reference = len( schedules[ scheduleIndex ] )
+#                 schedules[ scheduleIndex ].append( vehicle )
+#                 break
+
+#     else:
+#         "inserting in empty schedule"
+
+#         schedules[ scheduleIndex ].insert( 0 , vehicle )
+#         reference = 0
+
+#     # for now, a QA check
+#     print "----------"
+#     print scheduleToString( scheduleIndex )
+#     prev = schedules[ scheduleIndex ][ 0 ]
+
+#     if len( schedules[ scheduleIndex ] ) > 1:
+#         for i in range( 1 , len( schedules[ scheduleIndex ] ) ):
+#             print "depTimes:  " , prev.depTime ,  "  <=   " , schedules[ scheduleIndex ][ i ].depTime
+#             # the prev car should always have a depTime <= to current
+#             if prev.depTime > schedules[ scheduleIndex ][ i ].depTime:
+#                 return "insert not working, schedules out of order"
+            
+#             # update prev
+#             prev = schedules[ scheduleIndex ][ i ]
+
+#     print "reference:   "  , reference , " ------- "
+
+#     return reference
 
 
 # takes in an index and a list of scheduled end times for vehicles
@@ -361,16 +445,10 @@ def simulateEDFPro( arrayOfVehicleArrivals ):
 
                     # insert a vehicle in the schedule and get its admission feasibility
                     insertLocation =  insertIntoSchedule( vehicle , index )
-                    print type( insertLocation ) , " dicks dicks dicks dicks"
                     insertLocation = int( insertLocation )
-                    print type( insertLocation ) , " penis penis penis"
                     admissionTest  =  genAdmissionFeasiblity( index )
 
-                    print "++++++------+++++___+++_+_+_+_+_++_"
-                    print type( insertLocation )
-
-
-                    print "insertLocation:  " , insertLocation
+                    print "insertLocation  :  " , type( insertLocation ) , "  :  " , insertLocation
 
                     # will it work?
                     tempFlex = admissionFeasibility( index , admissionTest )

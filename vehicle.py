@@ -64,7 +64,7 @@ class Vehicle:
         return 
 
     def toStringID( self ):
-        return 'ID: ' + str( self.id ) 
+        return 'ID: ' + str( self.id ) + '  ' + str( self.depTime )
 
     # updates the laxity for vehicle. Requires the current time of the simulation
     def updateLaxity( self, currentTime ):
