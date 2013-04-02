@@ -206,14 +206,15 @@ def vehicleCanFitTest( vehicle ):
     for scheduledVehicle in edfQueue:
         totalTime += scheduledVehicle.timeToCharge
 
-    averageEndTime = (totalTime * 1.0) / chargePorts.numChargePorts
+    averageEndTime = ( totalTime * 1.0 ) / chargePorts.numChargePorts
     averageEndTime += common.currentTime
 
     # returns true if it can fit, false if it cannot
-    return averageEndTime < (vehicle.depTime - vehicle.timeToCharge)
+    return averageEndTime < (vehicle.depTime - vehicle.timeToCharge )
 
 
-# takes in an index to specify which schedule in schedules, and returns an array with predicted 
+# takes in a scheduleIndex and returns an array with predicted times for
+#   each vehicle to finish charging
 def genAdmissionFeasiblity( index ):
     
     endTimes = []
@@ -223,7 +224,7 @@ def genAdmissionFeasiblity( index ):
     for i, vehicle in enumerate( schedules[ index ] ):
 
         # update endingTime for the next vehicle, add it to endTimes
-        endingTime += vehicle.timeToCharge
+        endingTime += vehicle.timeToCharge + 1
         endTimes.append( endingTime )
 
     # now have an array of scheduled endTimes for each vehicle
@@ -231,6 +232,8 @@ def genAdmissionFeasiblity( index ):
     return endTimes
 
 
+# properly inserts a vehicle into a schedule, returns its index
+# maintains a properly sorted schedule, based on deadlines 
 def insertIntoSchedule( vehicle, scheduleIndex ):
 
     reference = -1
@@ -266,12 +269,10 @@ def insertIntoSchedule( vehicle, scheduleIndex ):
         spotted   =  True
         schedules[ scheduleIndex ].append( vehicle )
 
-
     # a quick QA check
     if len( schedules[ scheduleIndex ] ) > 1:
         prev = schedules[ scheduleIndex ][ 0 ]
         for i in range( 1 , len( schedules[ scheduleIndex ] ) ):
-            print "depTimes:  " , prev.depTime ,  "  <=   " , schedules[ scheduleIndex ][ i ].depTime
             # the prev car should always have a depTime <= to current
             if prev.depTime > schedules[ scheduleIndex ][ i ].depTime:
                 return "insert not working, schedules out of order"
@@ -279,92 +280,10 @@ def insertIntoSchedule( vehicle, scheduleIndex ):
             # update prev
             prev = schedules[ scheduleIndex ][ i ]
 
-
     if spotted and reference >= 0:
         return reference
     else:
         return "insert isn't working right"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# # properly inserts a vehicle into a schedule, returns its index
-# # maintains a properly sorted schedule, based on deadlines 
-# def insertIntoSchedule( vehicle, scheduleIndex ):
-
-#     print "******* attempting to insert " , vehicle.toStringID()
-
-#     reference = -1
-#     depTime   = vehicle.depTime
-
-#     print "schedule length:   : " ,  len( schedules[ scheduleIndex ] )
-
-#     if len( schedules[ scheduleIndex ] ) > 0:
-
-#         # iterate until it fits, insert, and then break from loop
-#         for index, car in enumerate( schedules[ scheduleIndex ] ):
-#             print "!!!!!:  " , depTime , "  <=  " , car.depTime
-#             print type( depTime) , "  " , type(car.depTime)
-#             if depTime <= car.depTime:
-#                 print "inserted  into " , index
-#                 reference = index
-#                 schedules[ scheduleIndex ].insert( index , vehicle )
-#                 break
-
-#             # add it to the end
-#             else:
-#                 print "adding to end of schedule"
-#                 reference = len( schedules[ scheduleIndex ] )
-#                 schedules[ scheduleIndex ].append( vehicle )
-#                 break
-
-#     else:
-#         "inserting in empty schedule"
-
-#         schedules[ scheduleIndex ].insert( 0 , vehicle )
-#         reference = 0
-
-#     # for now, a QA check
-#     print "----------"
-#     print scheduleToString( scheduleIndex )
-#     prev = schedules[ scheduleIndex ][ 0 ]
-
-#     if len( schedules[ scheduleIndex ] ) > 1:
-#         for i in range( 1 , len( schedules[ scheduleIndex ] ) ):
-#             print "depTimes:  " , prev.depTime ,  "  <=   " , schedules[ scheduleIndex ][ i ].depTime
-#             # the prev car should always have a depTime <= to current
-#             if prev.depTime > schedules[ scheduleIndex ][ i ].depTime:
-#                 return "insert not working, schedules out of order"
-            
-#             # update prev
-#             prev = schedules[ scheduleIndex ][ i ]
-
-#     print "reference:   "  , reference , " ------- "
-
-#     return reference
 
 
 # takes in an index and a list of scheduled end times for vehicles
@@ -380,6 +299,7 @@ def admissionFeasibility( scheduleIndex , feasibilityArray ):
 
     # iterate through arrays, comparing depTimes with predicted end charging times
     for index, vehicle in enumerate( schedules[ scheduleIndex ] ):
+
         tempFlex = vehicle.depTime - feasibilityArray[ index ]
 
         # can it finish before depTime?
@@ -447,14 +367,11 @@ def simulateEDFPro( arrayOfVehicleArrivals ):
                     insertLocation =  insertIntoSchedule( vehicle , index )
                     insertLocation = int( insertLocation )
                     admissionTest  =  genAdmissionFeasiblity( index )
-
-                    print "insertLocation  :  " , type( insertLocation ) , "  :  " , insertLocation
-
+                   
                     # will it work?
                     tempFlex = admissionFeasibility( index , admissionTest )
 
                     # check if it can work for this sched
-                    print "tempFlex:  " , tempFlex
                     if tempFlex == False:
 
                         # if it can't work, delete from schedule and move on
@@ -470,8 +387,7 @@ def simulateEDFPro( arrayOfVehicleArrivals ):
                     del schedules[ index ][ insertLocation ]
 
                 # now will we do an official insert? or decline
-                if bestSchedule >= 0 or tempFlex < 0:
-                    print "bestSchedule index: " , bestSchedule
+                if bestSchedule >= 0 and scheduleFlex > 0:
                     insertIntoSchedule( vehicle , bestSchedule )
 
                 # decline
@@ -493,13 +409,13 @@ def simulateEDFPro( arrayOfVehicleArrivals ):
           "  failed charging lot: " , len( common.failedLot ) , \
           "  declined lot: ", len( common.declinedLot ), \
           "  cant charge lot: " , len( common.cantChargeLot ) , \
-          "  schedules:  " , len( edfQueue ) , \
+          "  schedules:  " , schedulesEmpty() , \
           "  chargePort " , chargePorts.toString()
 
     # write a CSV with all the chargePort logs
     csvGen.exportChargePortsToCSV( "edfPro" )
 
-    return ( 1.0 * len( common.doneChargingLot ) / common.numberOfVehiclesInSimulation )
+    return ( 1.0 * len( common.doneChargingLot ) / ( len( common.failedLot ) + len( common.doneChargingLot ) ) )
 
 # update vehicles for the pro edf algorithm
 def updateVehiclesEDFPro():
@@ -522,9 +438,6 @@ def updateVehiclesEDFPro():
                 # remove finished vehicle from grid and document it
                 csvGen.exportVehicleToCSV( vehicle, "SUCCESS" )
                 common.doneChargingLot.append( vehicle )
-
-                print "vehicle done charging....  index:  " ,  index
-                print schedules
 
                 del schedules[ index ][ 0 ] # remove the vehicle from the schedule
                 
@@ -567,6 +480,17 @@ def updateVehiclesEDFPro():
                 else:
                     chargePorts.chargePorts[ index ] = None
 
+        # a quick QA check
+        if len( schedules[ index ] ) > 1:
+            prev = schedules[ index ][ 0 ]
+            for i in range( 1 , len( schedules[ index ] ) ):
+                # the prev car should always have a depTime <= to current
+                if prev.depTime > schedules[ index ][ i ].depTime:
+                    return "insert not working, schedules out of order"
+                
+                # update prev
+                prev = schedules[ index ][ i ]
+
 
     # there are cases when a new car arrived with the earliestDL, but all swaps are done at discrete intervals
     # in this case, it is currently at index 0, but not being charged. This part will change that
@@ -578,8 +502,6 @@ def updateVehiclesEDFPro():
         if len( schedule ) > 0:
             if schedule[ 0 ].depTime < chargePorts.chargePorts[ index ].depTime:
 
-                print "swap swap baby"
-
                 # close the listener for swappingOut
                 chargePorts.chargePortListeners[ index ][ 0 ].terminateCharge( chargePorts.chargePorts[ index ] , common.currentTime )
 
@@ -590,6 +512,7 @@ def updateVehiclesEDFPro():
                 chargePorts.chargePortListeners[ index ].insert( 0 , chargeEvent.ChargeEvent( schedules[ index ][ 0 ] , common.currentTime ) )
 
 
+# takes in an index and  prints out a specific schedule from schedules
 def scheduleToString( index ):
     statement = "[ "
     for position, vehicle in enumerate( schedules[ index ] ):

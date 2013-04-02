@@ -23,7 +23,7 @@ common.setInterval(interval)
 
 simulationData = []
 
-arrivalRate = .1
+arrivalRate = 2.0
 poissonGen.setArrivalRate( arrivalRate )
 
 
