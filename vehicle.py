@@ -66,6 +66,9 @@ class Vehicle:
     def toStringID( self ):
         return 'ID: ' + str( self.id ) + '  ' + str( self.depTime )
 
+    def toStringIDL( self ):
+        return 'ID: ' + str( self.id ) + '  ' + str( self.laxity )
+
     # updates the laxity for vehicle. Requires the current time of the simulation
     def updateLaxity( self, currentTime ):
         timeToCharge =  ( self.chargeNeeded - self.currentCharge ) / self.chargeRate

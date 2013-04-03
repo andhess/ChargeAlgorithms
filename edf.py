@@ -269,7 +269,7 @@ def insertIntoSchedule( vehicle, scheduleIndex ):
         spotted   =  True
         schedules[ scheduleIndex ].append( vehicle )
 
-    # a quick QA check
+    # a quick QA check:
     if len( schedules[ scheduleIndex ] ) > 1:
         prev = schedules[ scheduleIndex ][ 0 ]
         for i in range( 1 , len( schedules[ scheduleIndex ] ) ):
@@ -519,6 +519,4 @@ def scheduleToString( index ):
         statement += vehicle.toStringID()
         statement += " , "
     return statement + " ] "
-    
-
 

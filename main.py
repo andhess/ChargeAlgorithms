@@ -33,6 +33,7 @@ simulationInterval = poissonGen.simulateInterval()
 # print llfSmart.simulateLLF( simulationInterval )
 
 print edf.simulateEDFPro( simulationInterval )
+print llfSimple.simulateLLFSimplePro( simulationInterval )
 
 # #dsac.simulateDSAC( simulationInterval )
 
