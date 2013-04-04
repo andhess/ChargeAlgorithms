@@ -42,7 +42,7 @@ poissonGen.setArrivalRate( arrivalRate )
 # # do tons and tons of simulations
 numIterations = 100
 maxArrivalRate = 2.0
-numRunsPerIteration = 5
+numRunsPerIteration = 10
 for i in range( numIterations ):
 	# gc.collect()
 
