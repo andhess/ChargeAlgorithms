@@ -129,6 +129,8 @@ def simulateDSAC( arrayOfVehicleArrivals ):
     # write a CSV for all the chargePort logs
 	csvGen.exportChargePortsToCSV( "dsac" )
 
+	totalProfit = totalProfit()
+
 	return ( 1.0 * len( common.doneChargingLot ) / common.numberOfVehiclesInSimulation )
 
 leastProfitConflictCount = 0
@@ -402,6 +404,23 @@ def scheduleEndTime( scheduleIndex ):
 # returns true if all schedules are empty
 def schedulesEmpty():
 	return all( len(subSchedule) == 0 for subSchedule in schedules)
+
+def totalProfit():
+	profit = 0
+	done = common.doneChargingLot
+	failed = common.failedLot
+	for vehicle in done:
+		if not listHasVehicleId(failed, vehicle.id):
+			profit += vehicle.getProfit()
+	for vehicle in failed:
+		profit -= (vehicle.chargeNeeded - vehicle.currentCharge) * common.penaltyCoefficient
+
+
+def listHasVehicleId(list, id):
+	for item in list:
+		if item.id == id:
+			return True
+	return False
 
 def schedulesToString():
 	output = "["
