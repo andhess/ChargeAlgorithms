@@ -9,6 +9,7 @@ import llfSimple
 import dsac
 import poissonGen
 import csvGen
+import fcfsAC
 import gc
 
 
@@ -23,17 +24,20 @@ common.setInterval(interval)
 
 simulationData = []
 
-arrivalRate = 2.0
+arrivalRate = .5
 poissonGen.setArrivalRate( arrivalRate )
 
 
 simulationInterval = poissonGen.simulateInterval()
 
+print fcfs.simulateFCFS( simulationInterval )
+print fcfsAC.simulateFCFSAC( simulationInterval )
+
 # print llfSmartAC.simulateLLF( simulationInterval )
 # print llfSmart.simulateLLF( simulationInterval )
 
-print edf.simulateEDFPro( simulationInterval )
-print llfSimple.simulateLLFSimplePro( simulationInterval )
+#print edf.simulateEDFPro( simulationInterval )
+#print llfSimple.simulateLLFSimplePro( simulationInterval )
 
 # #dsac.simulateDSAC( simulationInterval )
 

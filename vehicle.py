@@ -43,7 +43,7 @@ class Vehicle:
         self.freeTime            =     self.totalTime - self.timeToCharge
         self.laxity              =     self.freeTime / self.totalTime
         self.originalLaxity      =     self.freeTime / self.totalTime
-        self.profit              =     (self.timeToCharge / 60.0) * self.chargeRate * common.electricityPrice
+        self.profit              =     ( self.timeToCharge / 60.0) * self.chargeRate * common.electricityPrice
 
         # return self
 
