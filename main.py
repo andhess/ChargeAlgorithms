@@ -23,19 +23,21 @@ common.setInterval(interval)
 
 simulationData = []
 
-arrivalRate = .1
+arrivalRate = 2.0
 poissonGen.setArrivalRate( arrivalRate )
 
 
-# simulationInterval = poissonGen.simulateInterval()
+simulationInterval = poissonGen.simulateInterval()
 
 # print llfSmartAC.simulateLLF( simulationInterval )
 # print llfSmart.simulateLLF( simulationInterval )
 
+print edf.simulateEDFPro( simulationInterval )
+print llfSimple.simulateLLFSimplePro( simulationInterval )
 
 # #dsac.simulateDSAC( simulationInterval )
 
-# sys.exit()
+sys.exit()
 
 # ------------------ real simulations -------------------------
 

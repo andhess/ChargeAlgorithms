@@ -13,7 +13,7 @@ cantChargeLot = []
 
 numberOfVehiclesInSimulation = 0
 
-csvOn = False # use this to toggle csv output
+csvOn = True # use this to toggle csv output
 
 # ----- global time vars ------
 currentTime = 0 
