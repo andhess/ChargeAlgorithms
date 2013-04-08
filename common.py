@@ -20,8 +20,8 @@ currentTime = 0
 interval = 0
 
 # -------- price per kilowatt*hour -------
-electricityPrice = .1   # in dollars
-penaltyCoefficient = .1	# ratio of how much charging costs vs how much the penalty is worth
+electricityPrice = .5   # in dollars
+penaltyCoefficient = 1.1	# ratio of how much charging costs vs how much the penalty is worth
 
 # used in main.py to set the common interval variable
 def setInterval( newInterval ):

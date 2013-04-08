@@ -1,6 +1,6 @@
 import chargeEvent
 # charge port constants
-numChargePorts = 3
+numChargePorts = 10
 chargePorts = [ None ] * numChargePorts
 chargePortListeners = [ ] * numChargePorts
 
