@@ -21,7 +21,7 @@ interval = 0
 
 # -------- price per kilowatt*hour -------
 electricityPrice = .1   # in dollars
-penaltyCoefficient = .1	# ratio of how much charging costs vs how much the penalty is worth
+penaltyCoefficient = 1.1 # a multiplier for electricity - used to add a penalty weight ... keep > 1
 
 # used in main.py to set the common interval variable
 def setInterval( newInterval ):
