@@ -146,8 +146,8 @@ def updateVehiclesFCFSAC():
                 else:
                     chargePorts.chargePorts[ index ] = None
 
+# looks at done and failed lots, and returns the profits based on the vehicles
 def calcProfit():
-
     profit = 0
 
     # add up profit from each vehicle in done lot

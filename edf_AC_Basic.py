@@ -12,15 +12,15 @@ earliestDLIndex = -1;
 
 # the main function for Earliest Deadline First Algorithm
 # takes in an array of vehicle interval arrays
-def simulateEDF( arrayOfVehicleArrivals ):
-    
+def simulateEDFACB( arrayOfVehicleArrivals ):
+
     # reset global variables such as time, done/failed lots
     common.updateGlobals( arrayOfVehicleArrivals )
     global currentTime
     global earliestDLIndex
 
     # initialize a CSV document for storing all data
-    csvGen.generateCSV( "edf" )
+    csvGen.generateCSV( "edfACB" )
 
     # iterate through each vehicle in each minute
     for minute, numVehiclesPerMin in enumerate( arrayOfVehicleArrivals ):
@@ -42,12 +42,16 @@ def simulateEDF( arrayOfVehicleArrivals ):
                 # initialize a listener object for its charging activity
                 chargePorts.chargePortListeners[ port ].insert( 0 , chargeEvent.ChargeEvent( vehicle, common.currentTime ) )
 
-            # no ports available so put in queue
+            # no ports available so put in queue if it can fit
             else:
-                edfQueue.append( vehicle )
-                if earliestDLIndex == -1 or vehicle.depTime < edfQueue[ earliestDLIndex ].depTime:
-                    earliestDLIndex = len( edfQueue ) - 1
-        
+                if vehicleCanFit( vehicle ):
+                    edfQueue.append( vehicle )
+                    if earliestDLIndex == -1 or vehicle.depTime < edfQueue[ earliestDLIndex ].depTime:
+                        earliestDLIndex = len( edfQueue ) - 1
+                else:
+                    csvGen.exportVehicleToCSV( vehicle, "DECLINED" )
+                    common.declinedLot.append( vehicle )
+
         updateVehiclesEDF()
         common.currentTime += 1
 
@@ -56,18 +60,19 @@ def simulateEDF( arrayOfVehicleArrivals ):
         updateVehiclesEDF()
         common.currentTime += 1
 
-    print "EDF: total number of cars: ", common.numberOfVehiclesInSimulation , \
+    print "EDF-AC-B: total number of cars: ", common.numberOfVehiclesInSimulation , \
           "  elapsed time: " , common.currentTime , \
           "  done charging lot: " , len( common.doneChargingLot ) , \
           "  failed charging lot: " , len( common.failedLot ) , \
+          "  declined lot: ", len( common.declinedLot ), \
           "  cant charge lot: " , len( common.cantChargeLot ) , \
           "  edfQueue size:  " , len( edfQueue ) , \
           "  chargePort " , chargePorts.toString()
 
     # write a CSV with all the chargePort logs
-    csvGen.exportChargePortsToCSV( "edf" )
+    csvGen.exportChargePortsToCSV( "edfACB" )
 
-    return ( 1.0 * len( common.doneChargingLot ) / common.numberOfVehiclesInSimulation )
+    return ( 1.0 * len( common.doneChargingLot ) / ( len( common.doneChargingLot ) + len( common.failedLot ) ) )
 
 
 # called to update the vehicles for each minute of simulation
@@ -92,7 +97,7 @@ def updateVehiclesEDF():
                 # remove finished vehicle from grid and document it
                 csvGen.exportVehicleToCSV( vehicle, "SUCCESS" )
                 common.doneChargingLot.append( vehicle )
-                
+
                 if len( edfQueue ) > 0:
 
                     # get next vehicle and throw in chargePort
@@ -119,7 +124,7 @@ def updateVehiclesEDF():
                 # remove finished vehicle and document it
                 csvGen.exportVehicleToCSV( vehicle, "FAILURE" )
                 common.failedLot.append( vehicle )
-                
+
                 if len( edfQueue ) > 0:
 
                     # get nextVehicle
@@ -187,3 +192,22 @@ def latestChargePortDL():
                 latestTime = port.depTime
                 latestIndex = index
     return latestIndex  
+
+# Add up all charging time left for vehicles in chargePorts and for vehicles in queue with an earlier deadline
+# then divide by number of chargeports to get average time per charge port
+def vehicleCanFit( vehicle ):
+    totalTime = 0
+    for curChargingVehicle in chargePorts.chargePorts:
+        if curChargingVehicle is not None:
+            totalTime += curChargingVehicle.timeLeftToCharge()
+        else:
+            raise Exception("Schedule should never be empty here, something is wrong")
+    for scheduledVehicle in edfQueue:
+        totalTime += scheduledVehicle.timeToCharge
+
+    averageEndTime = (totalTime * 1.0) / chargePorts.numChargePorts
+    averageEndTime += common.currentTime
+
+    # returns true if it can fit, false if it cannot
+    return averageEndTime < (vehicle.depTime - vehicle.timeToCharge)
+
