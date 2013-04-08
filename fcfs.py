@@ -1,11 +1,11 @@
-#import Queue
+import Queue
 import common
 import csvGen
 import chargePorts
 import chargeEvent
 
 #fcfs
-schedules = [ [ ] for y in range( chargePorts.numChargePorts ) ]
+queue = Queue.Queue( 0 )
 
 
 # ------ FCFS ------
@@ -13,7 +13,7 @@ schedules = [ [ ] for y in range( chargePorts.numChargePorts ) ]
 # the main implementation of the First Come First Serve algorithm
 # takes in an array of arrays of vehicle minutes ( 2-level )
 def simulateFCFS( arrayOfVehicleArrivals ):
-
+    
     # reset global variables such as time, done/failed lots
     common.updateGlobals( arrayOfVehicleArrivals )
     global currentTime
@@ -26,7 +26,6 @@ def simulateFCFS( arrayOfVehicleArrivals ):
         for vehicle in numVehiclesPerMin:       
             port = chargePorts.openChargePort()
 
-            # in case something wrong with distribution, pull vehicle out of system
             if vehicle.currentCharge > vehicle.chargeNeeded:
                 csvGen.exportVehicleToCSV( vehicle, "Charge Not Needed" )
                 common.cantChargeLot.append( vehicle )
@@ -37,46 +36,31 @@ def simulateFCFS( arrayOfVehicleArrivals ):
 
                 # add to chargePort
                 chargePorts.chargePorts[ port ] = vehicle
-                schedules[ port ].append(vehicle)
-
+            
                 # initialize a listener object for its charging activity
                 chargePorts.chargePortListeners[ port ].insert( 0 , chargeEvent.ChargeEvent( vehicle, common.currentTime ) )
-
+                
             # no ports are available so put the vehicle in the queue
             else:
-                # queue.put( vehicle )
-
-                bestPortInfo     =  findEarliestEndingSchedule()
-                bestPortIndex    =  bestPortInfo[ 0 ]      #index
-                bestPortEndTime  =  bestPortInfo[ 1 ]      #end time
-
-                # vehicle declined because not enough time to charge
-                if vehicle.depTime - bestPortEndTime < vehicle.timeToCharge:
-                    csvGen.exportVehicleToCSV( vehicle, "DECLINED" )
-                    common.declinedLot.append( vehicle )
-
-                # vehicle appended to best schedule
-                else:
-                    schedules[ bestPortIndex ].append( vehicle )
+                queue.put( vehicle )
 
         updateVehiclesFCFS()
         common.currentTime += 1
 
     # print "status:  " , openChargePort() , "  " , queue.empty()
-
+    
     # run the clock until all vehicles have ran through the simulation
-    while chargePorts.chargePortsEmpty() == False or not schedulesEmpty():
+    while chargePorts.chargePortsEmpty() == False or not queue.empty():
         updateVehiclesFCFS()
         common.currentTime += 1
 
-    # print "FCFS: total number of cars: ", common.numberOfVehiclesInSimulation , \
-    #     "  elapsed time: " , common.currentTime , \
-    #     "  done charging lot: " , len( common.doneChargingLot ) , \
-    #     "  failed charging lot: " , len( common.failedLot ) , \
-    #     "  cant charge lot: " , len( common.cantChargeLot ) , \
-    #     "  declined lot: "  , len( common.declinedLot ) , \
-    #     "  fcfsQueue schedules:  " , schedules , \
-    #     "  chargePort " , chargePorts.toString()
+    print "FCFS: total number of cars: ", common.numberOfVehiclesInSimulation , \
+          "  elapsed time: " , common.currentTime , \
+          "  done charging lot: " , len( common.doneChargingLot ) , \
+          "  failed charging lot: " , len( common.failedLot ) , \
+          "  cant charge lot: " , len( common.cantChargeLot ) , \
+          "  fcfsQueue size:  " , queue.qsize() , \
+          "  chargePort " , chargePorts.toString()
 
     # write a CSV for all the chargePort logs
     csvGen.exportChargePortsToCSV( "fcfs" )
@@ -103,12 +87,11 @@ def updateVehiclesFCFS():
                 # remove finished vehicle from grid and document it
                 csvGen.exportVehicleToCSV( vehicle, "SUCCESS" )
                 common.doneChargingLot.append( vehicle )
-                del schedules[ index ][ 0 ] # remove the vehicle from the schedule
                 
                 # the next vehicle
-                if len( schedules[ index ] ) != 0:
+                if not queue.empty():
 
-                    nextVehicle = schedules[ index ][ 0 ]
+                    nextVehicle = queue.get()
                     chargePorts.chargePorts[ index ] = nextVehicle
 
                     # and then make a new listener
@@ -119,10 +102,8 @@ def updateVehiclesFCFS():
                 removed = True;
 
 
-            # check if deadline reached, should never happen with admission control           
+            # check if deadline reached            
             if common.currentTime >= vehicle.depTime and not removed:
-
-                # print "current time: ", common.currentTime, " depTime: ", vehicle.depTime, " timeLeft: ", vehicle.timeLeftToCharge()
 
                 # this vehicle is on the out, so wrap up its listener
                 chargePorts.chargePortListeners[ index ][ 0 ].terminateCharge( vehicle , common.currentTime )
@@ -130,12 +111,11 @@ def updateVehiclesFCFS():
                 # remove finished vehicle from grid and document it
                 csvGen.exportVehicleToCSV( vehicle, "FAILURE" )               
                 common.failedLot.append( vehicle )
-                del schedules[ index ][ 0 ] # remove the vehicle for the schedule
                 
                 # the next vehicle
-                if len( schedules[ index ] ) != 0:
+                if not queue.empty():
 
-                    nextVehicle = schedules[ index ][ 0 ]
+                    nextVehicle = queue.get()
                     chargePorts.chargePorts[ index ] = nextVehicle
 
                     # and then make a new listener
@@ -143,40 +123,3 @@ def updateVehiclesFCFS():
 
                 else:
                     chargePorts.chargePorts[ index ] = None
-
-
-# iterate through each schedule and find the one that will have an opening the soonest
-# return the index, and the time that the shortest schedule will complete the current tasks
-def findEarliestEndingSchedule():
-
-    earliestIndex = -1;
-    earliestEndTime = float( "inf" );
-
-    # check each schedule
-    for index, portSchedule in enumerate( schedules ):
-        length = len( portSchedule );
-        
-        # there will always be the one charging; make it break if its 0 (a failsafe)
-        if length == 0:
-            raise Exception("Schedule should never be empty here, something is wrong")
-
-        # this car is already in the chargePort and may have started charging
-        endTime = portSchedule[ 0 ].timeLeftToCharge()
-
-        # look at cars scheduled for this chargePort and add time to charge to total time
-        for i in range ( 1 , length ):
-            endTime += portSchedule[ i ].timeToCharge
-
-        # compare and keep the smallest
-        if endTime < earliestEndTime:
-            earliestIndex = index
-            earliestEndTime = endTime
-
-    return ( earliestIndex , earliestEndTime + common.currentTime )
-
-
-# returns True if there more vehicles in the schedules
-def schedulesEmpty():
-    return all( len( subSchedule ) == 0 for subSchedule in schedules )
-
-

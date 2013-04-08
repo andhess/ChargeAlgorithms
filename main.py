@@ -9,6 +9,7 @@ import llfSimple
 import dsac
 import poissonGen
 import csvGen
+import fcfsAC
 import gc
 
 
@@ -28,6 +29,9 @@ poissonGen.setArrivalRate( arrivalRate )
 
 
 simulationInterval = poissonGen.simulateInterval()
+
+print fcfs.simulateFCFS( simulationInterval )
+print fcfsAC.simulateFCFSAC( simulationInterval )
 
 # print llfSmartAC.simulateLLF( simulationInterval )
 # print llfSmart.simulateLLF( simulationInterval )
@@ -61,7 +65,6 @@ for i in range( numIterations ):
 		# don't want a simulation with no cars
 		while common.numberOfVehiclesInSimulation == 0:
 			simulationInterval = poissonGen.simulateInterval()
-
 
 		#fcfs
 		fcfsRate = fcfs.simulateFCFS( simulationInterval )
