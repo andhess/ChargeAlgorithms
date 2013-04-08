@@ -43,10 +43,10 @@ print edf_AC_Pro.simulateEDFPro( simulationInterval )
 # print llfSmartAC.simulateLLF( simulationInterval )
 # print llfSmart.simulateLLF( simulationInterval )
 
-#print edf.simulateEDFPro( simulationInterval )
-#print llfSimple.simulateLLFSimplePro( simulationInterval )
+# print edf.simulateEDFPro( simulationInterval )
+# print llfSimple.simulateLLFSimplePro( simulationInterval )
 
-# #dsac.simulateDSAC( simulationInterval )
+dsac.simulateDSAC( simulationInterval )
 
 sys.exit()
 
@@ -72,7 +72,6 @@ for i in range( numIterations ):
 		# don't want a simulation with no cars
 		while common.numberOfVehiclesInSimulation == 0:
 			simulationInterval = poissonGen.simulateInterval()
-
 
 		#fcfs
 		fcfsRate = fcfs.simulateFCFS( simulationInterval )

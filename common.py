@@ -20,7 +20,7 @@ currentTime = 0
 interval = 0
 
 # -------- price per kilowatt*hour -------
-electricityPrice = .1   # in dollars
+electricityPrice = .5   # in dollars
 penaltyCoefficient = 1.1 # a multiplier for electricity - used to add a penalty weight ... keep > 1
 
 # used in main.py to set the common interval variable
