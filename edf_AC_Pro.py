@@ -177,42 +177,6 @@ def updateVehiclesEDF():
         # NOTE: we are explicitly choosing to grab a clean version of each index because accuracy cannot be guaranteed
 
 
-# gets the index of earliest deadline of all the vehicles in edfQueue
-def earliestDL():
-    if len( edfQueue ) == 0:
-        return -1
-    return edfQueue.index( min( edfQueue, key = attrgetter( 'depTime' ) ) )
-
-# gets the index of the vehicle in chargePorts with the latest deadline 
-def latestChargePortDL():
-    latestIndex = -1
-    latestTime = -1
-    for index, port in enumerate( chargePorts.chargePorts ):
-        if port is not None:
-            if port.depTime > latestTime:
-                latestTime = port.depTime
-                latestIndex = index
-    return latestIndex  
-
-# Add up all charging time left for vehicles in chargePorts and for vehicles in queue with an earlier deadline
-# then divide by number of chargeports to get average time per charge port
-def vehicleCanFitTest( vehicle ):
-    totalTime = 0
-    for curChargingVehicle in chargePorts.chargePorts:
-        if curChargingVehicle is not None:
-            totalTime += curChargingVehicle.timeLeftToCharge()
-        else:
-            raise Exception("Schedule should never be empty here, something is wrong")
-    for scheduledVehicle in edfQueue:
-        totalTime += scheduledVehicle.timeToCharge
-
-    averageEndTime = ( totalTime * 1.0 ) / chargePorts.numChargePorts
-    averageEndTime += common.currentTime
-
-    # returns true if it can fit, false if it cannot
-    return averageEndTime < (vehicle.depTime - vehicle.timeToCharge )
-
-
 # takes in a scheduleIndex and returns an array with predicted times for
 #   each vehicle to finish charging
 def genAdmissionFeasiblity( index ):
