@@ -30,7 +30,7 @@ def simulateLLF( arrayOfVehicleArrivals ):
     global llfIndex
 
     # initialize a CSV document for storing all data
-    csvGen.generateCSV( "llfSmartAC" )
+    csvGen.generateCSV( "llfSmartACB" )
 
     # iterate through each vehicle in each minute
     for minute, numVehiclesPerMin in enumerate( arrayOfVehicleArrivals ):
@@ -72,18 +72,19 @@ def simulateLLF( arrayOfVehicleArrivals ):
         updateVehiclesLLF()
         common.currentTime += 1
 
-    # print "LLF Complex:  total number of cars: ", common.numberOfVehiclesInSimulation , \
-    #       "  elapsed time: " , common.currentTime , \
-    #       "  done charging lot: " , len( common.doneChargingLot ) , \
-    #       "  failed charging lot: " , len( common.failedLot ) , \
-    #       "  cant charge lot: " , len( common.cantChargeLot ) , \
-    #       "  llfQueue size:  " , len( llfQueue ) , \
-    #       "  chargePort " , chargePorts.toString()
+    print "LLF Complex:  total number of cars: ", common.numberOfVehiclesInSimulation , \
+          "  elapsed time: " , common.currentTime , \
+          "  done charging lot: " , len( common.doneChargingLot ) , \
+          "  failed charging lot: " , len( common.failedLot ) , \
+          "  declined lot: ", len( common.declinedLot ), \
+          "  cant charge lot: " , len( common.cantChargeLot ) , \
+          "  llfQueue size:  " , len( llfQueue ) , \
+          "  chargePort " , chargePorts.toString()
         
     # write the CSV with all the chargePort logs
-    csvGen.exportChargePortsToCSV( "llfSmartAC" )
+    csvGen.exportChargePortsToCSV( "llfSmartACB" )
 
-    return ( 1.0 * len( common.doneChargingLot ) / common.numberOfVehiclesInSimulation )
+    return ( 1.0 * len( common.doneChargingLot ) / ( len( common.failedLot) + len( common.doneChargingLot ) ) )
 
 # called to update the vehicles for each minute of simulation
 def updateVehiclesLLF():

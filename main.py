@@ -8,8 +8,8 @@ import edf_AC_Pro
 import llfSimple
 import llfSimple_AC_Basic
 import llfSimple_AC_Pro
-import llfSmartAC
 import llfSmart
+import llfSmart_AC_Basic
 import dsac
 import poissonGen
 import csvGen
@@ -34,30 +34,24 @@ poissonGen.setArrivalRate( arrivalRate )
 simulationInterval = poissonGen.simulateInterval()
 
 # <----  FCFS ---->
-
 #print fcfs.simulateFCFS( simulationInterval )
 #print fcfsAC.simulateFCFSAC( simulationInterval )
 
 # <---- EDF ---->
-
 #print edf.simulateEDF( simulationInterval )
 #print edf_AC_Basic.simulateEDFACB( simulationInterval )
 #print edf_AC_Pro.simulateEDFPro( simulationInterval )
 
 # <---- LLFSimple ---->
+# print llfSimple.simulateLLFSimple( simulationInterval )
+# print llfSimple_AC_Basic.simulateLLFSimpleACB( simulationInterval )
+# print llfSimple_AC_Pro.simulateLLFSimpleACPro( simulationInterval )
 
-print llfSimple.simulateLLFSimple( simulationInterval )
-print llfSimple_AC_Basic.simulateLLFSimpleACB( simulationInterval )
-print llfSimple_AC_Pro.simulateLLFSimpleACPro( simulationInterval )
+# <----- LLFSmart ---->
+print llfSmart.simulateLLF( simulationInterval )
+print llfSmart_AC_Basic.simulateLLF( simulationInterval )
 
-
-
-# print llfSmartAC.simulateLLF( simulationInterval )
-# print llfSmart.simulateLLF( simulationInterval )
-
-# print edf.simulateEDFPro( simulationInterval )
-# print llfSimple.simulateLLFSimplePro( simulationInterval )
-
+# <----- DSAC ----->
 # dsac.simulateDSAC( simulationInterval )
 
 sys.exit()
