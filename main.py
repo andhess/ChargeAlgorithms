@@ -35,7 +35,7 @@ simulationInterval = poissonGen.simulateInterval()
 
 # <----  FCFS ---->
 #print fcfs.simulateFCFS( simulationInterval )
-#print fcfsAC.simulateFCFSAC( simulationInterval )
+print fcfs_AC.simulateFCFSAC( simulationInterval )
 
 # <---- EDF ---->
 #print edf.simulateEDF( simulationInterval )
@@ -48,8 +48,8 @@ simulationInterval = poissonGen.simulateInterval()
 # print llfSimple_AC_Pro.simulateLLFSimpleACPro( simulationInterval )
 
 # <----- LLFSmart ---->
-print llfSmart.simulateLLF( simulationInterval )
-print llfSmart_AC_Basic.simulateLLF( simulationInterval )
+# print llfSmart.simulateLLF( simulationInterval )
+# print llfSmart_AC_Basic.simulateLLF( simulationInterval )
 
 # <----- DSAC ----->
 # dsac.simulateDSAC( simulationInterval )
