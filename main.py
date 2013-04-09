@@ -5,10 +5,11 @@ import fcfs_AC
 import edf
 import edf_AC_Basic
 import edf_AC_Pro
+import llfSimple
+import llfSimple_AC_Basic
+import llfSimple_AC_Pro
 import llfSmartAC
 import llfSmart
-import llfSimpleAC
-import llfSimple
 import dsac
 import poissonGen
 import csvGen
@@ -39,11 +40,15 @@ simulationInterval = poissonGen.simulateInterval()
 
 # <---- EDF ---->
 
-print edf.simulateEDF( simulationInterval )
-print edf_AC_Basic.simulateEDFACB( simulationInterval )
-print edf_AC_Pro.simulateEDFPro( simulationInterval )
+#print edf.simulateEDF( simulationInterval )
+#print edf_AC_Basic.simulateEDFACB( simulationInterval )
+#print edf_AC_Pro.simulateEDFPro( simulationInterval )
 
 # <---- LLFSimple ---->
+
+print llfSimple.simulateLLFSimple( simulationInterval )
+print llfSimple_AC_Basic.simulateLLFSimpleACB( simulationInterval )
+print llfSimple_AC_Pro.simulateLLFSimpleACPro( simulationInterval )
 
 
 
