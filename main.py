@@ -27,46 +27,47 @@ common.setInterval(interval)
 
 simulationData = []
 
-arrivalRate = 10
+arrivalRate = 2
 poissonGen.setArrivalRate( arrivalRate )
 
 
 simulationInterval = poissonGen.simulateInterval()
 
 # <----  FCFS ---->
-#print fcfs.simulateFCFS( simulationInterval )
-print fcfs_AC.simulateFCFSAC( simulationInterval )
+print "fcfc", fcfs.simulateFCFS( simulationInterval )
+print "fcfs_AC", fcfs_AC.simulateFCFSAC( simulationInterval )
 
 # <---- EDF ---->
-# print edf.simulateEDF( simulationInterval )
-# print edf_AC_Basic.simulateEDFACB( simulationInterval )
-# print edf_AC_Pro.simulateEDFPro( simulationInterval )
+print "edf",edf.simulateEDF( simulationInterval )
+print "edf_AC_Basic", edf_AC_Basic.simulateEDFACB( simulationInterval )
+print "edf_AC_Pro", edf_AC_Pro.simulateEDFPro( simulationInterval )
 
 
 # <---- LLFSimple ---->
-# print llfSimple.simulateLLFSimple( simulationInterval )
-# print llfSimple_AC_Basic.simulateLLFSimpleACB( simulationInterval )
-# print llfSimple_AC_Pro.simulateLLFSimpleACPro( simulationInterval )
+print "llfSimple",llfSimple.simulateLLFSimple( simulationInterval )
+print "llfSimple_AC_Basic",llfSimple_AC_Basic.simulateLLFSimpleACB( simulationInterval )
+print "llfSimple_AC_Pro",llfSimple_AC_Pro.simulateLLFSimpleACPro( simulationInterval )
 
 # <----- LLFSmart ---->
-# print llfSmart.simulateLLF( simulationInterval )
-# print llfSmart_AC_Basic.simulateLLF( simulationInterval )
+print "llfSmart",llfSmart.simulateLLF( simulationInterval )
+print "llfSmart_AC_Basic",llfSmart_AC_Basic.simulateLLF( simulationInterval )
 
 # <----- DSAC ----->
-# dsac.simulateDSAC( simulationInterval )
+print "dsac",dsac.simulateDSAC( simulationInterval )
 
 sys.exit()
 
 # ------------------ real simulations -------------------------
 
 # # do tons and tons of simulations
+arrivalRate = .2
 numIterations = 100
 maxArrivalRate = 2.0
 numRunsPerIteration = 10
 for i in range( numIterations ):
 	# gc.collect()
 
-	averageRates = [0] * 7    # a spot for every algo
+	averageRates = [0] * 11    # a spot for every algo
 
 	for k in range( numRunsPerIteration ):
 		gc.collect()
