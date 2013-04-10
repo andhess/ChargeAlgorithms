@@ -64,7 +64,7 @@ def simulate( arrayOfVehicleArrivals ):
 
 	# write a CSV for all the chargePort logs
 	csvGen.exportChargePortsToCSV( "fcfs" )
-
+	
 	output = [common.calcProfit(), len(common.doneChargingLot), len(common.failedLot), len(common.declinedLot), common.numberOfVehiclesInSimulation, common.currentTime]
 	return output
 

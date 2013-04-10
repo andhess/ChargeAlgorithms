@@ -84,28 +84,34 @@ for i in range( numIterations ):
 
 		runData = [fcfsData, fcfsACData, edfData , edfACBasicData, edfACProData, llfSimpleData, llfSimpleACBasicData, llfSimpleACProData, llfSmartData , llfSmartACBasicData, dsacData]
 
-		runProfits = []
-		runSuccessRates = []
-		runElapsedTimes = []
-		for algoData in runData:
-			print algoData
-			runProfits.append( algoData[0] )
-			print algoData[0]
-			runSuccessRates.append( algoData[1]/ algoData[4] )
-			runElapsedTimes.append( algoData[5] )
+		runProfits = [0] * 11
+		runSuccessRates = [0] * 11
+		runElapsedTimes = [0] * 11
+		for index,algoData in enumerate(runData):
+			runProfits[index] = algoData[0]
+			print "algo data: ", algoData 
+			runSuccessRates[index] = (1.0 * algoData[1] ) / algoData[4] 
+			runElapsedTimes[index] = algoData[5] 
+
+		print "runSuccessRates ",runSuccessRates
 
 		for index, rate in enumerate( runSuccessRates ):
 			averageRates[index] += rate
 
 		for index, profit in enumerate( runProfits ):
-			averageProfits[index] += rate
+			averageProfits[index] += profit
 
 		for index, time in enumerate( runElapsedTimes ):
 			averageElapsedTimes[index] += time
 
+	print "averageRates before dividing ",averageRates
 	
 	for n in range( len(averageRates) ):
 		averageRates[n] /= ( numRunsPerIteration * 1.0 )
+	for n in range( len(averageProfits) ):
+		averageProfits[n] /= ( numRunsPerIteration * 1.0 )
+	for n in range( len(averageElapsedTimes) ):
+		averageElapsedTimes[n] /= ( numRunsPerIteration * 1.0 )
 
 	simulationData.append( [arrivalRate] + averageProfits)
 	arrivalRate += (maxArrivalRate / numIterations)
