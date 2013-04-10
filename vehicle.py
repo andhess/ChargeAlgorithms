@@ -32,10 +32,18 @@ class Vehicle:
         else:
             self.chargeNeeded   =   .8 * maxCapacity
 
+
+        self.timeToCharge = math.ceil( 60 * ( ( self.chargeNeeded - self.currentCharge ) * 1.0 ) / chargeRate )  #linear
+
+        # check to see if it's possible to charge the vehicle within its timespan
+        if self.timeToCharge > ( depTime - arrivalTime ):
+            self.depTime = arrivalTime + self.timeToCharge + 1
+        else:
+            self.depTime = depTime
+
         # parameters for each vehicle, not all are used for each algorithm implementation
         self.arrivalTime         =     arrivalTime
         self.startTime           =     arrivalTime
-        self.depTime             =     depTime
         self.chargeRate          =     chargeRate
         self.maxCapacity         =     maxCapacity
         self.timeToCharge        =     math.ceil( 60 * ( ( self.chargeNeeded - self.currentCharge ) * 1.0 ) / self.chargeRate )  #linear
