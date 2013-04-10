@@ -28,13 +28,13 @@ def simulateDSAC( arrayOfVehicleArrivals ):
 	for minute, numVehiclesPerMin in enumerate( arrayOfVehicleArrivals ):
 
 		for vehicle in numVehiclesPerMin: 
-			# print "arrived: ", vehicle.id
 			port = chargePorts.openChargePort()
 			allVehicles.append(vehicle)
 
 			if vehicle.currentCharge > vehicle.chargeNeeded:
 				csvGen.exportVehicleToCSV( vehicle, "Charge Not Needed" )
 				common.cantChargeLot.append( vehicle )
+				print "CHARGE NOT NEEDED: ",vehicle.id
 				continue
 
 			# a port is open so start charging the vehicle
@@ -56,7 +56,6 @@ def simulateDSAC( arrayOfVehicleArrivals ):
 
 				# add to schedule
 				if appendable != -1:
-
 					# there is at least one car in the schedule
 					if len(schedules[ appendable ]) > 0:
 						tempVehicle = schedules[ appendable ][ len( schedules[ appendable ] ) - 1  ] #last item
@@ -71,7 +70,7 @@ def simulateDSAC( arrayOfVehicleArrivals ):
 					schedules[ appendable ].append( vehicle )
 
 				# an ugly conflict
-				if appendable == -1:
+				else:
 					vehicle.updateStartTime( vehicle.depTime - vehicle.timeToCharge )
 					
 					leastProfitConflictResults = leastProfitConflict( vehicle )
@@ -82,6 +81,8 @@ def simulateDSAC( arrayOfVehicleArrivals ):
 					if leastProfitConflictPort > 0:
 						schedules[ leastProfitConflictPort ] = leastProfitConflictSchedule
 						numOverlapInserts += 1
+						if leastProfitConflictSchedule[0] == vehicle:
+							chargePorts.chargePorts[leastProfitConflictPort] = vehicle
 
 					else:
 						# CSV to decline car
@@ -110,7 +111,12 @@ def simulateDSAC( arrayOfVehicleArrivals ):
 	# write a CSV for all the chargePort logs
 	csvGen.exportChargePortsToCSV( "dsac" )
 
-	return ( 1.0 * len( common.doneChargingLot ) / common.numberOfVehiclesInSimulation )
+	failed = uniqueVehicles(common.failedLot)
+	done = uniqueVehicles(common.doneChargingLot) - failed # if a car gets split and is in done and failed, that is considered failed
+	declined = uniqueVehicles(common.declinedLot)
+
+	output = [totalProfit(), len(done), len(failed), len(declined), common.numberOfVehiclesInSimulation, common.currentTime]
+	return output
 
 leastProfitConflictCount = 0
 def leastProfitConflict( vehicle ):
@@ -261,6 +267,7 @@ def updateVehicles():
 				# remove finished vehicle from grid and document it
 				csvGen.exportVehicleToCSV( vehicle, "SUCCESS" )
 				common.doneChargingLot.append( vehicle )
+				# print "success: ",vehicle.id
 				removed = True
 
 				# remove the vehicle that was charging from the front of the schedule
@@ -274,6 +281,7 @@ def updateVehicles():
 					while nextVehicle is not None and nextVehicle.depTime < common.currentTime:
 						csvGen.exportVehicleToCSV( nextVehicle, "FAILURE" )
 						common.failedLot.append( nextVehicle )
+						# print "failed here: ", nextVehicle.id
 						del schedules[ index ][ 0 ]
 						nextVehicle = None
 						if len(schedules[ index ]) > 0:
@@ -301,6 +309,7 @@ def updateVehicles():
 				# remove finished vehicle and document it
 				csvGen.exportVehicleToCSV( vehicle, "FAILURE" )
 				common.failedLot.append( vehicle )
+				# print "failed here2: ", vehicle.id
 
 				del schedules[ index ][ 0 ]
 
@@ -313,6 +322,8 @@ def updateVehicles():
 						# print "vehicle ",nextVehicle.id," was next but its depTime passed"
 						csvGen.exportVehicleToCSV( nextVehicle, "FAILURE" )
 						common.failedLot.append(nextVehicle)
+						# print "failed here3: ", nextVehicle.id
+
 						del schedules[ index ][ 0 ]
 						nextVehicle = None
 						if len(schedules[ index ]) > 0:
@@ -390,6 +401,12 @@ def listHasVehicleId(list, id):
 		if item.id == id:
 			return True
 	return False
+
+def uniqueVehicles(lot):
+	uniqueIds = set()
+	for vehicle in lot:
+		uniqueIds.add(vehicle.id)
+	return uniqueIds
 
 def schedulesToString():
 	output = "["
