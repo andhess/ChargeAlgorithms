@@ -6,10 +6,10 @@ class Vehicle:
     numVehiclesMade = 0
 
     def __init__( self, arrivalTime, depTime, chargeNeeded, currentCharge, chargeRate, maxCapacity ):
-        self.id = Vehicle.numVehiclesMade
+        self.id = common.numVehiclesMade
         
         # keep tabs of the number of vehicles that have entered the model
-        Vehicle.numVehiclesMade += 1
+        common.numVehiclesMade += 1
 
         # can't have a negative currentCharge, also keeps the distribution within a range
         if ( 1.0 * currentCharge / maxCapacity ) >= 0:
@@ -91,6 +91,7 @@ class Vehicle:
 
     def timeLeftToCharge( self ):
         return math.ceil( 60 * ( ( self.chargeNeeded - self.currentCharge ) * 1.0 ) / self.chargeRate )
+
 
  #   def getStartingTime( self ):
  #       return max( self.startTime 

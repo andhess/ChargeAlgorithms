@@ -14,6 +14,7 @@ import dsac
 import poissonGen
 import csvGen
 import gc
+import vehicle
 
 
 
@@ -25,54 +26,23 @@ interval = int( sys.argv[ 1 ] )
 common.setInterval(interval)
 
 
-simulationData = []
-
-arrivalRate = 2
-poissonGen.setArrivalRate( arrivalRate )
-
-
-simulationInterval = poissonGen.simulateInterval()
-
-# <----  FCFS ---->
-print "fcfc", fcfs.simulateFCFS( simulationInterval )
-print "fcfs_AC", fcfs_AC.simulateFCFSAC( simulationInterval )
-
-# <---- EDF ---->
-print "edf",edf.simulateEDF( simulationInterval )
-print "edf_AC_Basic", edf_AC_Basic.simulateEDFACB( simulationInterval )
-print "edf_AC_Pro", edf_AC_Pro.simulateEDFPro( simulationInterval )
-
-
-# <---- LLFSimple ---->
-print "llfSimple",llfSimple.simulateLLFSimple( simulationInterval )
-print "llfSimple_AC_Basic",llfSimple_AC_Basic.simulateLLFSimpleACB( simulationInterval )
-print "llfSimple_AC_Pro",llfSimple_AC_Pro.simulateLLFSimpleACPro( simulationInterval )
-
-# <----- LLFSmart ---->
-print "llfSmart",llfSmart.simulateLLF( simulationInterval )
-print "llfSmart_AC_Basic",llfSmart_AC_Basic.simulateLLF( simulationInterval )
-
-# <----- DSAC ----->
-print "dsac",dsac.simulateDSAC( simulationInterval )
-
-sys.exit()
-
 # ------------------ real simulations -------------------------
 
-# # do tons and tons of simulations
+# do tons and tons of simulations
 arrivalRate = .2
 numIterations = 100
 maxArrivalRate = 2.0
-numRunsPerIteration = 10
+numRunsPerIteration = 5
+simulationData = []
 for i in range( numIterations ):
-	# gc.collect()
 
 	averageRates = [0] * 11    # a spot for every algo
+	averageProfits = [0] * 11
+	averageElapsedTimes = [0] * 11
 
 	for k in range( numRunsPerIteration ):
 		gc.collect()
 
-		individualRates = []
 		poissonGen.setArrivalRate( arrivalRate )
 
 		simulationInterval = poissonGen.simulateInterval()
@@ -81,42 +51,70 @@ for i in range( numIterations ):
 		while common.numberOfVehiclesInSimulation == 0:
 			simulationInterval = poissonGen.simulateInterval()
 
-		#fcfs
-		fcfsRate = fcfs.simulateFCFS( simulationInterval )
-		individualRates.append( fcfsRate )
+		# common.vehicleIdsIn2DList( simulationInterval )
 
-		#edf
-		edfRate = edf.simulateEDF( simulationInterval ) 
-		individualRates.append( edfRate )
+		#----------------fcfs----------------
+		fcfsData = fcfsRate = fcfs.simulate( simulationInterval )
 
-		#llfSmart
-		llfSmartRate = llfSmart.simulateLLF( simulationInterval )
-		individualRates.append( llfSmartRate )
-		llfSmartACRate = llfSmartAC.simulateLLF( simulationInterval )
-		individualRates.append( llfSmartACRate )
+		fcfsACData = fcfs_AC.simulate( simulationInterval )
 
-		#llfSimple
-		llfSimpleRate = llfSimple.simulateLLFSimple( simulationInterval )
-		individualRates.append( llfSimpleRate )
-		llfSimpleACRate = llfSimpleAC.simulateLLFSimpleAC( simulationInterval )
-		individualRates.append( llfSimpleACRate )
+		#----------------edf----------------
+		edfData = edf.simulate( simulationInterval )
 
-		#dsac
-		dsacRate = dsac.simulateDSAC( simulationInterval )
-		individualRates.append( dsacRate )
+		edfACBasicData = edf_AC_Basic.simulate( simulationInterval )
 
-		for index, rate in enumerate(individualRates):
+		edfACProData = edf_AC_Pro.simulate( simulationInterval )
+
+		#----------------llfSimple----------------
+		llfSimpleData = llfSimple.simulate( simulationInterval )
+
+		llfSimpleACBasicData = llfSimple_AC_Basic.simulate( simulationInterval )
+
+		llfSimpleACProData = llfSimple_AC_Pro.simulate( simulationInterval )
+
+		#----------------llfSmart----------------
+		llfSmartData = llfSimple.simulate( simulationInterval )
+
+		llfSmartACBasicData = llfSmart_AC_Basic.simulate( simulationInterval )
+
+		#----------------dsac----------------
+		dsacData = dsac.simulate( simulationInterval )
+
+		# common.vehicleIdsIn2DList( simulationInterval )
+
+		runData = [fcfsData, fcfsACData, edfData , edfACBasicData, edfACProData, llfSimpleData, llfSimpleACBasicData, llfSimpleACProData, llfSmartData , llfSmartACBasicData, dsacData]
+
+		runProfits = []
+		runSuccessRates = []
+		runElapsedTimes = []
+		for algoData in runData:
+			print algoData
+			runProfits.append( algoData[0] )
+			print algoData[0]
+			runSuccessRates.append( algoData[1]/ algoData[4] )
+			runElapsedTimes.append( algoData[5] )
+
+		for index, rate in enumerate( runSuccessRates ):
 			averageRates[index] += rate
+
+		for index, profit in enumerate( runProfits ):
+			averageProfits[index] += rate
+
+		for index, time in enumerate( runElapsedTimes ):
+			averageElapsedTimes[index] += time
+
 	
 	for n in range( len(averageRates) ):
 		averageRates[n] /= ( numRunsPerIteration * 1.0 )
 
-	simulationData.append( [arrivalRate] + averageRates)
+	simulationData.append( [arrivalRate] + averageProfits)
 	arrivalRate += (maxArrivalRate / numIterations)
 
-	if i % 10 == 0:
+	if i % 10 != 0:
 		print "iteration: " , i, " arrival rate: ", arrivalRate
-		print averageRates
+		print "averageRates: ",averageRates
+		print "averageProfits: ",averageProfits
+
 
 csvGen.exportSimulationDataToCSV( simulationData )
 

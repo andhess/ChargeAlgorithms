@@ -7,7 +7,7 @@ from operator import attrgetter
 schedules =  [ [ ] for y in range( chargePorts.numChargePorts ) ]
 
 # simulates LLF with the queues for each chargePort
-def simulateLLFSimpleACPro( arrayOfVehicleArrivals ):
+def simulate( arrayOfVehicleArrivals ):
 
 	#global schedules
 

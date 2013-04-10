@@ -12,7 +12,7 @@ queue = Queue.Queue( 0 )
 
 # the main implementation of the First Come First Serve algorithm
 # takes in an array of arrays of vehicle minutes ( 2-level )
-def simulateFCFS( arrayOfVehicleArrivals ):
+def simulate( arrayOfVehicleArrivals ):
 	
 	# reset global variables such as time, done/failed lots
 	common.updateGlobals( arrayOfVehicleArrivals )

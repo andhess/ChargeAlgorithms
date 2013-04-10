@@ -8,7 +8,7 @@ import copy
 schedules = [ [ ] for y in range( chargePorts.numChargePorts ) ]
 numOverlapInserts = 0
 
-def simulateDSAC( arrayOfVehicleArrivals ):
+def simulate( arrayOfVehicleArrivals ):
 
 	# reset global variables such as time, done/failed lots
 	common.updateGlobals( arrayOfVehicleArrivals )

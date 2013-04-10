@@ -12,6 +12,7 @@ declinedLot = [ ]
 cantChargeLot = []
 
 numberOfVehiclesInSimulation = 0
+numVehiclesMade = 0
 
 csvOn = True # use this to toggle csv output
 
@@ -45,7 +46,8 @@ def updateGlobals( arrayOfVehicleArrivals ):
     global cantChargeLot
     cantChargeLot = []
     resetChargePorts()	# function in chargePorts.py to empty all chargePorts
-    resetChargePortListeners()
+    global numVehiclesMade
+    numVehiclesMade = 0
     
     # reset charge, timeToCharge for each vehicle
     for minute, numVehiclesPerMin in enumerate( arrayOfVehicleArrivals ):

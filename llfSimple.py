@@ -14,7 +14,7 @@ llfSimpleQueue = []
 
 llfSimpleIndex = -1
 
-def simulateLLFSimple( arrayOfVehicleArrivals ):
+def simulate( arrayOfVehicleArrivals ):
 	
 	# reset global variables such as time, done/failed lots
 	common.updateGlobals( arrayOfVehicleArrivals )
