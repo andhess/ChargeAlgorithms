@@ -60,12 +60,12 @@ def calcProfit():
 
     # add up profit from each vehicle in done lot
     for vehicle in doneChargingLot:
-        profit += vehicle.profit
+        profit += vehicle.timeToCharge * electricityPrice * vehicle.chargeRate / 60.0
 
     # now to deal with vehicles in the failed lot
     if len( failedLot ) > 0:
         for vehicle in failedLot:
-            profit += ( vehicle.profit - ( ( vehicle.chargeNeeded - vehicle.currentCharge ) * electricityPrice * penaltyCoefficient ) )
+            profit += ( vehicle.timeToCharge * electricityPrice * vehicle.chargeRate / 60.0) - ( ( vehicle.chargeNeeded - vehicle.currentCharge ) * electricityPrice * penaltyCoefficient )
 
     return profit
 

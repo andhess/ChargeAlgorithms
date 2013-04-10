@@ -29,19 +29,25 @@ common.setInterval(interval)
 # ------------------ real simulations -------------------------
 
 # do tons and tons of simulations
-arrivalRate = .2
+arrivalRate = 1
 numIterations = 100
 maxArrivalRate = 2.0
 numRunsPerIteration = 5
-simulationData = []
+simulationProfitData = []
+simulationSuccessData = []
+simulationSuccessDataWithDeclined = []
+simulationElapsedTimeData = []
+
 for i in range( numIterations ):
 
 	averageRates = [0] * 11    # a spot for every algo
+	averageRatesWithDeclined = [0] * 11	
 	averageProfits = [0] * 11
 	averageElapsedTimes = [0] * 11
 
 	for k in range( numRunsPerIteration ):
 		gc.collect()
+		print"--------------------------"
 
 		poissonGen.setArrivalRate( arrivalRate )
 
@@ -87,16 +93,19 @@ for i in range( numIterations ):
 		runProfits = [0] * 11
 		runSuccessRates = [0] * 11
 		runElapsedTimes = [0] * 11
+		runSuccessRatesWithDeclined = [0] * 11
+
 		for index,algoData in enumerate(runData):
 			runProfits[index] = algoData[0]
-			print "algo data: ", algoData 
-			runSuccessRates[index] = (1.0 * algoData[1] ) / algoData[4] 
+			runSuccessRates[index] = (1.0 * algoData[1] ) / ( algoData[1] + algoData[2]) 
+			runSuccessRatesWithDeclined[index] = (1.0 * algoData[1] ) / algoData[4]
 			runElapsedTimes[index] = algoData[5] 
-
-		print "runSuccessRates ",runSuccessRates
 
 		for index, rate in enumerate( runSuccessRates ):
 			averageRates[index] += rate
+
+		for index, rate in enumerate( runSuccessRatesWithDeclined ):
+			averageRatesWithDeclined[index] += rate
 
 		for index, profit in enumerate( runProfits ):
 			averageProfits[index] += profit
@@ -104,24 +113,33 @@ for i in range( numIterations ):
 		for index, time in enumerate( runElapsedTimes ):
 			averageElapsedTimes[index] += time
 
-	print "averageRates before dividing ",averageRates
+
 	
 	for n in range( len(averageRates) ):
 		averageRates[n] /= ( numRunsPerIteration * 1.0 )
+	for n in range( len(averageRatesWithDeclined) ):
+		averageRatesWithDeclined[n] /= ( numRunsPerIteration * 1.0 )
 	for n in range( len(averageProfits) ):
 		averageProfits[n] /= ( numRunsPerIteration * 1.0 )
 	for n in range( len(averageElapsedTimes) ):
 		averageElapsedTimes[n] /= ( numRunsPerIteration * 1.0 )
 
-	simulationData.append( [arrivalRate] + averageProfits)
+	simulationSuccessData.append( [arrivalRate] + averageRates)
+	simulationSuccessDataWithDeclined.append( [arrivalRate] + averageRatesWithDeclined)
+	simulationProfitData.append( [arrivalRate] + averageProfits)
+	simulationElapsedTimeData.append( [arrivalRate] + averageElapsedTimes)
+
+
 	arrivalRate += (maxArrivalRate / numIterations)
 
-	if i % 10 != 0:
+	if i % 10 == 0:
 		print "iteration: " , i, " arrival rate: ", arrivalRate
 		print "averageRates: ",averageRates
+		print "averageRatesWithDeclined", averageRatesWithDeclined
 		print "averageProfits: ",averageProfits
 
-
-csvGen.exportSimulationDataToCSV( simulationData )
-
+csvGen.exportSimulationDataToCSV( simulationSuccessData, "Success" )
+csvGen.exportSimulationDataToCSV( simulationSuccessData, "Success With Declines" )
+csvGen.exportSimulationDataToCSV( simulationProfitData, "Profits" )
+csvGen.exportSimulationDataToCSV( simulationElapsedTimeData, "Elapsed Time" )
 
