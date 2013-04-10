@@ -14,7 +14,7 @@ llfSimpleQueue = []
 
 llfSimpleIndex = -1
 
-def simulateLLFSimple( arrayOfVehicleArrivals ):
+def simulateLLFSimpleACB( arrayOfVehicleArrivals ):
     
     # reset global variables such as time, done/failed lots
     common.updateGlobals( arrayOfVehicleArrivals )
@@ -22,7 +22,7 @@ def simulateLLFSimple( arrayOfVehicleArrivals ):
     global llfSimpleIndex
 
     # initialize a CSV document for storing all data
-    csvGen.generateCSV( "llfSimple" )
+    csvGen.generateCSV( "llfSimpleACB" )
 
     # iterate through each vehicle in each minute
     for minute, numVehiclesPerMin in enumerate( arrayOfVehicleArrivals ):
@@ -46,12 +46,14 @@ def simulateLLFSimple( arrayOfVehicleArrivals ):
 
             # no open chargePort, append to llfQueue
             else:
-
-                llfSimpleQueue.append( vehicle )
-
-                # update the llfIndex if this vehicle is better
-                if llfSimpleIndex == -1 or vehicle.laxity < llfSimpleQueue[ llfSimpleIndex ].laxity:
-                    llfSimpleIndex = len( llfSimpleQueue ) - 1
+                if vehicleCanFit( vehicle ):
+                    llfSimpleQueue.append( vehicle )
+                    # update the llfIndex if this vehicle is better
+                    if llfSimpleIndex == -1 or vehicle.laxity < llfSimpleQueue[ llfSimpleIndex ].laxity:
+                        llfSimpleIndex = len( llfSimpleQueue ) - 1
+                else:
+                    csvGen.exportVehicleToCSV( vehicle, "DECLINED" )
+                    common.declinedLot.append( vehicle )
 
         updateVehiclesLLFSimple()
         common.currentTime += 1
@@ -61,16 +63,17 @@ def simulateLLFSimple( arrayOfVehicleArrivals ):
         updateVehiclesLLFSimple()
         common.currentTime += 1
 
-    print "LLF Simple: total number of cars: ", common.numberOfVehiclesInSimulation , \
+    print "LLF Simple AC Basic: total number of cars: ", common.numberOfVehiclesInSimulation , \
           "  elapsed time: " , common.currentTime , \
           "  done charging lot: " , len( common.doneChargingLot ) , \
           "  failed charging lot: " , len( common.failedLot ) , \
+          "  declined lot: ", len( common.declinedLot ), \
           "  cant charge lot: " , len( common.cantChargeLot ) , \
           "  llfQueue size:  " , len( llfSimpleQueue ) , \
           "  chargePort " , chargePorts.toString()
         
     # write a CSV of all the data in chargePortListeners
-    csvGen.exportChargePortsToCSV( "llfSimple" )
+    csvGen.exportChargePortsToCSV( "llfSimpleACB" )
 
     return ( 1.0 * len( common.doneChargingLot ) / ( len( common.failedLot ) + len( common.doneChargingLot ) ) )
 
@@ -186,3 +189,22 @@ def highestLaxityChargePort():
                 highestLaxity = port.laxity
                 highestLaxityIndex = index
     return highestLaxityIndex
+
+# Add up all charging time left for vehicles in chargePorts and for vehicles in queue with an earlier deadline
+# then divide by number of chargeports to get average time per charge port
+def vehicleCanFit( vehicle ):
+    totalTime = 0
+    for curChargingVehicle in chargePorts.chargePorts:
+        if curChargingVehicle is not None:
+            totalTime += curChargingVehicle.timeLeftToCharge()
+        else:
+            raise Exception("Schedule should never be empty here, something is wrong")
+    for scheduledVehicle in llfSimpleQueue:
+        totalTime += scheduledVehicle.timeToCharge
+
+    averageEndTime = (totalTime * 1.0) / chargePorts.numChargePorts
+    averageEndTime += common.currentTime
+
+    # returns true if it can fit, false if it cannot
+    return averageEndTime < (vehicle.depTime - vehicle.timeToCharge)
+

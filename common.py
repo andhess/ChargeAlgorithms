@@ -52,6 +52,21 @@ def updateGlobals( arrayOfVehicleArrivals ):
         for vehicle in numVehiclesPerMin:
         	vehicle.resetVehicleCharge()
 
+# looks at done and failed lots, and returns the profits based on the vehicles
+def calcProfit():
+    profit = 0
+
+    # add up profit from each vehicle in done lot
+    for vehicle in doneChargingLot:
+        profit += vehicle.profit
+
+    # now to deal with vehicles in the failed lot
+    if len( failedLot ) > 0:
+        for vehicle in failedLot:
+            profit += ( vehicle.profit - ( ( vehicle.chargeNeeded - vehicle.currentCharge ) * electricityPrice * penaltyCoefficient ) )
+
+    return profit
+
 
 # returns string representation of all vehicles in a list by id in form [0,1,2,3,4...] 
 # with one id highlighted which is useful for viewing llfIndex or earliestDLIndex, etc

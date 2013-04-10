@@ -81,7 +81,7 @@ def simulateFCFSAC( arrayOfVehicleArrivals ):
     # write a CSV for all the chargePort logs
     csvGen.exportChargePortsToCSV( "fcfsAC" )
 
-    profit = calcProfit()
+    profit = common.calcProfit()
 
     return [ ( 1.0 * len( common.doneChargingLot ) / len( common.doneChargingLot ) + len( common.failedLot ) ) , profit ]
 
@@ -146,20 +146,20 @@ def updateVehiclesFCFSAC():
                 else:
                     chargePorts.chargePorts[ index ] = None
 
-# looks at done and failed lots, and returns the profits based on the vehicles
-def calcProfit():
-    profit = 0
+# # looks at done and failed lots, and returns the profits based on the vehicles
+# def calcProfit():
+#     profit = 0
 
-    # add up profit from each vehicle in done lot
-    for vehicle in common.doneChargingLot:
-        profit += vehicle.profit
+#     # add up profit from each vehicle in done lot
+#     for vehicle in common.doneChargingLot:
+#         profit += vehicle.profit
 
-    # now to deal with vehicles in the failed lot
-    if len( common.failedLot ) > 0:
-        for vehicle in common.failedLot:
-            profit += ( vehicle.profit - ( ( vehicle.chargeNeeded - vehicle.currentCharge ) * common.electricityPrice * common.penaltyCoefficient ) )
+#     # now to deal with vehicles in the failed lot
+#     if len( common.failedLot ) > 0:
+#         for vehicle in common.failedLot:
+#             profit += ( vehicle.profit - ( ( vehicle.chargeNeeded - vehicle.currentCharge ) * common.electricityPrice * common.penaltyCoefficient ) )
 
-    return profit
+#     return profit
 
 # iterate through each schedule and find the one that will have an opening the soonest
 # return the index, and the time that the shortest schedule will complete the current tasks
