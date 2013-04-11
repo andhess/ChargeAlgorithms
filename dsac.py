@@ -24,6 +24,8 @@ def simulate( arrayOfVehicleArrivals ):
 	# initialize a CSV document for storing all data
 	csvGen.generateCSV( "dsac" )
 
+	print chargePorts.chargePorts
+
 	# iterate through each vehicle in each minute
 	for minute, numVehiclesPerMin in enumerate( arrayOfVehicleArrivals ):
 

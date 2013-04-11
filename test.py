@@ -26,27 +26,30 @@ common.setInterval(interval)
 
 def simulateArrivalChargePorts():
 
-    arrivalRate = .2
+    arrivalRate = 3
     initialChargePorts = 1
 
-    arrivalRateStep = .4
-    chargePortStep  = 3
+    arrivalRateStep = 0
+    chargePortStep  = 5
 
     chargePortCycles = 5
-    arrivalRateCycles = 8
+    arrivalRateCycles = 1
 
-    numRunsPerIteration = 2
+    numRunsPerIteration = 3
 
     heatMap = [ ]
 
     # gen 1st row of heatMap
     # for now just write the name of the algorithm in by hand for cell (0,0)
-    row1 = [ "FCFS" ]
+    row1 = [ "DSAC" ]
 
     numChargePorts = initialChargePorts
+
     for a in range( 1, chargePortCycles + 1 ):
         row1.append( numChargePorts )
         numChargePorts += chargePortStep
+
+    heatMap.append( row1 )
 
     for i in range( arrivalRateCycles ):
         poissonGen.setArrivalRate( arrivalRate )
@@ -54,7 +57,7 @@ def simulateArrivalChargePorts():
 
         heatMapRow = [ arrivalRate ]
 
-        for j in range( chargePortStep ):
+        for j in range( chargePortCycles ):
 
             chargePorts.setNumChargePorts( numChargePorts )
             averageProfit = 0
@@ -62,18 +65,18 @@ def simulateArrivalChargePorts():
             for k in range( numRunsPerIteration ):
 
                 gc.collect()
-                print "--------------------------"
+                # print "--------------------------"
 
                 simulationInterval = poissonGen.simulateInterval()
 
                 # test one algorithm at a time
-                singleTestData = fcfs.simulate( simulationInterval )
+                singleTestData = dsac.simulate( simulationInterval )
 
                 # increment profit in spot
                 averageProfit += singleTestData[ 0 ]
 
             # get average 
-            averageProfit /= numRunsPerIteration
+            averageProfit /= ( 1.0 * numRunsPerIteration )
 
             heatMapRow.append( averageProfit )
             numChargePorts += chargePortStep
