@@ -65,7 +65,7 @@ numRunsPerIteration = 10
 for i in range( numIterations ):
 	# gc.collect()
 
-	averageRates = [0] * 7    # a spot for every algo
+	averageRates = [ 0 ] * 7    # a spot for every algo
 
 	for k in range( numRunsPerIteration ):
 		gc.collect()

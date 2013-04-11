@@ -22,6 +22,13 @@ def resetChargePortListeners():
     for i in range( numChargePorts ):
         chargePortListeners.append( [ ] )
 
+# resets the number of chargePorts being used in simulation
+def setNumChargePorts( newChargePortsSize ):
+    global chargePorts
+    global chargePortListeners
+    chargePorts = [ None ] * newChargePortsSize
+    chargePortListeners = [ ] * newChargePortsSize
+
 # returns open charge port ( if any )
 def openChargePort():
     for index, port in enumerate( chargePorts ):

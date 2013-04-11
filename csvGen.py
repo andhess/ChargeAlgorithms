@@ -133,7 +133,7 @@ def exportChargePortsToCSV( folderName ):
                         # csvPrep does all the labor
                         portCSV.writerow( chargeEvent.csvPrep() )
 
-def exportSimulationDataToCSV( simulationData ):
+def exportSimulationDataToCSV( simulationData , title ):
 
         # generate a unique fipame with a time stamp
         timeStamp = datetime.datetime.now().strftime( "%H-%M-%S%f-%m-%d-%Y" )
@@ -147,9 +147,9 @@ def exportSimulationDataToCSV( simulationData ):
                 os.makedirs(dest_dir)
         except OSError:
                 pass # already exists
-        
+
         # make a CSV of it all
-        csvPath = os.path.join( dest_dir, timeStamp + '.csv' )
+        csvPath = os.path.join( dest_dir, title + timeStamp + '.csv' )
         
         # and now write them up
         writeCSV = csv.writer( open( csvPath , "wb" ) )
@@ -157,7 +157,7 @@ def exportSimulationDataToCSV( simulationData ):
         # write some basic info info in vehicleCSV
 
         # columns
-        writeCSV.writerow( [ "Arrival Rate" , "FCFS" , "EDF" , "LLFsmart" , "LLFsmartAC" , "LLFsimple" , "LLFsimpleAC" , "DSAC" ] )
+        writeCSV.writerow( [ "Arrival Rate" , "FCFS" , "FCFS-AC" , "EDF" , "EDF-AC-Basic" , "EDF-AC-Pro" , "LLFsimple" , "LLFsimple-AC-Basic" , "LLFsimple-AC-Pro" , "LLFsmart" , "LLFsmart-AC" , "DSAC" ] )
         
         # write each row
         for index, simulationRound in enumerate( simulationData ):
