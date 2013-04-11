@@ -48,7 +48,7 @@ for i in range( numIterations ):
     for k in range( numRunsPerIteration ):
 
         gc.collect()
-        print"--------------------------"
+        #print"--------------------------"
 
         poissonGen.setArrivalRate( arrivalRate )
 
@@ -148,7 +148,7 @@ csvGen.exportSimulationDataToCSV( simulationElapsedTimeData , "Elapsed Time" )
 def simulateArrivalChargePorts():
 
     arrivalRate = .2
-    numChargePorts = 1
+    initialChargePorts = 1
 
     arrivalRateStep = .4
     chargePortStep  = 3
@@ -156,53 +156,50 @@ def simulateArrivalChargePorts():
     chargePortCycles = 5
     arrivalRateCycles = 8
 
-    numRunsPerIteration = 5
+    numRunsPerIteration = 10
 
     heatMap = [ ]
 
     # gen 1st row of heatMap
-    row1 = [ "ArrivalRates/ChargePorts" ]
+    # for now just write the name of the algorithm in by hand for cell (0,0)
+    row1 = [ "DSAC" ]
 
+    numChargePorts = initialChargePorts
     for a in range( 1, chargePortCycles + 1 ):
-        row1.append()
-
-
+        row1.append( numChargePorts )
+        numChargePorts += chargePortStep
 
     for i in range( arrivalRateCycles ):
+        poissonGen.setArrivalRate( arrivalRate )
+        numChargePorts = initialChargePorts
+
+        heatMapRow = [ arrivalRate ]
 
         for j in range( chargePortStep ):
 
-            chargePorts.setNumChargePorts( )
-
-            trial = [ arrivalRate , numChargePorts , 0 ]
+            chargePorts.setNumChargePorts( numChargePorts )
+            averageProfit = 0
 
             for k in range( numRunsPerIteration ):
 
                 gc.collect()
                 print "--------------------------"
-                poissonGen.setArrivalRate( arrivalRate )
+
                 simulationInterval = poissonGen.simulateInterval()
 
                 # test one algorithm at a time
                 singleTestData = dsac.simulate( simulationInterval )
 
                 # increment profit in spot
-                trial[ 2 ] += singleTestData[ 0 ]
+                averageProfit += singleTestData[ 0 ]
 
             # get average 
-            trial[ 2 ] /= numRunsPerIteration
+            averageProfit /= numRunsPerIteration
 
-            
+            heatMapRow.append( averageProfit )
             numChargePorts += chargePortStep
 
-        arrivalRate += arrivalRateStep    
+        heatMap.append( heatMapRow )
+        arrivalRate += arrivalRateStep
 
-
-
-
-    for i in range( numIterations ):
-
-        averageRates = [ 0 ] * 11    # a spot for every algo
-        averageRatesWithDeclined = [ 0 ] * 11 
-        averageProfits = [ 0 ] * 11
-        averageElapsedTimes = [ 0 ] * 11
+    print heatMap

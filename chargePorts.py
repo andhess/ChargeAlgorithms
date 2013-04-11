@@ -26,6 +26,8 @@ def resetChargePortListeners():
 def setNumChargePorts( newChargePortsSize ):
     global chargePorts
     global chargePortListeners
+    global numChargePorts
+    numChargePorts = newChargePortsSize
     chargePorts = [ None ] * newChargePortsSize
     chargePortListeners = [ ] * newChargePortsSize
 
