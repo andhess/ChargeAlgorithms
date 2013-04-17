@@ -29,10 +29,10 @@ common.setInterval(interval)
 # ------------------ real simulations -------------------------
 
 # do tons and tons of simulations
-arrivalRate = .05
-numIterations = 40
-maxArrivalRate = 2.0
-numRunsPerIteration = 10
+arrivalRate =  .1
+numIterations = 8
+arrivalStep = .3
+numRunsPerIteration = 20
 simulationProfitData = [ ]
 simulationSuccessData = [ ]
 simulationSuccessDataWithDeclined = [ ]
@@ -131,7 +131,7 @@ for i in range( numIterations ):
     simulationProfitData.append( [ arrivalRate ] + averageProfits )
     simulationElapsedTimeData.append( [ arrivalRate ] + averageElapsedTimes )
 
-    arrivalRate += ( maxArrivalRate / numIterations )
+    arrivalRate += arrivalStep
 
     if i % 10 == 0:
         print "iteration: " , i, " arrival rate: ", arrivalRate
@@ -144,62 +144,3 @@ csvGen.exportSimulationDataToCSV( simulationSuccessDataWithDeclined , "Success W
 csvGen.exportSimulationDataToCSV( simulationProfitData , "Profits" )
 csvGen.exportSimulationDataToCSV( simulationElapsedTimeData , "Elapsed Time" )
 
-
-def simulateArrivalChargePorts():
-
-    arrivalRate = .2
-    initialChargePorts = 1
-
-    arrivalRateStep = .4
-    chargePortStep  = 3
-
-    chargePortCycles = 5
-    arrivalRateCycles = 8
-
-    numRunsPerIteration = 10
-
-    heatMap = [ ]
-
-    # gen 1st row of heatMap
-    # for now just write the name of the algorithm in by hand for cell (0,0)
-    row1 = [ "DSAC" ]
-
-    numChargePorts = initialChargePorts
-    for a in range( 1, chargePortCycles + 1 ):
-        row1.append( numChargePorts )
-        numChargePorts += chargePortStep
-
-    for i in range( arrivalRateCycles ):
-        poissonGen.setArrivalRate( arrivalRate )
-        numChargePorts = initialChargePorts
-
-        heatMapRow = [ arrivalRate ]
-
-        for j in range( chargePortStep ):
-
-            chargePorts.setNumChargePorts( numChargePorts )
-            averageProfit = 0
-
-            for k in range( numRunsPerIteration ):
-
-                gc.collect()
-                print "--------------------------"
-
-                simulationInterval = poissonGen.simulateInterval()
-
-                # test one algorithm at a time
-                singleTestData = dsac.simulate( simulationInterval )
-
-                # increment profit in spot
-                averageProfit += singleTestData[ 0 ]
-
-            # get average 
-            averageProfit /= numRunsPerIteration
-
-            heatMapRow.append( averageProfit )
-            numChargePorts += chargePortStep
-
-        heatMap.append( heatMapRow )
-        arrivalRate += arrivalRateStep
-
-    print heatMap
