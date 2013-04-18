@@ -30,9 +30,9 @@ common.setInterval(interval)
 
 # do tons and tons of simulations
 arrivalRate =  .1
-numIterations = 8
-arrivalStep = .3
-numRunsPerIteration = 20
+numIterations = 20
+arrivalStep = .1
+numRunsPerIteration = 5
 simulationProfitData = [ ]
 simulationSuccessData = [ ]
 simulationSuccessDataWithDeclined = [ ]
@@ -80,7 +80,7 @@ for i in range( numIterations ):
         llfSimpleACProData = llfSimple_AC_Pro.simulate( simulationInterval )
 
         #----------------llfSmart----------------
-        llfSmartData = llfSimple.simulate( simulationInterval )
+        llfSmartData = llfSmart.simulate( simulationInterval )
 
         llfSmartACBasicData = llfSmart_AC_Basic.simulate( simulationInterval )
 
