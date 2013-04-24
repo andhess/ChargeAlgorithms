@@ -18,8 +18,8 @@ import gc
 
 
 if len( sys.argv ) != 2:
-	print 'Wrong Number of Arguments you sent', sys.argv , " .. just interval" 
-	sys.exit()  
+    print 'Wrong Number of Arguments you sent', sys.argv , " .. just interval" 
+    sys.exit()  
 
 interval = int( sys.argv[ 1 ] )
 common.setInterval(interval)
@@ -63,57 +63,57 @@ numIterations = 100
 maxArrivalRate = 2.0
 numRunsPerIteration = 10
 for i in range( numIterations ):
-	# gc.collect()
+    # gc.collect()
 
-	averageRates = [ 0 ] * 7    # a spot for every algo
+    averageRates = [ 0 ] * 7    # a spot for every algo
 
-	for k in range( numRunsPerIteration ):
-		gc.collect()
+    for k in range( numRunsPerIteration ):
+        gc.collect()
 
-		individualRates = []
-		poissonGen.setArrivalRate( arrivalRate )
+        individualRates = []
+        poissonGen.setArrivalRate( arrivalRate )
 
-		simulationInterval = poissonGen.simulateInterval()
+        simulationInterval = poissonGen.simulateInterval()
 
-		# don't want a simulation with no cars
-		while common.numberOfVehiclesInSimulation == 0:
-			simulationInterval = poissonGen.simulateInterval()
+        # don't want a simulation with no cars
+        while common.numberOfVehiclesInSimulation == 0:
+            simulationInterval = poissonGen.simulateInterval()
 
-		#fcfs
-		fcfsRate = fcfs.simulateFCFS( simulationInterval )
-		individualRates.append( fcfsRate )
+        #fcfs
+        fcfsRate = fcfs.simulateFCFS( simulationInterval )
+        individualRates.append( fcfsRate )
 
-		#edf
-		edfRate = edf.simulateEDF( simulationInterval ) 
-		individualRates.append( edfRate )
+        #edf
+        edfRate = edf.simulateEDF( simulationInterval ) 
+        individualRates.append( edfRate )
 
-		#llfSmart
-		llfSmartRate = llfSmart.simulateLLF( simulationInterval )
-		individualRates.append( llfSmartRate )
-		llfSmartACRate = llfSmartAC.simulateLLF( simulationInterval )
-		individualRates.append( llfSmartACRate )
+        #llfSmart
+        llfSmartRate = llfSmart.simulateLLF( simulationInterval )
+        individualRates.append( llfSmartRate )
+        llfSmartACRate = llfSmartAC.simulateLLF( simulationInterval )
+        individualRates.append( llfSmartACRate )
 
-		#llfSimple
-		llfSimpleRate = llfSimple.simulateLLFSimple( simulationInterval )
-		individualRates.append( llfSimpleRate )
-		llfSimpleACRate = llfSimpleAC.simulateLLFSimpleAC( simulationInterval )
-		individualRates.append( llfSimpleACRate )
+        #llfSimple
+        llfSimpleRate = llfSimple.simulateLLFSimple( simulationInterval )
+        individualRates.append( llfSimpleRate )
+        llfSimpleACRate = llfSimpleAC.simulateLLFSimpleAC( simulationInterval )
+        individualRates.append( llfSimpleACRate )
 
-		#dsac
-		dsacRate = dsac.simulateDSAC( simulationInterval )
-		individualRates.append( dsacRate )
+        #dsac
+        dsacRate = dsac.simulateDSAC( simulationInterval )
+        individualRates.append( dsacRate )
 
-		for index, rate in enumerate(individualRates):
-			averageRates[index] += rate
+        for index, rate in enumerate(individualRates):
+            averageRates[index] += rate
 
-	for n in range( len(averageRates) ):
-		averageRates[n] /= ( numRunsPerIteration * 1.0 )
+    for n in range( len(averageRates) ):
+        averageRates[n] /= ( numRunsPerIteration * 1.0 )
 
-	simulationData.append( [arrivalRate] + averageRates)
-	arrivalRate += (maxArrivalRate / numIterations)
+    simulationData.append( [arrivalRate] + averageRates)
+    arrivalRate += (maxArrivalRate / numIterations)
 
-	if i % 10 == 0:
-		print "iteration: " , i, " arrival rate: ", arrivalRate
-		print averageRates
+    if i % 10 == 0:
+        print "iteration: " , i, " arrival rate: ", arrivalRate
+        print averageRates
 
 csvGen.exportSimulationDataToCSV( simulationData )

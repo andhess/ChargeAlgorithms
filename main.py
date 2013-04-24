@@ -29,9 +29,9 @@ common.setInterval(interval)
 # ------------------ real simulations -------------------------
 
 # do tons and tons of simulations
-arrivalRate =  .1
-numIterations = 20
-arrivalStep = .1
+arrivalRate =  1
+numIterations = 1
+arrivalStep = 1
 numRunsPerIteration = 5
 simulationProfitData = [ ]
 simulationSuccessData = [ ]
@@ -143,4 +143,3 @@ csvGen.exportSimulationDataToCSV( simulationSuccessData , "Success" )
 csvGen.exportSimulationDataToCSV( simulationSuccessDataWithDeclined , "Success With Declines" )
 csvGen.exportSimulationDataToCSV( simulationProfitData , "Profits" )
 csvGen.exportSimulationDataToCSV( simulationElapsedTimeData , "Elapsed Time" )
-

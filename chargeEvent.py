@@ -17,11 +17,11 @@ class ChargeEvent:
     def __init__( self, vehicle, startTime ):
 
         # parameters for each vehicle, not all are used for each algorithm implementation
-        self.id			 		=	  ChargeEvent.numEvents 
-        self.startTime   		=     startTime					# the time that this vehicle began charging
-        self.initialVehicle     =     vehicle 					# we wil have all the stats of our vehicle object when it entered
-        self.endTime			=     -1						# update to endTime
-        self.endVehicle			=     -1						# will write its properties when it exits
+        self.id                 =     ChargeEvent.numEvents 
+        self.startTime          =     startTime                 # the time that this vehicle began charging
+        self.initialVehicle     =     vehicle                   # we wil have all the stats of our vehicle object when it entered
+        self.endTime            =     -1                        # update to endTime
+        self.endVehicle         =     -1                        # will write its properties when it exits
         self.timeCharging       =     -1
 
         # keep tabs of the number of vehicles that have entered the model
@@ -29,9 +29,9 @@ class ChargeEvent:
 
     # when the vehicle is done charging, we'll gather its stats
     def terminateCharge( self, vehicle, currentTime ):
-    	self.endTime 	    = 	currentTime
-    	self.endVehicle     = 	vehicle
-    	self.timeCharging   =   currentTime - self.startTime
+        self.endTime        =   currentTime
+        self.endVehicle     =   vehicle
+        self.timeCharging   =   currentTime - self.startTime
 
     # probably useful to have
     def toString( self ):

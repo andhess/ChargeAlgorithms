@@ -43,7 +43,7 @@ def openChargePort():
 
 # says if all charge ports are empty
 def chargePortsEmpty():
-	return all( port is None for port in chargePorts )
+    return all( port is None for port in chargePorts )
 
 def addChargeEvent( portNum, vehicle, time ):
     chargeEvents[ portNum ] = chargeEvent.ChargeEvent(vehicle, time)

@@ -87,5 +87,3 @@ def simulateArrivalChargePorts():
     return heatMap
 
 print simulateArrivalChargePorts()
-
-
