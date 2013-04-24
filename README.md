@@ -6,7 +6,7 @@ This repository is part of a research project that I worked on for a semester wi
 
 # Simulation
 The simulation operates in discrete time at intervals of 1 minute.  Before running an algorithm, we simulate a window in which vehicles will arrive, and then iterate through the simulation minute by minute.  The arrival of vehicles is based on a poisson distribution, which is easily changeable.  In our model, we commonly change the value of the arrival rate, which is the frequency of occurrences of our distribution.
-As each algorithm progresses through time, it attempts to make decisions based on its current state.  No algorithm can know the future, and at each interval only has information about its current state and any vehicle that just arrived.
+As each algorithm progresses through time, it attempts to make decisions based on its current state.  No algorithm can know the future, and at each interval it only has information about its current state and any vehicle that just arrived.
 
 # Vehicles
 To know the best method for charging a vehicle, an algorithm is going to need some information about its needs.  Vehicle objects thus have the following basic properties:
@@ -25,7 +25,7 @@ We implemented 11 different algorithms.  These algorithms are built on 5 fundame
 * EDF - Earliest Deadline First - This is a type of priorty queue.  It prioritizes vehicles based on their deadline.  A vehicle with a deadline approaching will skip up in priority.
 * LLF-Simple - Least Laxity First - Laxity is defined as 1 - (time needed to charge / total time available for charging ).  In this version, laxity is calculated when a vehicle enters the simulation and the priority queues use only that initial value for all sorting.
 * LLF-Smart - Here laxity is taken slightly differently.  Instead, it is defined as 1 - ( time left to charge / time until deadline ).  The difference between LLF-Smart is that the value of laxity is updated for all vehicles at the end of every discrete interval of simulation.
-* DSAC - Decision Scheduling Admission Control - This algorithm was suggested in a [paper](http://acsp.ece.cornell.edu/papers/ChenJiTong12PES.pdf) by researchers at Cornell University.  It adds the ability to admit or decline a vehicle when it arrives.  It will admit a vehicle if it finds that it can increase its projected profit.
+* DSAC - Decision Scheduling Admission Control - This algorithm was suggested in a [paper](http://acsp.ece.cornell.edu/papers/ChenJiTong12PES.pdf) by researchers at Cornell University.  It adds the ability to admit or decline a vehicle when it arrives.  It will admit a vehicle if it finds that it can increase its projected profit.  This was the most difficult algorithm to write mostly because vehicle objects needed to be cloned, acted upon independently, but updated in unison.
 
 Initially, we built FCFS, EDF, and both of the LLF algorithms where they were required to admit all vehicles.  Since DSAC had the power of admission control, we also created a version of each that took advantage of admission control.  Furthermore, our initial 4 algorithms used 1 queue for all charging ports, whereas DSAC had a separate queue for each port.  To fairly compare DSAC, we implemented an additional admission control algorithm for FCFS, EDF, and LLF-Simple.  It didn't make much sense for LLF-Smart in both implementation or practicality.  These additions brought the total algorithm count to 11; they are as follows:
 * FCFS (single queue)
