@@ -40,3 +40,9 @@ Initially, we built FCFS, EDF, and both of the LLF algorithms where they were re
 * DSAC (multiple queues)
 
 The reason the multiple queue algorithms are referred to as pro is that they absolutely guarantee that no failure will ever occur when they admit a vehicle.  The basic ones will make a very accurate guess (about 99%, but not definite).
+
+# Charge Ports
+There is no charge port object, we just used an array.  The algorithms perform all swaps between schedules and ports.  For each time a vehicle enters a charge port, a charging activity object is created.  This is stored in an array of the sime size, and just documents how long the vehicle was charging there and what it did.
+
+# Trying It Out
+main.py will run all algorithms and return a csv file with some of their performances.  To get started, just pull in this entire repository into an empty directory.  I have been running everything on Python 2.7.2 (standard on Macs); not sure how well previous versions are supported.  When you simulate, you can also get a CSV output on every vehicle and chargePort activity.  I suggest keeping that off for big simulations as it slows everything down a lot.
