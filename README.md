@@ -46,3 +46,8 @@ There is no charge port object, we just used an array.  The algorithms perform a
 
 # Trying It Out
 main.py will run all algorithms and return a csv file with some of their performances.  To get started, just pull in this entire repository into an empty directory.  I have been running everything on Python 2.7.2 (standard on Macs); not sure how well previous versions are supported.  When you simulate, you can also get a CSV output on every vehicle and chargePort activity.  I suggest keeping that off for big simulations as it slows everything down a lot.
+In main.py, you will have to define some components of your simulation: how many simulations to run, across what intervals, and how many to run for an average.
+main.py will take in an integer, which is the interval of time that vehicles can arrive.
+
+# More Information
+A full write up on our findings plus a better explanation of this model will be available on a separate website soon.  In the meantime, please email hess@wustl.edu with any questions.
