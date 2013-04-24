@@ -4,6 +4,21 @@ Charging Algorithms
 # About
 This repository is part of a research project that I worked on for a semester with [@samwdon](https://github.com/samwdon) through the School of Engineering and Applied Sciences at Washington University in St. Louis.  The goal of the project was to test different scheduling and queueing algorithms to determine which is most effective in charging electric vehicles.  To test the algorithms, we built out this entire simulation and then compared their performance on a few different metrics.
 
+# Simulation
+The simulation operates in discrete time at intervals of 1 minute.  Before running an algorithm, we simulate a window in which vehicles will arrive, and then iterate through the simulation minute by minute.  The arrival of vehicles is based on a poisson distribution, which is easily changeable.  In our model, we commonly change the value of the arrival rate, which is the frequency of occurrences of our distribution.
+As each algorithm progresses through time, it attempts to make decisions based on its current state.  No algorithm can know the future, and at each interval only has information about its current state and any vehicle that just arrived.
+
+# Vehicles
+To know the best method for charging a vehicle, an algorithm is going to need some information about its needs.  Vehicle objects thus have the following basic properties:
+* Arrival time
+* Departure time
+* Initial charge (amount of KWh upon arrival)
+* Charge needed (amount of KWh needed at departure)
+* Battery capacity
+* Charging rate
+
+Aside from arrival time and charging rate, these values are calculated from a normal distribution.  Arrival time is fixed into the poisson distribtuion, while charging rate is fixed and part of the charge ports.
+
 # The Algorithms
 We implemented 11 different algorithms.  These algorithms are built on 5 fundamentally different scheduling approaches.  They are defined as follows:
 * FCFS - First Come First Serve - This is just a typical queue, as vehicles are kept in the order in which they arrive.
