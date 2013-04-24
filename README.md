@@ -23,4 +23,5 @@ Initially, we built FCFS, EDF, and both of the LLF algorithms where they were re
 * LLF-Smart (single queue)
 * LLF-Smart-AC (single queue)
 * DSAC (multiple queues)
+
 The reason the multiple queue algorithms are referred to as pro is that they absolutely guarantee that no failure will ever occur when they admit a vehicle.  The basic ones will make a very accurate guess (about 99%, but not definite).
