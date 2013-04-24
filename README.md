@@ -4,7 +4,6 @@ Charging Algorithms
 # About
 This repository is part of a research project that I worked on for a semester with [@samwdon](https://github.com/samwdon) through the School of Engineering and Applied Sciences at Washington University in St. Louis.  The goal of the project was to test different scheduling and queueing algorithms to determine which is most effective in charging electric vehicles.  To test the algorithms, we built out this entire simulation and then compared their performance on a few different metrics.
 
-
 # The Algorithms
 We implemented 11 different algorithms.  These algorithms are built on 5 fundamentally different scheduling approaches.  They are defined as follows:
 * FCFS - First Come First Serve - This is just a typical queue, as vehicles are kept in the order in which they arrive.
